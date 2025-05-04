@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -140,8 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         // TODO: implementar lógica de login
-                        print('Usuario: ${_usuarioController.text}');
-                        print('Password: ${_passwordController.text}');
+                        context.go('/home');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: buttonColor,
@@ -165,9 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Link Olvidé mi contraseña
                   TextButton(
-                    onPressed: () {
-                      // TODO: navegación a recuperación de contraseña
-                    },
+                    onPressed: () => context.push('/forgot'),
                     child: const Text(
                       'Olvidé mi contraseña',
                       style: TextStyle(

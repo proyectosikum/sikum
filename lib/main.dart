@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sikum/screens/login/login.dart';
+import 'package:sikum/router/app_router.dart';
 
 void main() {
   runApp(const MainApp());
@@ -10,9 +10,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp.router(
+      title: 'Sikum',
       debugShowCheckedModeBanner: false,
-      home: LoginScreen()
+      routerConfig: appRouter,
     );
   }
 }
