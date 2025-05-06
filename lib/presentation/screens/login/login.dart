@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sikum/router/app_router.dart';
+import 'package:sikum/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Colores del diseño
     const backgroundColor = Color(0xFF4F959D);
     const cardBorderColor = Color(0xFFB2D4E1);
     const fieldFillColor = Color(0xFFF2F2F2);
@@ -139,9 +140,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: implementar lógica de login
-                        context.go('/home');
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        final user = _usuarioController.text.trim();
+                        final pass = _passwordController.text;
+                        final success = await AuthService.instance.login(user, pass);
+
+                        if (success) {
+                          authNotifier.login(user);
+                        } else {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Usuario o contraseña inválidos')),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: buttonColor,
