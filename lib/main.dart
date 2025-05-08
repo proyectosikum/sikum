@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sikum/presentation/screens/crear_usuarios_screens.dart';
+import 'presentation/screens/usuarios_screen.dart';
 void main() {
   runApp(const MainApp());
 }
@@ -10,7 +10,12 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: CrearUsuariosScreens()
+      title: 'Gestión de Usuarios',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        useMaterial3: true,
+      ),
+      home: const UsuariosScreen(),
     );
   }
 }
