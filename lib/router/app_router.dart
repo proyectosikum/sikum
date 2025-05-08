@@ -1,11 +1,11 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sikum/presentation/screens/crear_usuarios_screens.dart';
+import 'package:sikum/presentation/screens/create_users.dart';
 import 'package:sikum/presentation/screens/login.dart';
 import 'package:sikum/presentation/screens/forgot_password.dart';
 import 'package:sikum/presentation/screens/change_password.dart';
-import 'package:sikum/presentation/screens/pacientes.dart';
-import 'package:sikum/presentation/screens/usuarios_screen.dart';
+import 'package:sikum/presentation/screens/patients.dart';
+import 'package:sikum/presentation/screens/users.dart';
 import 'package:sikum/services/auth_notifier.dart';
 
 final authChangeNotifier = AuthChangeNotifier();
@@ -15,9 +15,9 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
   routes: [
     GoRoute(path: '/login',        builder: (_, __) => const LoginScreen()),
-    GoRoute(path: '/usuarios',     builder: (_, __) => const UsuariosScreen()),
-    GoRoute(path: '/altaUsuarios', builder: (_, __) => const CrearUsuariosScreen()),
-    GoRoute(path: '/pacientes',    builder: (_, __) => const Pacientes()),
+    GoRoute(path: '/usuarios',     builder: (_, __) => const Users()),
+    GoRoute(path: '/altaUsuarios', builder: (_, __) => const CreateUsers()),
+    GoRoute(path: '/pacientes',    builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',       builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',       builder: (_, __) => const ChangePasswordScreen()),
   ],

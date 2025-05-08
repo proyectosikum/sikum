@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sikum/entities/paciente.dart';
+import 'package:sikum/entities/patient.dart';
 
-class PacienteCard extends StatelessWidget {
-  final Paciente paciente;
+class PatientCard extends StatelessWidget {
+  final Patient patient;
 
-  const PacienteCard({
+  const PatientCard({
     super.key,
-    required this.paciente,
+    required this.patient,
   });
 
   @override
@@ -19,8 +19,8 @@ class PacienteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        title: Text('${paciente.nombre} ${paciente.apellido}'),
-        subtitle: Text('DNI: ${paciente.dni}'),
+        title: Text('${patient.name} ${patient.lastName}'),
+        subtitle: Text('DNI: ${patient.dni}'),
         trailing: SizedBox(
           width: 100, // Aumentá este valor si querés más espacio hacia la derecha
           child: Row(

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../entities/usuario.dart';
+import '../../entities/user.dart';
 
 class UserCard extends StatelessWidget {
-  final Usuario usuario;
+  final User user;
 
   const UserCard({
     super.key,
-    required this.usuario,
+    required this.user,
   });
 
   @override
@@ -19,8 +19,8 @@ class UserCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        title: Text(usuario.nombre),
-        subtitle: Text('DNI: ${usuario.dni}'),
+        title: Text(user.name),
+        subtitle: Text('DNI: ${user.dni}'),
         trailing: IconButton(
           icon: const Icon(Icons.remove_red_eye),
           onPressed: () {
