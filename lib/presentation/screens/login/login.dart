@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sikum/router/app_router.dart';
 import 'package:sikum/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usuarioController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showText = true;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -23,20 +23,54 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _togglePasswordView() {
-    setState(() => _showText = !_showText);
+  void _togglePasswordView() => setState(() => _showText = !_showText);
+
+  Future<void> _onLogin() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final usuario = _usuarioController.text.trim();
+    final pass = _passwordController.text;
+
+    if (usuario.isEmpty || pass.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Por favor completa ambos campos')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    final result = await AuthService.instance.login(usuario, pass);
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    if (!result.success) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Usuario o contraseña inválidos')),
+      );
+      return;
+    }
+
+    if (result.needsChange) {
+      context.push('/change');
+      return;
+    }
+
+    if (result.role == 'admin') {
+      context.go('/homeAdmin');
+    } else {
+      context.go('/home');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     const backgroundColor = Color(0xFF4F959D);
     const cardBorderColor = Color(0xFFB2D4E1);
-    const fieldFillColor = Color(0xFFF2F2F2);
-    const buttonColor = Color(0xFFFFF8E1);
-    const titleColor = Color(0xFFFFF8E1);
-    const inputTextColor = Colors.black87;
-    const labelColor = Color(0xFFFFF8E1);
-    const labelSize = 18.0;
+    const fieldFillColor  = Color(0xFFF2F2F2);
+    const buttonColor     = Color(0xFFFFF8E1);
+    const titleColor      = Color(0xFFFFF8E1);
+    const inputTextColor  = Colors.black87;
+    const labelColor      = Color(0xFFFFF8E1);
+    const labelSize       = 18.0;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -84,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                              horizontal: 16, vertical: 12),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -114,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                              horizontal: 16, vertical: 12),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -140,21 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final messenger = ScaffoldMessenger.of(context);
-
-                        final user = _usuarioController.text.trim();
-                        final pass = _passwordController.text;
-                        final success = await AuthService.instance.login(user, pass);
-
-                        if (success) {
-                          authNotifier.login(user);
-                        } else {
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text('Usuario o contraseña inválidos')),
-                          );
-                        }
-                      },
+                      onPressed: _loading ? null : _onLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: buttonColor,
                         shape: RoundedRectangleBorder(
@@ -162,14 +182,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Ingresar',
-                        style: TextStyle(
-                          color: backgroundColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _loading
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 24, height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(buttonColor),
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'Ingresar',
+                            style: TextStyle(
+                              color: backgroundColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                     ),
                   ),
 
