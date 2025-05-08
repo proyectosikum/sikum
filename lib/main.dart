@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sikum/router/app_router.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+import 'presentation/screens/usuarios_screen.dart';
+void main() {
   runApp(const MainApp());
 }
 
@@ -16,10 +9,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Sikum',
-      debugShowCheckedModeBanner: false,
-      routerConfig: appRouter,
+    return MaterialApp(
+      title: 'Gestión de Usuarios',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        useMaterial3: true,
+      ),
+      home: const UsuariosScreen(),
     );
   }
 }
