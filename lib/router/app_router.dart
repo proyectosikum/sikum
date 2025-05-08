@@ -12,7 +12,7 @@ final authChangeNotifier = AuthChangeNotifier();
 
 final GoRouter appRouter = GoRouter(
   refreshListenable: authChangeNotifier,
-  initialLocation: '/login',
+  initialLocation: '/pacientes',
   routes: [
     GoRoute(path: '/login',        builder: (_, __) => const LoginScreen()),
     GoRoute(path: '/usuarios',     builder: (_, __) => const Users()),
