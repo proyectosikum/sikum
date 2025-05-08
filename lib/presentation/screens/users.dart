@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
-import '../../core/data/usuarios_fake.dart';
+import '../../core/data/users_fake.dart';
 import '../widgets/user_card.dart';
 import '../widgets/search_field.dart';
 import '../widgets/filter_buttons.dart';
 import '../widgets/screen_subtitle.dart';
 
-class UsuariosScreen extends StatefulWidget {
-  const UsuariosScreen({super.key});
+class Users extends StatefulWidget {
+  const Users({super.key});
 
   @override
-  State<UsuariosScreen> createState() => _UsuariosScreenState();
+  State<Users> createState() => _UsuariosScreenState();
 }
 
-class _UsuariosScreenState extends State<UsuariosScreen> {
-  bool mostrarActivos = true;
+class _UsuariosScreenState extends State<Users> {
+  bool showAssets = true;
   String searchText = '';
 
   @override
   Widget build(BuildContext context) {
-    final usuariosFiltrados = usuarioList.where((u) {
-      final coincideEstado = u.activo == mostrarActivos;
-      final coincideBusqueda = u.nombre.toLowerCase().contains(searchText.toLowerCase()) ||
+    final filteredUsers = userList.where((u) {
+      final matchesState = u.isActive == showAssets;
+      final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) ||
           u.dni.contains(searchText);
-      return coincideEstado && coincideBusqueda;
+      return matchesState && matchesSearch;
     }).toList();
 
     return Scaffold(
@@ -51,10 +51,10 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 FilterButtons(
-                  mostrarActivos: mostrarActivos,
+                  showAssets: showAssets,
                   onChanged: (value) {
                     setState(() {
-                      mostrarActivos = value;
+                      showAssets = value;
                     });
                   },
                 ),
@@ -71,12 +71,12 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: usuariosFiltrados.isEmpty
+              child: filteredUsers.isEmpty
                   ? const Center(child: Text('No se encontraron usuarios.'))
                   : ListView.builder(
-                      itemCount: usuariosFiltrados.length,
+                      itemCount: filteredUsers.length,
                       itemBuilder: (context, index) {
-                        return UserCard(usuario: usuariosFiltrados[index]);
+                        return UserCard(user: filteredUsers[index]);
                       },
                     ),
             ),

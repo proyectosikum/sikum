@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:sikum/core/data/pacientes_fake.dart';
+import 'package:sikum/core/data/patient_fake.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
-import 'package:sikum/presentation/widgets/paciente_card.dart';
+import 'package:sikum/presentation/widgets/patient_card.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/search_field.dart';
 
-class Pacientes extends StatefulWidget {
-  const Pacientes({super.key});
+class Patients extends StatefulWidget {
+  const Patients({super.key});
 
   @override
-  State<Pacientes> createState() => _PacientesState();
+  State<Patients> createState() => _PacientesState();
 }
 
 
-class _PacientesState extends State<Pacientes> {
-  bool mostrarActivos = true;
+class _PacientesState extends State<Patients> {
+  bool showAssets = true;
   String searchText = '';
 
 
   @override
   Widget build(BuildContext context) {
 
-    final pacientesFiltrados = pacienteList.where((u) {
-      final coincideEstado = u.estaActivo == mostrarActivos;
-      final coincideBusqueda = u.nombre.toLowerCase().contains(searchText.toLowerCase()) || u.apellido.toLowerCase().contains(searchText.toLowerCase()) ||
+    final filteredPatients = patientList.where((u) {
+      final matchesState = u.isActive == showAssets;
+      final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) || u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
           u.dni.contains(searchText); 
-      return coincideEstado && coincideBusqueda;
+      return matchesState && matchesSearch;
     }).toList();
 
 
@@ -54,10 +54,10 @@ class _PacientesState extends State<Pacientes> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 FilterButtons(
-                  mostrarActivos: mostrarActivos,
+                  showAssets: showAssets,
                   onChanged: (value) {
                     setState(() {
-                      mostrarActivos = value;
+                      showAssets = value;
                     });
                   },
                 ),
@@ -74,12 +74,12 @@ class _PacientesState extends State<Pacientes> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: pacientesFiltrados.isEmpty
+              child: filteredPatients.isEmpty
                   ? const Center(child: Text('No se encontraron pacientes.'))
                   : ListView.builder(
-                      itemCount: pacientesFiltrados.length,
+                      itemCount: filteredPatients.length,
                       itemBuilder: (context, index) {
-                        return PacienteCard(paciente: pacientesFiltrados[index]);
+                        return PatientCard(patient: filteredPatients[index]);
                       },
                     ),
             ),

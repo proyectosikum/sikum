@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class FilterButtons extends StatelessWidget {
-  final bool mostrarActivos;
+  final bool showAssets;
   final ValueChanged<bool> onChanged;
 
   const FilterButtons({
     super.key,
-    required this.mostrarActivos,
+    required this.showAssets,
     required this.onChanged,
   });
 
@@ -21,7 +21,7 @@ class FilterButtons extends StatelessWidget {
       children: [
         FilterChip(
           label: const Text('Activos'),
-          selected: mostrarActivos,
+          selected: showAssets,
           selectedColor: activeColor,
           backgroundColor: inactiveColor,
           onSelected: (_) => onChanged(true),
@@ -29,7 +29,7 @@ class FilterButtons extends StatelessWidget {
         const SizedBox(width: 8),
         FilterChip(
           label: const Text('Inactivos'),
-          selected: !mostrarActivos,
+          selected: !showAssets,
           selectedColor: activeColor,
           backgroundColor: inactiveColor,
           onSelected: (_) => onChanged(false),
