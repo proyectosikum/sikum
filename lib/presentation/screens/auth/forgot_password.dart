@@ -11,21 +11,21 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final _usuarioController = TextEditingController();
+  final _userController = TextEditingController();
   bool _loading = false;
 
   @override
   void dispose() {
-    _usuarioController.dispose();
+    _userController.dispose();
     super.dispose();
   }
 
   Future<void> _sendResetEmail() async {
-    final user = _usuarioController.text.trim();
+    final user = _userController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
     if (user.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa tu usuario')),
+        const SnackBar(content: Text('Por favor ingresa tu user')),
       );
       return;
     }
@@ -41,7 +41,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (query.docs.isEmpty) {
       setState(() => _loading = false);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Usuario no encontrado')),
+        const SnackBar(content: Text('user no encontrado')),
       );
       return;
     }
@@ -51,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (email == null) {
       setState(() => _loading = false);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Email no vinculado a usuario')),
+        const SnackBar(content: Text('Email no vinculado a user')),
       );
       return;
     }
@@ -122,7 +122,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Usuario',
+                          'user',
                           style: TextStyle(
                             color: cream,
                             fontSize: 18,
@@ -131,9 +131,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Input de usuario
+                      // Input de user
                       TextField(
-                        controller: _usuarioController,
+                        controller: _userController,
                         style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           contentPadding:

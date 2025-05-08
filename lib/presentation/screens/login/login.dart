@@ -11,14 +11,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usuarioController = TextEditingController();
+  final _userController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showText = true;
   bool _loading = false;
 
   @override
   void dispose() {
-    _usuarioController.dispose();
+    _userController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -27,10 +27,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _onLogin() async {
     final messenger = ScaffoldMessenger.of(context);
-    final usuario = _usuarioController.text.trim();
+    final user = _userController.text.trim();
     final pass = _passwordController.text;
 
-    if (usuario.isEmpty || pass.isEmpty) {
+    if (user.isEmpty || pass.isEmpty) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Por favor completa ambos campos')),
       );
@@ -38,19 +38,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _loading = true);
-    final result = await AuthService.instance.login(usuario, pass);
+    final result = await AuthService.instance.login(user, pass);
     if (!mounted) return;
     setState(() => _loading = false);
 
     if (!result.success) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Usuario o contraseña inválidos')),
+        const SnackBar(content: Text('user o contraseña inválidos')),
       );
       return;
     }
 
     if (result.needsChange) {
-      context.push('/change');
+      context.go('/change');
       return;
     }
 
@@ -101,11 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Campo Usuario
+                  // Campo user
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Usuario',
+                      'user',
                       style: TextStyle(
                         color: labelColor,
                         fontSize: labelSize,
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   TextField(
-                    controller: _usuarioController,
+                    controller: _userController,
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(

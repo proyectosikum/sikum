@@ -34,7 +34,7 @@ class AuthService {
       final data = q.docs.first.data();
       final email = data['email'] as String?;
       final needs = data['needsPasswordChange'] as bool? ?? false;
-      final role = data['rol'] as String? ?? 'user';
+      final role = data['role'] as String? ?? 'user';
 
       if (email == null) return LoginResult(false);
 

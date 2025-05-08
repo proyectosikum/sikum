@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sikum/presentation/screens/login/login.dart';
-import 'package:sikum/presentation/screens/auth/forgot_password_screen.dart';
-import 'package:sikum/presentation/screens/auth/change_password_screen.dart';
+import 'package:sikum/presentation/screens/auth/forgot_password.dart';
+import 'package:sikum/presentation/screens/auth/change_password.dart';
 import 'package:sikum/services/auth_notifier.dart';
 
 final authChangeNotifier = AuthChangeNotifier();
