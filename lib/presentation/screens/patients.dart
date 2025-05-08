@@ -1,43 +1,48 @@
+// lib/presentation/screens/patients.dart
+
 import 'package:flutter/material.dart';
-import 'package:sikum/core/data/patient_fake.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sikum/entities/patient.dart';
+import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
 import 'package:sikum/presentation/widgets/patient_card.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/search_field.dart';
 
-class Patients extends StatefulWidget {
+class Patients extends ConsumerStatefulWidget {
   const Patients({super.key});
 
   @override
-  State<Patients> createState() => _PacientesState();
+  ConsumerState<Patients> createState() => _PatientsState();
 }
 
-
-class _PacientesState extends State<Patients> {
+class _PatientsState extends ConsumerState<Patients> {
   bool showAssets = true;
   String searchText = '';
 
+  @override
+  void initState() {
+    super.initState();
+    ref.read(patientProvider.notifier).getAllPatients();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final patients = ref.watch(patientProvider);
 
-    final filteredPatients = patientList.where((u) {
-      final matchesState = u.isActive == showAssets;
-      final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) || u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
-          u.dni.contains(searchText); 
+    final filteredPatients = patients.where((u) {
+      final matchesState = u.status == showAssets;
+      final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) ||
+          u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
+          u.dni.toString().contains(searchText);
       return matchesState && matchesSearch;
     }).toList();
 
-
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
-      appBar: CustomAppBar(
-        onLogout: () {
-
-        }
-        ),
-        body: Padding(
+      appBar: CustomAppBar(onLogout: () {}),
+      body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +69,15 @@ class _PacientesState extends State<Patients> {
                 FloatingActionButton(
                   heroTag: 'addUserBtn',
                   onPressed: () {
-                    // Acción de agregar usuario
+                    /*
+                    final newPatient = Patient(
+                      id: 'test-id',
+                      name: 'Juan',
+                      lastName: 'Pérez',
+                      dni: '12345678',
+                      isActive: true,
+                    );
+                    ref.read(patientProvider.notifier).addPatient(newPatient);*/
                   },
                   backgroundColor: const Color(0xFF4F959D),
                   mini: true,
@@ -85,8 +98,7 @@ class _PacientesState extends State<Patients> {
             ),
           ],
         ),
-      )
-
+      ),
     );
   }
 }
