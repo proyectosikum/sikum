@@ -3,9 +3,9 @@ import 'package:sikum/core/theme/app_colors.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/labeled_text_field.dart';
 
-class CrearUsuariosScreens extends StatelessWidget{
+class CrearUsuariosScreen extends StatelessWidget{
 
-  const CrearUsuariosScreens({  super.key  });
+  const CrearUsuariosScreen({  super.key  });
 
   @override
 Widget build(BuildContext context) {
