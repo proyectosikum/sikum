@@ -6,27 +6,42 @@ class AuthChangeNotifier extends ChangeNotifier {
   String? role;
   bool needsChange = false;
 
+  String? firstName;
+  String? surname;
+
+  String get displayName {
+    final fn = firstName?.trim()  ?? '';
+    final sn = surname?.trim()    ?? '';
+    if (fn.isEmpty && sn.isEmpty) return 'Usuario';
+    return '$fn${sn.isEmpty ? '' : ' '}$sn';
+  }
+
   AuthChangeNotifier() {
     FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (user == null) {
-        role = null;
-        needsChange = false;
+        role         = null;
+        needsChange  = false;
+        firstName    = null;
+        surname      = null;
         notifyListeners();
       } else {
         final q = await FirebaseFirestore.instance
-            .collection('usuarios')
+            .collection('users')
             .where('email', isEqualTo: user.email)
             .limit(1)
             .get();
 
         if (q.docs.isNotEmpty) {
           final data = q.docs.first.data();
-          role = data['role'] as String? ?? 'user';
-          needsChange =
-              data['needsPasswordChange'] as bool? ?? false;
+          role         = data['role']                as String? ?? 'user';
+          needsChange  = data['needsPasswordChange'] as bool?   ?? false;
+          firstName    = data['name']                as String? ?? '';
+          surname      = data['surname']             as String? ?? '';
         } else {
-          role = 'user';
+          role        = 'user';
           needsChange = false;
+          firstName   = '';
+          surname     = '';
         }
         notifyListeners();
       }

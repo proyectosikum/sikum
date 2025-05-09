@@ -25,7 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final messenger = ScaffoldMessenger.of(context);
     if (user.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa tu user')),
+        const SnackBar(content: Text('Por favor ingresa tu usuario')),
       );
       return;
     }
@@ -33,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     // 1) Buscamos el email en Firestore
     final query = await FirebaseFirestore.instance
-        .collection('usuarios')
+        .collection('users')
         .where('user', isEqualTo: user)
         .limit(1)
         .get();
@@ -41,7 +41,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (query.docs.isEmpty) {
       setState(() => _loading = false);
       messenger.showSnackBar(
-        const SnackBar(content: Text('user no encontrado')),
+        const SnackBar(content: Text('Usuario no encontrado')),
       );
       return;
     }
@@ -51,7 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (email == null) {
       setState(() => _loading = false);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Email no vinculado a user')),
+        const SnackBar(content: Text('Email no vinculado a usuario')),
       );
       return;
     }
@@ -122,7 +122,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'user',
+                          'Usuario',
                           style: TextStyle(
                             color: cream,
                             fontSize: 18,
@@ -198,7 +198,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ),
                                 ),
                                 child: _loading
-                                    ? const CircularProgressIndicator()
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SizedBox(
+                                          width: 24, height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation(cream),
+                                          ),
+                                        ),
+                                      )
                                     : Text('Aceptar',
                                         style: TextStyle(color: green)),
                               ),
