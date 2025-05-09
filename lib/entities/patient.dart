@@ -8,7 +8,7 @@ class Patient {
   final String lastName;
   final int dni;
   final int medicalRecordNumber;
-  final bool status;
+  final bool available;
 
   Patient({
     required this.id,
@@ -16,7 +16,7 @@ class Patient {
     required this.lastName,
     required this.dni,
     required this.medicalRecordNumber,
-    required this.status,
+    required this.available,
   });
 
   factory Patient.fromFirestore(
@@ -30,7 +30,7 @@ class Patient {
       lastName: data['lastName'],
       dni: data['dni'],
       medicalRecordNumber: data['medicalRecordNumber'],
-      status: data['status'] == 'available',
+      available: data['available'],
     );
   }
 
@@ -40,7 +40,7 @@ class Patient {
       'lastName': lastName,
       'dni': dni,
       'medicalRecordNumber': medicalRecordNumber,
-      'status': status,
+      'available': available,
     };
   }
 }

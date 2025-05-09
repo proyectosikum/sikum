@@ -42,22 +42,33 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _loading = false);
 
-    if (!result.success) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('user o contraseña inválidos')),
-      );
-      return;
-    }
+    switch (result.status) {
+      case LoginStatus.invalid:
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Usuario o contraseña inválidos')),
+        );
+        break;
 
-    if (result.needsChange) {
-      context.go('/change');
-      return;
-    }
+      case LoginStatus.inactive:
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Usuario inactivo. Contacta al administrador.'),
+          ),
+        );
+        break;
 
-    if (result.role == 'admin') {
-      context.go('/usuarios');
-    } else {
-      context.go('/pacientes');
+      case LoginStatus.success:
+        if (result.needsChange) {
+          context.go('/change');
+          return;
+        }
+
+        if (result.role == 'admin') {
+          context.go('/usuarios');
+        } else {
+          context.go('/pacientes');
+        }
+        break;
     }
   }
 
@@ -105,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'user',
+                      'Usuario',
                       style: TextStyle(
                         color: labelColor,
                         fontSize: labelSize,

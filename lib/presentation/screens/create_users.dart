@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sikum/core/theme/app_colors.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/labeled_text_field.dart';
+import 'package:sikum/presentation/widgets/side_menu.dart';
 
 class CreateUsers extends StatelessWidget{
 
@@ -10,11 +12,8 @@ class CreateUsers extends StatelessWidget{
   @override
 Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        onLogout: () {
-          // Lógica de logout
-        },
-      ),
+      appBar: const CustomAppBar(),
+      endDrawer: const SideMenu(),
       backgroundColor: AppColors.background,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -75,9 +74,7 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 20),
             OutlinedButton(
-              onPressed: () {
-                // Lógica cancelar
-              },
+              onPressed: () => { context.pop() },
               style: OutlinedButton.styleFrom(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 padding: const EdgeInsets.symmetric(vertical: 16),

@@ -10,10 +10,14 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final _oldPassController = TextEditingController();
-  final _newPassController = TextEditingController();
-  final _confirmController = TextEditingController();
-  bool _loading = false;
+  final _oldPassController     = TextEditingController();
+  final _newPassController     = TextEditingController();
+  final _confirmController     = TextEditingController();
+  bool _loading                = false;
+
+  bool _showOld     = true;
+  bool _showNew     = true;
+  bool _showConfirm = true;
 
   @override
   void dispose() {
@@ -35,9 +39,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
       return;
     }
+    if (newPass.length < 6) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('La nueva contraseña debe tener al menos 6 caracteres')),
+      );
+      return;
+    }
     if (newPass != confirm) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+    if (oldPass == newPass) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('La nueva contraseña no puede ser igual a la actual')),
       );
       return;
     }
@@ -105,91 +121,40 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Contraseña actual
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Contraseña actual',
-                          style: TextStyle(
-                            color: cream,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
+                      _buildPasswordField(
+                        label: 'Contraseña actual',
                         controller: _oldPassController,
-                        obscureText: true,
-                        style: const TextStyle(color: Colors.black87),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: cream,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                        ),
+                        showText: _showOld,
+                        onToggle: () => setState(() => _showOld = !_showOld),
+                        fillColor: cream,
+                        textColor: Colors.black87,
+                        labelColor: cream,
                       ),
 
                       const SizedBox(height: 16),
 
                       // Nueva contraseña
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Nueva contraseña',
-                          style: TextStyle(
-                            color: cream,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
+                      _buildPasswordField(
+                        label: 'Nueva contraseña',
                         controller: _newPassController,
-                        obscureText: true,
-                        style: const TextStyle(color: Colors.black87),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: cream,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                        ),
+                        showText: _showNew,
+                        onToggle: () => setState(() => _showNew = !_showNew),
+                        fillColor: cream,
+                        textColor: Colors.black87,
+                        labelColor: cream,
                       ),
 
                       const SizedBox(height: 16),
 
-                      // Repetir contraseña...
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Repetir contraseña',
-                          style: TextStyle(
-                            color: cream,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
+                      // Repetir contraseña
+                      _buildPasswordField(
+                        label: 'Repetir contraseña',
                         controller: _confirmController,
-                        obscureText: true,
-                        style: const TextStyle(color: Colors.black87),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: cream,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                        ),
+                        showText: _showConfirm,
+                        onToggle: () => setState(() => _showConfirm = !_showConfirm),
+                        fillColor: cream,
+                        textColor: Colors.black87,
+                        labelColor: cream,
                       ),
 
                       const SizedBox(height: 32),
@@ -204,7 +169,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 onPressed: _loading ? null : () => context.pop(),
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: green,
-                                  side: BorderSide(color: cream),
+                                  side: const BorderSide(color: cream),
                                   shape: RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.circular(25),
@@ -240,12 +205,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   ),
                                 ),
                                 child: _loading
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: green,
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SizedBox(
+                                          width: 24, height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation(cream),
+                                          ),
                                         ),
                                       )
                                     : const Text(
@@ -265,6 +232,49 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required String label,
+    required TextEditingController controller,
+    required bool showText,
+    required VoidCallback onToggle,
+    required Color fillColor,
+    required Color textColor,
+    required Color labelColor,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: labelColor, fontSize: 18),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: showText,
+          style: TextStyle(color: textColor),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: fillColor,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                showText ? Icons.visibility_off : Icons.visibility,
+                color: Colors.grey,
+              ),
+              onPressed: onToggle,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

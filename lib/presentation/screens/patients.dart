@@ -1,14 +1,12 @@
-// lib/presentation/screens/patients.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
 import 'package:sikum/presentation/widgets/patient_card.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/search_field.dart';
+import 'package:sikum/presentation/widgets/side_menu.dart';
 
 class Patients extends ConsumerStatefulWidget {
   const Patients({super.key});
@@ -32,7 +30,7 @@ class _PatientsState extends ConsumerState<Patients> {
     final patients = ref.watch(patientProvider);
 
     final filteredPatients = patients.where((u) {
-      final matchesState = u.status == showAssets;
+      final matchesState = u.available == showAssets;
       final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) ||
           u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
           u.dni.toString().contains(searchText);
@@ -41,7 +39,8 @@ class _PatientsState extends ConsumerState<Patients> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
-      appBar: CustomAppBar(onLogout: () {}),
+      appBar: const CustomAppBar(),
+      endDrawer: const SideMenu(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(

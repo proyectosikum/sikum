@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../entities/user.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sikum/entities/user.dart';
 
 class UserCard extends StatelessWidget {
   final User user;
 
-  const UserCard({
-    super.key,
-    required this.user,
-  });
+  const UserCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,8 @@ class UserCard extends StatelessWidget {
         trailing: IconButton(
           icon: const Icon(Icons.remove_red_eye),
           onPressed: () {
-            // Lógica para ver detalles del usuario
+            // Aquí pasamos el user.id como parámetro
+            context.push('/usuario/detalle/${user.id}');
           },
         ),
       ),
