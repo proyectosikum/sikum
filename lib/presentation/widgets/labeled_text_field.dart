@@ -27,6 +27,7 @@ class LabeledTextField extends StatelessWidget {
           ),
         ),
         TextField(
+          controller: controller,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
