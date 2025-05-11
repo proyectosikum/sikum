@@ -83,84 +83,99 @@ try {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(),
-      endDrawer: const SideMenu(),
-      backgroundColor: AppColors.background,
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: ListView(
-          children: [
-            const SizedBox(height: 30),
-            const Center(
-              child: Text(
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: const CustomAppBar(),
+    endDrawer: const SideMenu(),
+    backgroundColor: AppColors.background,
+    body: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
                 'Nuevo Usuario',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 30),
+              const SizedBox(height: 16),
 
-            LabeledTextField(label: 'Nombre Completo', controller: _nameController),
-            LabeledTextField(label: 'DNI', controller: _dniController),
-            LabeledTextField(label: 'Email', controller: _emailController),
-            LabeledTextField(label: 'Teléfono', controller: _phoneController),
-            LabeledTextField(label: 'Matrícula Provincial', controller: _provRegController),
+              LabeledTextField(label: 'Nombre Completo', controller: _nameController),
+              LabeledTextField(label: 'DNI', controller: _dniController),
+              LabeledTextField(label: 'Email', controller: _emailController),
+              LabeledTextField(label: 'Teléfono', controller: _phoneController),
+              LabeledTextField(label: 'Matrícula Provincial', controller: _provRegController),
 
-            const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0, bottom: 4),
-              child: Text(
-                'Especialidad',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              const Padding(
+                padding: EdgeInsets.only(left: 4.0, bottom: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Especialidad',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ),
               ),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedSpecialty,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.white,
+              DropdownButtonFormField<String>(
+                value: _selectedSpecialty,
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Neonatología', child: Text('Neonatología')),
+                  DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
+                  DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
+                  DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedSpecialty = value;
+                  });
+                },
               ),
-              items: const [
-                DropdownMenuItem(value: 'Neonatología', child: Text('Neonatología')),
-                DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
-                DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
-                DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedSpecialty = value;
-                });
-              },
-            ),
 
-            const SizedBox(height: 40),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: _createUser,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4F959D),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+              const SizedBox(height: 20),
+              _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _createUser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4F959D),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     child: const Text('Crear'),
+                    ),
                   ),
-
-            const SizedBox(height: 20),
-            OutlinedButton(
-              onPressed: () => context.pop(),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text('Cancelar'),
-            ),
-          ],
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: () => context.pop(),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(color: Colors.black),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                        child: const Text('Cancelar'),
+                    ),
+                  ),
+            ],
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

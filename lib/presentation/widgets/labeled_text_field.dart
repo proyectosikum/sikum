@@ -15,27 +15,31 @@ class LabeledTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+Widget build(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 4.0, left: 4),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
           ),
         ),
         TextField(
           controller: controller,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             filled: true,
             fillColor: Colors.white,
-            border: const OutlineInputBorder(),
+            border: OutlineInputBorder(),
           ),
         ),
-        const SizedBox(height: 16),
       ],
-    );
-  }
+    ),
+  );
+}
 }
