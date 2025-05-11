@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sikum/presentation/screens/confirmation_screen.dart';
 import 'package:sikum/presentation/screens/create_users.dart';
 import 'package:sikum/presentation/screens/login.dart';
 import 'package:sikum/presentation/screens/forgot_password.dart';
@@ -30,13 +31,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
+    GoRoute(path: '/confirmacion',    builder: (_,__) => const ConfirmationScreen())
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
     final loggedIn = user != null;
     final loc      = state.matchedLocation;
 
-    const publicPaths = ['/login','/forgot','/change'];
+    const publicPaths = ['/login','/forgot','/change', '/confirmacion'];
 
     if (!loggedIn && !publicPaths.contains(loc)) {
       return '/login';
@@ -68,6 +70,7 @@ final GoRouter appRouter = GoRouter(
         '/perfil',
         '/change',
         '/forgot',
+        '/confirmacion'
       ].contains(loc);
 
       if (!isAdmin && !okUser) {

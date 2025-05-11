@@ -41,11 +41,6 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
     final phone = _phoneController.text.trim();
     final provReg = _provRegController.text.trim();
     final specialty = _selectedSpecialty;
-    
-    print('SPECIALTY: $_selectedSpecialty');
-    print('NAME: "$name"');
-print('DNI: "$dni"');
-print('EMAIL: "$email"');
 
     if (name.isEmpty || dni.isEmpty || email.isEmpty || specialty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,31 +51,35 @@ print('EMAIL: "$email"');
 
     setState(() => _isLoading = true);
 
-    try {
-      await ref.read(usersProvider.notifier).addUser(
-            name: name,
-            surname: '',
-            dni: dni,
-            email: email,
-            phone: phone,
-            provReg: provReg,
-            specialty: specialty,
-            role: 'usuario',
-          );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuario creado exitosamente')),
-        );
-        context.pop();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al crear usuario: $e')),
+try {
+  await ref.read(usersProvider.notifier).addUser(
+        name: name,
+        surname: '',
+        dni: dni,
+        email: email,
+        phone: phone,
+        provReg: provReg,
+        specialty: specialty,
+        role: 'usuario',
       );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+
+  if (mounted) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.go('/confirmacion');
+    });
+  }
+
+} catch (e) {
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al crear usuario: $e')),
+    );
+  }
+} finally {
+  if (mounted) {
+    setState(() => _isLoading = false);
+  }
+}
   }
 
   @override
