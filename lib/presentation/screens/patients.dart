@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/add_patients.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
@@ -20,23 +21,18 @@ class _PatientsState extends ConsumerState<Patients> {
   bool showAssets = true;
   String searchText = '';
 
-  @override
-  void initState() {
-    super.initState();
-    ref.read(patientProvider.notifier).getAllPatients();
+  void _onSearchChanged(String value) {
+    setState(() => searchText = value);
+  }
+
+  void _onFilterChanged(bool value) {
+    setState(() => showAssets = value);
   }
 
   @override
   Widget build(BuildContext context) {
-    final patients = ref.watch(patientProvider);
-
-    final filteredPatients = patients.where((u) {
-      final matchesState = u.available == showAssets;
-      final matchesSearch = u.firstName.toLowerCase().contains(searchText.toLowerCase()) ||
-          u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
-          u.dni.toString().contains(searchText);
-      return matchesState && matchesSearch;
-    }).toList();
+    // 1) Escuchamos el stream de pacientes
+    final patientsAsync = ref.watch(patientsStreamProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
@@ -48,23 +44,18 @@ class _PatientsState extends ConsumerState<Patients> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ScreenSubtitle(text: 'Pacientes'),
-            SearchField(
-              onChanged: (value) {
-                setState(() {
-                  searchText = value;
-                });
-              },
-            ),
+
+            // Search
+            SearchField(onChanged: _onSearchChanged),
+            const SizedBox(height: 8),
+
+            // Filtros y botón de agregar
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 FilterButtons(
                   showAssets: showAssets,
-                  onChanged: (value) {
-                    setState(() {
-                      showAssets = value;
-                    });
-                  },
+                  onChanged: _onFilterChanged,
                 ),
                 FloatingActionButton(
                   heroTag: 'addUserBtn',
@@ -81,15 +72,39 @@ class _PatientsState extends ConsumerState<Patients> {
               ],
             ),
             const SizedBox(height: 10),
+
+            // 2) Build según el estado del AsyncValue
             Expanded(
-              child: filteredPatients.isEmpty
-                  ? const Center(child: Text('No se encontraron pacientes.'))
-                  : ListView.builder(
-                      itemCount: filteredPatients.length,
-                      itemBuilder: (context, index) {
-                        return PatientCard(patient: filteredPatients[index]);
-                      },
-                    ),
+              child: patientsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error:   (e,_) => Center(child: Text('Error al cargar pacientes: $e')),
+                data:    (allPatients) {
+                  // 3) Filtrado
+                  final filtered = allPatients.where((u) {
+                    final matchesState = u.available == showAssets;
+                    final matchesSearch =
+                      u.firstName.toLowerCase().contains(searchText.toLowerCase()) ||
+                      u.lastName .toLowerCase().contains(searchText.toLowerCase()) ||
+                      u.dni.toString().contains(searchText);
+                    return matchesState && matchesSearch;
+                  }).toList();
+
+                  if (filtered.isEmpty) {
+                    return const Center(child: Text('No se encontraron pacientes.'));
+                  }
+
+                  return ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final p = filtered[index];
+                      return PatientCard(
+                        patient: p,
+                        onTap: () => context.push('/paciente/detalle/${p.id}'),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

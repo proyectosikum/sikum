@@ -4,9 +4,12 @@ import 'package:sikum/entities/patient.dart';
 class PatientCard extends StatelessWidget {
   final Patient patient;
 
+  final VoidCallback onTap;
+
   const PatientCard({
     super.key,
     required this.patient,
+    required this.onTap,
   });
 
   @override
@@ -28,9 +31,7 @@ class PatientCard extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.remove_red_eye),
-                onPressed: () {
-                  // Acción ver detalles
-                },
+                onPressed: onTap,
               ),
               IconButton(
                 icon: const Icon(Icons.circle, color: Colors.red),
