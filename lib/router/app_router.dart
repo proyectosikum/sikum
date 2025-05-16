@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sikum/presentation/screens/create_users.dart';
+import 'package:sikum/presentation/screens/evolution_form_screen.dart';
 import 'package:sikum/presentation/screens/login.dart';
 import 'package:sikum/presentation/screens/forgot_password.dart';
 import 'package:sikum/presentation/screens/change_password.dart';
@@ -36,6 +37,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['patientId']!;
         return PatientDetailsScreen(patientId: id);
+      },
+    ),
+    GoRoute(
+      path: '/paciente/evolucionar/:patientId',
+      builder: (context, state) {
+        final id = state.pathParameters['patientId']!;
+        return EvolutionFormScreen(patientId: id);
       },
     ),
   ],
@@ -76,7 +84,9 @@ final GoRouter appRouter = GoRouter(
         '/perfil',
         '/change',
         '/forgot',
-      ].any((p) => p == loc) || loc.startsWith('/paciente/detalle');
+      ].any((p) => p == loc)
+        || loc.startsWith('/paciente/detalle')
+        || loc.startsWith('/paciente/evolucionar');
 
       if (!isAdmin && !okUser) {
         return '/pacientes';

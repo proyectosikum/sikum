@@ -8,13 +8,20 @@ import 'package:sikum/presentation/widgets/evolution_card.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
-class PatientDetailsScreen extends ConsumerWidget {
+class PatientDetailsScreen extends ConsumerStatefulWidget {
   final String patientId;
   const PatientDetailsScreen({super.key, required this.patientId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(patientDetailsStreamProvider(patientId));
+  ConsumerState<PatientDetailsScreen> createState() => _PatientDetailsScreenState();
+}
+
+class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
+  String selectedSpecialty = 'Todas';
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
     const green = Color(0xFF4F959D);
 
     return Scaffold(
@@ -23,21 +30,23 @@ class PatientDetailsScreen extends ConsumerWidget {
       endDrawer: const SideMenu(),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: green)),
-        error:   (_, __) => const Center(child: Text('Error al cargar paciente')),
-        data:    (p) {
+        error: (_, __) => const Center(child: Text('Error al cargar paciente')),
+        data: (p) {
           if (p == null) {
             return const Center(child: Text('Paciente no encontrado'));
           }
-          return _buildContent(context, ref, p);
+          return _buildContent(context, p);
         },
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, WidgetRef ref, Patient p) {
+  Widget _buildContent(BuildContext context, Patient p) {
     const green = Color(0xFF4F959D);
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
+
+    final evolutionsAsync = ref.watch(evolutionsStreamProvider(p.id));
 
     return SafeArea(
       child: Column(
@@ -48,12 +57,12 @@ class PatientDetailsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Detalle de paciente',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: black,
+                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -100,32 +109,84 @@ class PatientDetailsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Evolución',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: black),
-                    ),
+
+                  // Título + PopupMenuButton de especialidades
+                  Row(
+                    children: [
+                      const Text(
+                        'Evolución',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: black),
+                      ),
+                      const Spacer(),
+                      evolutionsAsync.when(
+                        loading: () => const SizedBox(),
+                        error: (_, __) => const SizedBox(),
+                        data: (list) {
+                          // construimos la lista de opciones
+                          final specs = <String>{ for (var e in list) e.specialty }..removeWhere((s) => s.isEmpty);
+                          final options = ['Todas', ...specs.toList()..sort()];
+                          if (!options.contains(selectedSpecialty)) {
+                            selectedSpecialty = 'Todas';
+                          }
+                          return PopupMenuButton<String>(
+                            color: cream,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: green),
+                            ),
+                            initialValue: selectedSpecialty,
+                            onSelected: (value) {
+                              setState(() => selectedSpecialty = value);
+                            },
+                            itemBuilder: (_) {
+                              return options.map((s) {
+                                final label = s[0].toUpperCase() + s.substring(1).toLowerCase();
+                                return PopupMenuItem(
+                                  value: s,
+                                  child: Text(label),
+                                );
+                              }).toList();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: cream,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: green, width: 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    selectedSpecialty == 'Todas'
+                                      ? 'Todas'
+                                      : (selectedSpecialty[0].toUpperCase() + selectedSpecialty.substring(1).toLowerCase()),
+                                  ),
+                                  const Icon(Icons.arrow_drop_down),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Evoluciones dinámicas en tiempo real
-                  Consumer(
-                    builder: (ctx, ref, _) {
-                      final evolutionsAsync = ref.watch(evolutionsStreamProvider(p.id));
-                      return evolutionsAsync.when(
-                        loading: () => const Center(child: CircularProgressIndicator(color: green)),
-                        error:   (_, __) => const Center(child: Text('Error al cargar evoluciones')),
-                        data:    (list) {
-                          if (list.isEmpty) {
-                            return const Center(child: Text('Sin evoluciones registradas'));
-                          }
-                          return Column(
-                            children: list
-                              .map((e) => EvolutionCard(evolution: e, patientId: p.id))
-                              .toList(),
-                          );
-                        },
+                  // Evoluciones filtradas
+                  evolutionsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator(color: green)),
+                    error: (_, __) => const Center(child: Text('Error al cargar evoluciones')),
+                    data: (list) {
+                      final filtered = selectedSpecialty == 'Todas'
+                          ? list
+                          : list.where((e) => e.specialty == selectedSpecialty).toList();
+                      if (filtered.isEmpty) {
+                        return const Center(child: Text('Sin evoluciones registradas'));
+                      }
+                      return Column(
+                        children: filtered
+                            .map((e) => EvolutionCard(evolution: e, patientId: p.id))
+                            .toList(),
                       );
                     },
                   ),
@@ -146,13 +207,11 @@ class PatientDetailsScreen extends ConsumerWidget {
               onSelected: (value) {
                 switch (value) {
                   case 'evolucionar':
-                    context.push('/pacientes/${p.id}/evolucionar');
+                    context.push('/paciente/evolucionar/${p.id}');
                     break;
                   case 'cerrar':
-                    // Lógica cerrar HC
                     break;
                   case 'descargar':
-                    // Lógica descargar HC
                     break;
                 }
               },
@@ -166,9 +225,9 @@ class PatientDetailsScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Seleccione una acción...', style: TextStyle(fontSize: 16)),
-                    const Icon(Icons.arrow_drop_down),
+                  children: const [
+                    Text('Seleccione una acción...', style: TextStyle(fontSize: 16)),
+                    Icon(Icons.arrow_drop_down),
                   ],
                 ),
               ),
@@ -186,7 +245,7 @@ class PatientDetailsScreen extends ConsumerWidget {
 
   Widget _buildLink(BuildContext context, String text, String route, Color color) {
     return InkWell(
-      onTap: () => context.push(route),
+      onTap: () => GoRouter.of(context).push(route),
       child: Row(
         children: [
           Icon(Icons.chevron_right, color: color, size: 20),

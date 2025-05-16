@@ -1,10 +1,7 @@
-// lib/presentation/screens/login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sikum/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
