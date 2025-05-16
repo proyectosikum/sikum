@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sikum/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sikum/presentation/providers/auth_provider.dart';
 
-class ChangePasswordScreen extends StatefulWidget {
+class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
+
   @override
-  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final _oldPassController     = TextEditingController();
-  final _newPassController     = TextEditingController();
-  final _confirmController     = TextEditingController();
-  bool _loading                = false;
+class _ChangePasswordScreenState
+    extends ConsumerState<ChangePasswordScreen> {
+  final _oldPassController = TextEditingController();
+  final _newPassController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _loading = false;
 
-  bool _showOld     = true;
-  bool _showNew     = true;
+  bool _showOld = true;
+  bool _showNew = true;
   bool _showConfirm = true;
 
   @override
@@ -59,8 +62,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     setState(() => _loading = true);
-    final success =
-        await AuthService.instance.changePassword(oldPass, newPass);
+
+    final success = await ref.read(authActionsProvider).changePassword(oldPass, newPass);
+
     setState(() => _loading = false);
 
     if (success) {
@@ -68,7 +72,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         const SnackBar(content: Text('Contraseña actualizada')),
       );
 
-      await FirebaseAuth.instance.signOut();
+      await ref.read(authActionsProvider).logout();
       context.go('/login');
     } else {
       messenger.showSnackBar(
@@ -79,8 +83,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const green       = Color(0xFF4F959D);
-    const cream       = Color(0xFFFFF8E1);
+    const green = Color(0xFF4F959D);
+    const cream = Color(0xFFFFF8E1);
     const borderColor = Color(0xFFB2D4E1);
 
     return Scaffold(
@@ -93,7 +97,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

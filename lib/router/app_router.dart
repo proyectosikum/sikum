@@ -4,6 +4,7 @@ import 'package:sikum/presentation/screens/create_users.dart';
 import 'package:sikum/presentation/screens/login.dart';
 import 'package:sikum/presentation/screens/forgot_password.dart';
 import 'package:sikum/presentation/screens/change_password.dart';
+import 'package:sikum/presentation/screens/patient_details.dart';
 import 'package:sikum/presentation/screens/patients.dart';
 import 'package:sikum/presentation/screens/user_details.dart';
 import 'package:sikum/presentation/screens/users.dart';
@@ -30,6 +31,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
+    GoRoute(
+      path: '/paciente/detalle/:patientId',
+      builder: (context, state) {
+        final id = state.pathParameters['patientId']!;
+        return PatientDetailsScreen(patientId: id);
+      },
+    ),
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
@@ -68,7 +76,7 @@ final GoRouter appRouter = GoRouter(
         '/perfil',
         '/change',
         '/forgot',
-      ].contains(loc);
+      ].any((p) => p == loc) || loc.startsWith('/paciente/detalle');
 
       if (!isAdmin && !okUser) {
         return '/pacientes';
