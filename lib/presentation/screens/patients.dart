@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
+import 'package:sikum/presentation/screens/add_patients.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
 import 'package:sikum/presentation/widgets/patient_card.dart';
@@ -31,7 +32,7 @@ class _PatientsState extends ConsumerState<Patients> {
 
     final filteredPatients = patients.where((u) {
       final matchesState = u.available == showAssets;
-      final matchesSearch = u.name.toLowerCase().contains(searchText.toLowerCase()) ||
+      final matchesSearch = u.firstName.toLowerCase().contains(searchText.toLowerCase()) ||
           u.lastName.toLowerCase().contains(searchText.toLowerCase()) ||
           u.dni.toString().contains(searchText);
       return matchesState && matchesSearch;
@@ -68,15 +69,10 @@ class _PatientsState extends ConsumerState<Patients> {
                 FloatingActionButton(
                   heroTag: 'addUserBtn',
                   onPressed: () {
-                    /*
-                    final newPatient = Patient(
-                      id: 'test-id',
-                      name: 'Juan',
-                      lastName: 'Pérez',
-                      dni: '12345678',
-                      isActive: true,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AddPatientsScreen()),
                     );
-                    ref.read(patientProvider.notifier).addPatient(newPatient);*/
                   },
                   backgroundColor: const Color(0xFF4F959D),
                   mini: true,

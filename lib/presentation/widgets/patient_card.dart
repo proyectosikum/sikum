@@ -19,7 +19,7 @@ class PatientCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        title: Text('${patient.name} ${patient.lastName}'),
+        title: Text('${patient.firstName} ${patient.lastName}'),
         subtitle: Text('DNI: ${patient.dni}'),
         trailing: SizedBox(
           width: 100, // Aumentá este valor si querés más espacio hacia la derecha

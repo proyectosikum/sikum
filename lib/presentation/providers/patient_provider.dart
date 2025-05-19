@@ -17,6 +17,8 @@ class PatientsNotifier extends StateNotifier<List<Patient>> {
           toFirestore: (Patient patient, _) => patient.toFirestore(),
         );
     final patientsSnapshot = await query.get();
+
+    
     state = patientsSnapshot.docs.map((doc) => doc.data()).toList();
   }
 
