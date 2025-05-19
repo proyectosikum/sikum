@@ -35,52 +35,55 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
   }
 
   Future<void> _createUser() async {
-    final name = _nameController.text.trim();
-    final dni = _dniController.text.trim();
-    final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
-    final provReg = _provRegController.text.trim();
-    final specialty = _selectedSpecialty;
+  final fullName = _nameController.text.trim();
+  final dni = _dniController.text.trim();
+  final email = _emailController.text.trim();
+  final phone = _phoneController.text.trim();
+  final provReg = _provRegController.text.trim();
+  final specialty = _selectedSpecialty;
 
-    if (name.isEmpty || dni.isEmpty || email.isEmpty || specialty == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completá todos los campos obligatorios')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-try {
-  await ref.read(userActionsProvider).createUser(
-        name: name,
-        surname: '',
-        dni: dni,
-        email: email,
-        phone: phone,
-        provReg: provReg,
-        specialty: specialty,
-        role: 'usuario',
-      );
-
-  if (mounted) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.go('/confirmacion');
-    });
-  }
-
-} catch (e) {
-  if (mounted) {
+  if (fullName.isEmpty || dni.isEmpty || email.isEmpty || specialty == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al crear usuario: $e')),
+      const SnackBar(content: Text('Completá todos los campos obligatorios')),
     );
+    return;
   }
-} finally {
-  if (mounted) {
-    setState(() => _isLoading = false);
+
+  final parts = fullName.split(' ');
+  final firstName = parts.first;
+  final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+  setState(() => _isLoading = true);
+
+  try {
+    await ref.read(userActionsProvider).createUser(
+      name: firstName,
+      surname: lastName,
+      dni: dni,
+      email: email,
+      phone: phone,
+      provReg: provReg,
+      specialty: specialty,
+      role: 'usuario',
+    );
+
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/confirmacion');
+      });
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al crear usuario: $e')),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 }
-  }
 
   @override
 Widget build(BuildContext context) {

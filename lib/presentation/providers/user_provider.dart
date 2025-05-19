@@ -63,8 +63,8 @@ class UserActions {
       final uid = fbUser.user!.uid;
 
       final newUser = {
-        'name': name,
-        'surname': surname,
+        'firstName': name,
+        'lastName': surname,
         'dni': dni,
         'email': email,
         'phone': phone,
