@@ -52,7 +52,7 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
     setState(() => _isLoading = true);
 
 try {
-  await ref.read(usersProvider.notifier).addUser(
+  await ref.read(userActionsProvider).createUser(
         name: name,
         surname: '',
         dni: dni,

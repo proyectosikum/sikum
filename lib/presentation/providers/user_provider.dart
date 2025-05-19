@@ -38,11 +38,54 @@ final userDetailsStreamProvider =
 /// 3) Acciones sobre usuarios
 class UserActions {
   final _col = FirebaseFirestore.instance.collection('users');
+  final _auth = fb_auth.FirebaseAuth.instance;
 
   Future<void> toggleAvailability(String id, bool newValue) {
     return _col.doc(id).update({'available': newValue});
   }
+
+  Future<void> createUser({
+    required String name,
+    required String surname,
+    required String dni,
+    required String email,
+    required String phone,
+    required String provReg,
+    required String specialty,
+    required String role,
+  }) async {
+    try {
+      final fbUser = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: dni,
+      );
+
+      final uid = fbUser.user!.uid;
+
+      final newUser = {
+        'name': name,
+        'surname': surname,
+        'dni': dni,
+        'email': email,
+        'phone': phone,
+        'provReg': provReg,
+        'specialty': specialty,
+        'role': role,
+        'needsPasswordChange': true,
+        'available': true,
+        'user': dni,
+        'userId': uid,
+      };
+
+      await _col.doc(uid).set(newUser);
+
+    } catch (e) {
+      print("Error al crear usuario: $e");
+      rethrow;
+    }
+  }
 }
+
 
 final userActionsProvider = Provider<UserActions>((ref) {
   return UserActions();
