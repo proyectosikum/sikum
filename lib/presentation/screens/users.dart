@@ -1,101 +1,102 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/presentation/screens/users_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sikum/entities/user.dart';
+import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
-import 'package:sikum/presentation/widgets/screen_subtitle.dart';
-import 'package:sikum/presentation/widgets/search_field.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
+import 'package:sikum/presentation/widgets/search_field.dart';
+import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/user_card.dart';
 
-class UsersScreen extends StatefulWidget {
+class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});
 
   @override
-  State<UsersScreen> createState() => _UsersScreenState();
+  ConsumerState<UsersScreen> createState() => _UsersScreenState();
 }
 
-class _UsersScreenState extends State<UsersScreen> {
-  bool showAssets = true;
+class _UsersScreenState extends ConsumerState<UsersScreen> {
+  bool showAvailable = true;
   String searchText = '';
 
   @override
   Widget build(BuildContext context) {
+    final usersAsync = ref.watch(usersStreamProvider);
+
+    // 1) Perfil actual: usamos el provider de detalle con NULL para buscar por email
+    final currentUserAsync = ref.watch(userDetailsStreamProvider(null));
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: const CustomAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const ScreenSubtitle(text: 'Usuarios'),
-            SearchField(
-              onChanged: (value) => setState(() => searchText = value),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FilterButtons(
-                  showAssets: showAssets,
-                  onChanged: (v) => setState(() => showAssets = v),
+      body: currentUserAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => const Center(child: Text('Error al cargar perfil')),
+        data: (currentUser) {
+          if (currentUser == null) {
+            return const Center(child: Text('Perfil no encontrado'));
+          }
+
+          return usersAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error al cargar usuarios: $e')),
+            data: (users) {
+              // Ahora filtramos comparando `userId`
+              final filtered = users.where((u) {
+                // a) Excluir al actual
+                if (u.userId == currentUser.userId) return false;
+                // b) Excluir a admins
+                if (u.role == 'admin') return false;
+                // c) Filtrar por available
+                if (u.available != showAvailable) return false;
+                // d) Filtrar por texto
+                final fullName = '${u.firstName} ${u.lastName}'.toLowerCase();
+                final query = searchText.toLowerCase();
+                final matchesName = fullName.contains(query);
+                final matchesDni = u.dni.toString().contains(searchText);
+                return searchText.isEmpty || matchesName || matchesDni;
+              }).toList();
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ScreenSubtitle(text: 'Usuarios'),
+                    SearchField(onChanged: (v) => setState(() => searchText = v)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        FilterButtons(
+                          showAssets: showAvailable,
+                          onChanged: (v) => setState(() => showAvailable = v),
+                        ),
+                        FloatingActionButton(
+                          heroTag: 'addUserBtn',
+                          onPressed: () => context.push('/usuarios/crear'),
+                          backgroundColor: const Color(0xFF4F959D),
+                          mini: true,
+                          child: const Icon(Icons.add, color: Color(0xFFFFF8E1)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('No se encontraron usuarios.'))
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (_, i) => UserCard(user: filtered[i]),
+                            ),
+                    ),
+                  ],
                 ),
-                FloatingActionButton(
-                  heroTag: 'addUserBtn',
-                  onPressed: () => context.push('/usuarios/crear'),
-                  backgroundColor: const Color(0xFF4F959D),
-                  mini: true,
-                  child: const Icon(Icons.add, color: Color(0xFFFFF8E1)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            Expanded(
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .snapshots(),
-                builder: (context, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                        child: CircularProgressIndicator());
-                  }
-                  if (!snap.hasData || snap.data!.docs.isEmpty) {
-                    return const Center(
-                        child: Text('No se encontraron usuarios.'));
-                  }
-
-                  // mapeo a nuestra entidad
-                  final allUsers = snap.data!.docs
-                      .map((doc) => User.fromDoc(doc))
-                      .toList();
-
-                  // filtrado local
-                  final filtered = allUsers.where((u) {
-                    final matchesState = u.available == showAssets;
-                    final matchesSearch =
-                        u.name.toLowerCase().contains(searchText.toLowerCase()) ||
-                        u.dni.contains(searchText);
-                    return matchesState && matchesSearch;
-                  }).toList();
-
-                  if (filtered.isEmpty) {
-                    return const Center(
-                        child: Text('No se encontraron usuarios.'));
-                  }
-
-                  return ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (ctx, i) {
-                      return UserCard(user: filtered[i]);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }

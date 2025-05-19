@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sikum/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sikum/presentation/providers/auth_provider.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _userController = TextEditingController();
   bool _loading = false;
 
@@ -23,12 +24,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _sendResetEmail() async {
     final user = _userController.text.trim();
     final messenger = ScaffoldMessenger.of(context);
+
     if (user.isEmpty) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Por favor ingresa tu usuario')),
       );
       return;
     }
+
     setState(() => _loading = true);
 
     // 1) Buscamos el email en Firestore
@@ -47,7 +50,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
 
     final email = query.docs.first.data()['email'] as String?;
-
     if (email == null) {
       setState(() => _loading = false);
       messenger.showSnackBar(
@@ -56,9 +58,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    // 2) Enviamos email de recuperación
-    final success =
-        await AuthService.instance.sendPasswordResetEmail(email);
+    // 2) Enviamos email de recuperación vía provider
+    final success = await ref.read(authActionsProvider).sendPasswordResetEmail(email);
+
     setState(() => _loading = false);
 
     if (success) {
@@ -91,8 +93,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -136,14 +137,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         controller: _userController,
                         style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                           filled: true,
                           fillColor: cream,
                           border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
                         ),
@@ -151,29 +150,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       const SizedBox(height: 32),
 
-                      // Botones
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
                               height: 45,
                               child: OutlinedButton(
-                                onPressed:
-                                    _loading ? null : () => context.pop(),
+                                onPressed: _loading ? null : () => context.pop(),
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: green,
                                   side: BorderSide(color: cream),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(25),
                                   ),
                                   textStyle: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                child: const Text('Cancelar',
-                                    style: TextStyle(color: cream)),
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(color: cream),
+                                ),
                               ),
                             ),
                           ),
@@ -182,14 +180,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             child: SizedBox(
                               height: 45,
                               child: ElevatedButton(
-                                onPressed: _loading
-                                    ? null
-                                    : _sendResetEmail,
+                                onPressed: _loading ? null : _sendResetEmail,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: cream,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(25),
                                   ),
                                   elevation: 0,
                                   textStyle: const TextStyle(
@@ -201,15 +196,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ? Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: SizedBox(
-                                          width: 24, height: 24,
+                                          width: 24,
+                                          height: 24,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor: AlwaysStoppedAnimation(cream),
                                           ),
                                         ),
                                       )
-                                    : Text('Aceptar',
-                                        style: TextStyle(color: green)),
+                                    : Text(
+                                        'Aceptar',
+                                        style: TextStyle(color: green),
+                                      ),
                               ),
                             ),
                           ),

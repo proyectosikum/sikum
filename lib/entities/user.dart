@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
   final String id;
-  final String name;
-  final String surname;
+  final String firstName;
+  final String lastName;
   final String dni;
   final String email;
   final String phone;
@@ -17,8 +17,8 @@ class User {
 
   User({
     required this.id,
-    required this.name,
-    required this.surname,
+    required this.firstName,
+    required this.lastName,
     required this.dni,
     required this.email,
     required this.phone,
@@ -35,8 +35,8 @@ class User {
     final data = doc.data()!;
     return User(
       id: doc.id,
-      name: data['name']                  as String? ?? '',
-      surname: data['surname']            as String? ?? '',
+      firstName: data['firstName']        as String? ?? '',
+      lastName: data['lastName']          as String? ?? '',
       dni: data['dni']                    as String? ?? '',
       email: data['email']                as String? ?? '',
       phone: data['phone']                as String? ?? '',

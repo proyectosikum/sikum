@@ -60,15 +60,17 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
   String dni = '';
   bool isSubmitting = false;
 
-Future<int> _getNextMedicalRecordNumber() async {
-  await ref.read(patientProvider.notifier).getAllPatients(); 
-  final patients = ref.read(patientProvider); 
-  final maxNumber = patients.map((p) => p.medicalRecordNumber).fold<int>(
-    0,
-    (prev, curr) => curr > prev ? curr : prev,
-  );
-  return maxNumber + 1;
-}
+  /// Calcula el siguiente número de historia clínica a partir de la lista actual
+  Future<int> _getNextMedicalRecordNumber() async {
+    // Leemos la lista actual de pacientes (puede estar en loading; asumimos lista vacía)
+    final maybePatients = ref.read(patientsStreamProvider).value;
+    final patients = maybePatients ?? [];
+
+    final maxNumber = patients
+        .map((p) => p.medicalRecordNumber)
+        .fold<int>(0, (prev, curr) => curr > prev ? curr : prev);
+    return maxNumber + 1;
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -78,7 +80,7 @@ Future<int> _getNextMedicalRecordNumber() async {
     try {
       final newNumber = await _getNextMedicalRecordNumber();
       final newPatient = Patient(
-        id: '',
+        id: '', // Firestore asignará un ID
         firstName: firstName,
         lastName: lastName,
         dni: int.parse(dni),
@@ -88,23 +90,18 @@ Future<int> _getNextMedicalRecordNumber() async {
         createdAt: DateTime.now(),
       );
 
-      await ref.read(patientProvider.notifier).addPatient(newPatient);
+      // Usamos el provider de acciones para agregar
+      await ref.read(patientActionsProvider).addPatient(newPatient);
 
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => _SuccessDialog(),
-        );
+        showDialog(context: context, builder: (_) => _SuccessDialog());
       }
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => _ErrorDialog(),
-        );
+        showDialog(context: context, builder: (_) => _ErrorDialog());
       }
     } finally {
-      setState(() => isSubmitting = false);
+      if (mounted) setState(() => isSubmitting = false);
     }
   }
 
@@ -160,7 +157,16 @@ Future<int> _getNextMedicalRecordNumber() async {
                       foregroundColor: Colors.white,
                     ),
                     onPressed: isSubmitting ? null : _submit,
-                    child: const Text('Agregar'),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Agregar'),
                   ),
                 ],
               ),
