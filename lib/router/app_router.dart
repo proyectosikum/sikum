@@ -10,6 +10,7 @@ import 'package:sikum/presentation/screens/patients.dart';
 import 'package:sikum/presentation/screens/user_details.dart';
 import 'package:sikum/presentation/screens/users.dart';
 import 'package:sikum/services/auth_notifier.dart';
+import 'package:sikum/presentation/screens/maternal/maternal_form.dart';
 
 final authChangeNotifier = AuthChangeNotifier();
 
@@ -46,6 +47,18 @@ final GoRouter appRouter = GoRouter(
         return EvolutionFormScreen(patientId: id);
       },
     ),
+
+//vaneeee
+GoRoute(
+  path: '/pacientes/:patientId/maternos',
+  builder: (context, state) {
+    final id = state.pathParameters['patientId']!;
+    return MaternalForm(patientId: id);
+  },
+),
+//
+
+
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
@@ -86,7 +99,8 @@ final GoRouter appRouter = GoRouter(
         '/forgot',
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
-        || loc.startsWith('/paciente/evolucionar');
+        || loc.startsWith('/paciente/evolucionar')
+        || loc.startsWith('/pacientes') && loc.contains('/maternos');
 
       if (!isAdmin && !okUser) {
         return '/pacientes';
