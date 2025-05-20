@@ -45,45 +45,49 @@ class UserActions {
   }
 
   Future<void> createUser({
-    required String name,
-    required String surname,
-    required String dni,
-    required String email,
-    required String phone,
-    required String provReg,
-    required String specialty,
-    required String role,
-  }) async {
-    try {
-      final fbUser = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: dni,
-      );
-
-      final uid = fbUser.user!.uid;
-
-      final newUser = {
-        'firstName': name,
-        'lastName': surname,
-        'dni': dni,
-        'email': email,
-        'phone': phone,
-        'provReg': provReg,
-        'specialty': specialty,
-        'role': role,
-        'needsPasswordChange': true,
-        'available': true,
-        'user': dni,
-        'userId': uid,
-      };
-
-      await _col.doc(uid).set(newUser);
-
-    } catch (e) {
-      print("Error al crear usuario: $e");
-      rethrow;
+  required String name,
+  required String surname,
+  required String dni,
+  required String email,
+  required String phone,
+  required String provReg,
+  required String specialty,
+  required String role,
+}) async {
+  try {
+    final existingUser = await _col.where('dni', isEqualTo: dni).get();
+    if (existingUser.docs.isNotEmpty) {
+      throw Exception('Ya existe un usuario con ese DNI.');
     }
+
+    final fbUser = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: dni,
+    );
+
+    final uid = fbUser.user!.uid;
+
+    final newUser = {
+      'firstName': name,
+      'lastName': surname,
+      'dni': dni,
+      'email': email,
+      'phone': phone,
+      'provReg': provReg,
+      'specialty': specialty,
+      'role': role,
+      'needsPasswordChange': true,
+      'available': true,
+      'user': dni,
+      'userId': uid,
+    };
+
+    await _col.doc(uid).set(newUser);
+  } catch (e) {
+    print("Error al crear usuario: $e");
+    rethrow;
   }
+}
 }
 
 
