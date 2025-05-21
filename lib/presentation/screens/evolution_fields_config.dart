@@ -1,4 +1,4 @@
-enum FieldType { text, number, checkbox, radio, multiline }
+enum FieldType { text, number, checkbox, radio, multiline, datetime }
 
 class FieldConfig {
   final String key;
@@ -18,48 +18,68 @@ class FieldConfig {
 const Map<String, List<FieldConfig>> evolutionFormConfig = {
   // Enfermería / general
   'enfermeria': [
-    FieldConfig(key: 'temperature',  label: 'Temperatura (°C)',        type: FieldType.number),
-    FieldConfig(key: 'respiratory',  label: 'Frecuencia respiratoria (resp/min)', type: FieldType.number),
-    FieldConfig(key: 'cardiac',      label: 'Frecuencia cardíaca (lat/min)',      type: FieldType.number),
-    FieldConfig(key: 'weight',       label: 'Peso (gr)',                type: FieldType.number),
-    FieldConfig(key: 'diuresis',     label: 'Diuresis',                 type: FieldType.radio,   options: ['Negativo', 'Positivo']),
-    FieldConfig(key: 'catarsis',     label: 'Catarsis',                 type: FieldType.radio,   options: ['Negativo', 'Positivo']),
-    FieldConfig(key: 'bilirubin',    label: 'Bilirrubina',              type: FieldType.radio,   options: ['No', 'Sí']),
-    FieldConfig(key: 'observations', label: 'Observaciones',            type: FieldType.multiline),
+    FieldConfig(key: 'temperature',  label: 'Temperatura (°C)',                             type: FieldType.number),
+    FieldConfig(key: 'respiratory',  label: 'Frecuencia respiratoria (resp/min)',           type: FieldType.number),
+    FieldConfig(key: 'cardiac',      label: 'Frecuencia cardíaca (lat/min)',                type: FieldType.number),
+    FieldConfig(key: 'weight',       label: 'Peso (gr)',                                    type: FieldType.number),
+    FieldConfig(key: 'diuresis',     label: 'Diuresis',                                     type: FieldType.radio,   options: ['Negativo', 'Positivo']),
+    FieldConfig(key: 'catarsis',     label: 'Catarsis',                                     type: FieldType.radio,   options: ['Negativo', 'Positivo']),
+    FieldConfig(key: 'bilirubin',    label: 'Bilirrubina',                                  type: FieldType.radio,   options: ['No', 'Sí']),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
+  ],
+
+  // Enfermería FEI
+  'enfermeria_fei': [
+    FieldConfig(key: 'feiDate',       label: 'Fecha',                                        type: FieldType.datetime),
+    FieldConfig(key: 'recordNumber',  label: 'Número de cartón',                             type: FieldType.number),
+  ],
+
+  // Enfermería Test Saturación
+  'enfermeria_test_saturacion': [
+    FieldConfig(key: 'preDuctalOxygenSaturation',    label: 'Saturación pre ductal',                   type: FieldType.number),
+    FieldConfig(key: 'preDuctalSaturationResult',    label: 'Resultado saturación pre ductal',         type: FieldType.text),
+    FieldConfig(key: 'postDuctalOxygenSaturation',   label: 'Saturación post ductal',                  type: FieldType.number),
+    FieldConfig(key: 'postDuctalSaturationResult',   label: 'Resultado saturación post ductal',        type: FieldType.text),
   ],
 
   // Vacunatorio
   'vacunatorio': [
-    FieldConfig(key: 'bcg',          label: 'Se aplicó la BCG',         type: FieldType.checkbox),
-    FieldConfig(key: 'observations', label: 'Observaciones',            type: FieldType.multiline),
+    FieldConfig(key: 'bcg',          label: 'Se aplicó la BCG',                             type: FieldType.checkbox),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
   // Fonoaudiología
   'fonoaudiologia': [
-    FieldConfig(key: 'leftOAE',      label: 'OEA – Oído izquierdo',     type: FieldType.radio,   options: ['Pasa', 'No pasa']),
-    FieldConfig(key: 'rightOAE',     label: 'OEA – Oído derecho',       type: FieldType.radio,   options: ['Pasa', 'No pasa']),
-    FieldConfig(key: 'indications',  label: 'Indicaciones',             type: FieldType.multiline),
-    FieldConfig(key: 'observations', label: 'Observaciones',            type: FieldType.multiline),
+    FieldConfig(key: 'leftOAE',      label: 'OEA – Oído izquierdo',                         type: FieldType.radio,   options: ['Pasa', 'No pasa']),
+    FieldConfig(key: 'rightOAE',     label: 'OEA – Oído derecho',                           type: FieldType.radio,   options: ['Pasa', 'No pasa']),
+    FieldConfig(key: 'indications',  label: 'Indicaciones',                                 type: FieldType.multiline),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
   // Puericultura
   'puericultura': [
-    FieldConfig(key: 'observations', label: 'Observaciones',            type: FieldType.multiline),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
   // Servicio Social
-  'servicio social': [
-    FieldConfig(key: 'observations', label: 'Observaciones',            type: FieldType.multiline),
+  'servicio_social': [
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
-  // Interconsultor (campo libre de especialidad más observaciones)
+  // Interconsultor
   'interconsultor': [
-    FieldConfig(key: 'interSpec',    label: 'Especialidad interconsultor', type: FieldType.text),
-    FieldConfig(key: 'observations', label: 'Observaciones',               type: FieldType.multiline),
+    FieldConfig(key: 'interSpec',    label: 'Especialidad interconsultor',                  type: FieldType.text),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
   // Neonatología
   'neonatologia': [],
+
+  // Neonatología Adicional
+  'neonatologia_adicional': [
+    FieldConfig(key: 'comment',       label: 'Comentario',                                  type: FieldType.text),
+    FieldConfig(key: 'indications',   label: 'Indicaciones',                                type: FieldType.text),
+  ],
 };
 
 // Neonatology – page 1
@@ -119,11 +139,11 @@ const List<FieldConfig> neonatologyPage2 = [
 
   // Alimentación
   FieldConfig(key: 'feedingPmld',            label: 'PMLD',                         type: FieldType.checkbox),
-  FieldConfig(key: 'feedingPmldComplement',  label: 'PMLD + complemento',          type: FieldType.checkbox),
-  FieldConfig(key: 'feedingMlQuantity',      label: 'Cantidad de ML/3hs',          type: FieldType.text),
+  FieldConfig(key: 'feedingPmldComplement',  label: 'PMLD + complemento',           type: FieldType.checkbox),
+  FieldConfig(key: 'feedingMlQuantity',      label: 'Cantidad de ML/3hs',           type: FieldType.number),
 
   FieldConfig(key: 'lf',                     label: 'LF',                           type: FieldType.checkbox),
-  FieldConfig(key: 'lfMlQuantity',           label: 'Cantidad de ML/3hs',          type: FieldType.text),
+  FieldConfig(key: 'lfMlQuantity',           label: 'Cantidad de ML/3hs',           type: FieldType.number),
 
   // Resto
   FieldConfig(
@@ -133,5 +153,5 @@ const List<FieldConfig> neonatologyPage2 = [
     options: ['No', 'Sí'],
   ),
   FieldConfig(key: 'medication',             label: 'Medicación',                   type: FieldType.multiline),
-  FieldConfig(key: 'observations',    label: 'Observaciones',                type: FieldType.multiline),
+  FieldConfig(key: 'observations',           label: 'Observaciones',                type: FieldType.multiline),
 ];
