@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/evolution_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
-import 'package:sikum/presentation/screens/evolution_fields_config.dart';
+import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
