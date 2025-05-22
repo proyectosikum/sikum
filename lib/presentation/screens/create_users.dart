@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sikum/core/theme/app_colors.dart';
@@ -15,7 +16,8 @@ class CreateUsers extends ConsumerStatefulWidget {
 }
 
 class _CreateUsersState extends ConsumerState<CreateUsers> {
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _dniController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -26,7 +28,8 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _dniController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -35,23 +38,20 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
   }
 
   Future<void> _createUser() async {
-  final fullName = _nameController.text.trim();
+  final firstName = _firstNameController.text.trim();
+  final lastName = _lastNameController.text.trim();
   final dni = _dniController.text.trim();
   final email = _emailController.text.trim();
   final phone = _phoneController.text.trim();
   final provReg = _provRegController.text.trim();
   final specialty = _selectedSpecialty;
 
-  if (fullName.isEmpty || dni.isEmpty || email.isEmpty || specialty == null) {
+  if (firstName.isEmpty || lastName.isEmpty || dni.isEmpty || email.isEmpty || specialty == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Completá todos los campos obligatorios')),
     );
     return;
   }
-
-  final parts = fullName.split(' ');
-  final firstName = parts.first;
-  final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
   setState(() => _isLoading = true);
 
@@ -105,10 +105,21 @@ Widget build(BuildContext context) {
               ),
               const SizedBox(height: 16),
 
-              LabeledTextField(label: 'Nombre Completo', controller: _nameController),
-              LabeledTextField(label: 'DNI', controller: _dniController),
+              LabeledTextField(label: 'Nombre', controller: _firstNameController),
+              LabeledTextField(label: 'Apellido', controller: _lastNameController),
+              LabeledTextField(
+                label: 'DNI', 
+                controller: _dniController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly]
+                ),
               LabeledTextField(label: 'Email', controller: _emailController),
-              LabeledTextField(label: 'Teléfono', controller: _phoneController),
+              LabeledTextField(
+                label: 'Teléfono',
+                controller: _phoneController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly]
+                ),
               LabeledTextField(label: 'Matrícula Provincial', controller: _provRegController),
 
               const Padding(
