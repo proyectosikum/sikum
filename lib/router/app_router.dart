@@ -1,18 +1,16 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sikum/presentation/screens/create_users.dart';
+import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
-import 'package:sikum/presentation/screens/login.dart';
-import 'package:sikum/presentation/screens/forgot_password.dart';
-import 'package:sikum/presentation/screens/change_password.dart';
+import 'package:sikum/presentation/screens/users/login.dart';
+import 'package:sikum/presentation/screens/users/forgot_password.dart';
+import 'package:sikum/presentation/screens/users/change_password.dart';
 import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/screens/patients/data/patients.dart';
-import 'package:sikum/presentation/screens/user_details.dart';
-import 'package:sikum/presentation/screens/users.dart';
+import 'package:sikum/presentation/screens/users/user_details.dart';
+import 'package:sikum/presentation/screens/users/users.dart';
 import 'package:sikum/services/auth_notifier.dart';
 import 'package:sikum/presentation/screens/patients/maternal/maternal_form.dart';
-
-final authChangeNotifier = AuthChangeNotifier();
 
 final GoRouter appRouter = GoRouter(
   refreshListenable: authChangeNotifier,

@@ -1,6 +1,9 @@
+// lib/presentation/screens/users/user_details_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:sikum/entities/user.dart';
 import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
@@ -12,40 +15,28 @@ class UserDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1) Perfil actual (stream)
-    final currentUserAsync = ref.watch(userDetailsStreamProvider(null));
     const green = Color(0xFF4F959D);
+
+    // Si hay userId específico, usar userDetailsStreamProvider
+    // Si no hay userId, usar userDetailsStreamProvider(null) que busca por email
+    final detailAsync = ref.watch(userDetailsStreamProvider(userId));
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: const CustomAppBar(),
       endDrawer: const SideMenu(),
-      body: currentUserAsync.when(
+      body: detailAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: green)),
-        error: (_, __) => const Center(child: Text('Error al cargar perfil')),
-        data: (currentUser) {
-          if (currentUser == null) {
+        error: (error, stack) {
+          debugPrint('Error en UserDetailsScreen: $error');
+          return const Center(child: Text('Error al cargar datos del usuario'));
+        },
+        data: (u) {
+          if (u == null) {
             return const Center(child: Text('Usuario no encontrado'));
           }
-          final role = currentUser.role;
-
-          // 2) Detalle del usuario seleccionado (stream)
-          final detailAsync =
-              ref.watch(userDetailsStreamProvider(userId));
-
-          return detailAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator(color: green)),
-            error: (_, __) =>
-                const Center(child: Text('Error al cargar datos')),
-            data: (user) {
-              if (user == null) {
-                return const Center(child: Text('Usuario no encontrado'));
-              }
-              return _buildContent(context, ref, user, role);
-            },
-          );
+          return _buildContent(context, ref, u, u.role);
         },
       ),
     );
@@ -68,8 +59,8 @@ class UserDetailsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Detalle usuario',
-              style: TextStyle(
+              userId == null ? 'Mi Perfil' : 'Detalle usuario',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: black,
@@ -85,13 +76,13 @@ class UserDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _infoCard(User u, Color cream, Color black) => Container(
+  Widget _infoCard(User u, Color bg, Color border) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cream,
+          color: bg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: black, width: 1),
+          border: Border.all(color: border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,17 +91,19 @@ class UserDetailsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _buildRow('Apellido:', u.lastName),
             const SizedBox(height: 16),
-            _buildRow('DNI:', u.dni.toString()),
+            _buildRow('DNI:', u.dni),
             const SizedBox(height: 16),
             _buildRow('Email:', u.email),
             const SizedBox(height: 16),
             _buildRow('Teléfono:', u.phone),
             const SizedBox(height: 16),
-            _buildRow('Matrícula provincial:', u.provReg),
+            _buildRow('Matrícula prov.:', u.provReg),
             const SizedBox(height: 16),
             _buildRow('Especialidad:', u.specialty),
             const SizedBox(height: 16),
             _buildRow('Activo:', u.available ? 'Sí' : 'No'),
+            const SizedBox(height: 16),
+            _buildRow('Rol:', u.role),
           ],
         ),
       );
@@ -122,18 +115,20 @@ class UserDetailsScreen extends ConsumerWidget {
     String role,
     Color green,
   ) {
+    // Si estamos viendo nuestro propio perfil (userId == null)
+    final isOwnProfile = userId == null;
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _circleButton(
           icon: Icons.arrow_back_rounded,
           color: green,
-          onTap: () {
-            final dest = role == 'admin' ? '/usuarios' : '/pacientes';
-            context.go(dest);
-          },
+          onTap: () =>
+              context.go(role == 'admin' ? '/usuarios' : '/pacientes'),
         ),
-        if (role == 'admin') ...[
+        // Solo mostrar acciones de admin si NO es el propio perfil Y el rol es admin
+        if (!isOwnProfile && role == 'admin') ...[
           const SizedBox(width: 64),
           _circleButton(
             icon: Icons.edit,
@@ -145,17 +140,18 @@ class UserDetailsScreen extends ConsumerWidget {
             icon: u.available ? Icons.delete : Icons.refresh,
             color: u.available ? Colors.redAccent : green,
             onTap: () async {
-              // Usamos userActionsProvider para toggle
               await ref
                   .read(userActionsProvider)
                   .toggleAvailability(u.id, !u.available);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    u.available ? 'Usuario desactivado' : 'Usuario reactivado',
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      u.available ? 'Usuario desactivado' : 'Usuario reactivado',
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             },
           ),
         ],
@@ -171,7 +167,7 @@ class UserDetailsScreen extends ConsumerWidget {
               text: '$label ',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            TextSpan(text: value),
+            TextSpan(text: value.isEmpty ? 'No especificado' : value),
           ],
         ),
       );

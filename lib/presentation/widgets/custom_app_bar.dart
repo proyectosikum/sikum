@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sikum/router/app_router.dart';
 import 'package:sikum/services/auth_notifier.dart';
 import 'package:sikum/presentation/providers/auth_provider.dart';
 
