@@ -1,16 +1,18 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sikum/presentation/screens/users/create_users.dart';
-import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
-import 'package:sikum/presentation/screens/users/login.dart';
-import 'package:sikum/presentation/screens/users/forgot_password.dart';
-import 'package:sikum/presentation/screens/users/change_password.dart';
 import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/screens/patients/data/patients.dart';
+import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
+import 'package:sikum/presentation/screens/patients/maternal/maternal_form.dart';
+import 'package:sikum/presentation/screens/users/change_password.dart';
+import 'package:sikum/presentation/screens/users/create_users.dart';
+import 'package:sikum/presentation/screens/users/forgot_password.dart';
+import 'package:sikum/presentation/screens/users/login.dart';
 import 'package:sikum/presentation/screens/users/user_details.dart';
 import 'package:sikum/presentation/screens/users/users.dart';
 import 'package:sikum/services/auth_notifier.dart';
-import 'package:sikum/presentation/screens/patients/maternal/maternal_form.dart';
+
+final authChangeNotifier = AuthChangeNotifier();
 
 final GoRouter appRouter = GoRouter(
   refreshListenable: authChangeNotifier,
@@ -45,25 +47,20 @@ final GoRouter appRouter = GoRouter(
         return EvolutionFormScreen(patientId: id);
       },
     ),
-
-//vaneeee
-GoRoute(
-  path: '/pacientes/:patientId/maternos',
-  builder: (context, state) {
-    final id = state.pathParameters['patientId']!;
-    return MaternalForm(patientId: id);
-  },
-),
-//
-
-
+    GoRoute(
+      path: '/pacientes/:patientId/maternos',
+      builder: (context, state) {
+        final id = state.pathParameters['patientId']!;
+        return MaternalForm(patientId: id);
+      },
+    ),
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
     final loggedIn = user != null;
     final loc      = state.matchedLocation;
 
-    const publicPaths = ['/login','/forgot','/change', '/confirmacion'];
+    const publicPaths = ['/login','/forgot','/change'];
 
     if (!loggedIn && !publicPaths.contains(loc)) {
       return '/login';

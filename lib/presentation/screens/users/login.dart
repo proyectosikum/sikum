@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sikum/presentation/providers/auth_provider.dart';
+import 'package:sikum/services/auth_service.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _userController     = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final _userController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showText = true;
-  bool _loading  = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -39,10 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     setState(() => _loading = true);
-
-    // Aquí recibimos el LoginResult directamente
-    final result = await ref.read(authActionsProvider).login(user, pass);
-
+    final result = await AuthService.instance.login(user, pass);
     if (!mounted) return;
     setState(() => _loading = false);
 
@@ -66,6 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context.go('/change');
           return;
         }
+
         if (result.role == 'admin') {
           context.go('/usuarios');
         } else {
@@ -102,6 +99,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 24),
+
+                  // Título
                   Text(
                     'Sikum',
                     style: GoogleFonts.kronaOne(
@@ -110,12 +109,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: titleColor,
                     ),
                   ),
+
                   const SizedBox(height: 48),
+
+                  // Campo user
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Usuario',
-                      style: TextStyle(color: labelColor, fontSize: labelSize),
+                      style: TextStyle(
+                        color: labelColor,
+                        fontSize: labelSize,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -124,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                              horizontal: 16, vertical: 12),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -133,12 +138,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 24),
+
+                  // Campo Contraseña
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Contraseña',
-                      style: TextStyle(color: labelColor, fontSize: labelSize),
+                      style: TextStyle(
+                        color: labelColor,
+                        fontSize: labelSize,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -148,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                              horizontal: 16, vertical: 12),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -157,14 +168,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _showText ? Icons.visibility_off : Icons.visibility,
+                          _showText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey,
                         ),
                         onPressed: _togglePasswordView,
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 48),
+
+                  // Botón Ingresar
                   SizedBox(
                     width: double.infinity,
                     height: 45,
@@ -178,32 +194,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         elevation: 0,
                       ),
                       child: _loading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 24, height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: buttonColor,
-                              ),
-                            )
-                          : Text(
-                              'Ingresar',
-                              style: TextStyle(
-                                color: backgroundColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                valueColor: AlwaysStoppedAnimation(buttonColor),
                               ),
                             ),
+                          )
+                        : Text(
+                            'Ingresar',
+                            style: TextStyle(
+                              color: backgroundColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                     ),
                   ),
+
                   const SizedBox(height: 5),
+
+                  // Link Olvidé mi contraseña
                   TextButton(
-                    onPressed: () => context.go('/forgot'),
+                    onPressed: () => context.push('/forgot'),
                     child: const Text(
                       'Olvidé mi contraseña',
-                      style: TextStyle(color: labelColor, fontSize: 14),
+                      style: TextStyle(
+                        color: labelColor,
+                        fontSize: 14
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 24),
                 ],
               ),
