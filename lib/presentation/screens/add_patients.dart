@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/patient.dart';
@@ -86,11 +87,12 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
         dni: int.parse(dni),
         medicalRecordNumber: newNumber,
         available: true,
-        createdByUserId: 'EJEMPLO',
+        createdByUserId: '', // No se necesita especificar aca
         createdAt: DateTime.now(),
       );
 
       // Usamos el provider de acciones para agregar
+      // El createdByUserId se asigna automáticamente en el provider
       await ref.read(patientActionsProvider).addPatient(newPatient);
 
       if (mounted) {

@@ -11,31 +11,79 @@ final usersStreamProvider = StreamProvider<List<User>>((ref) {
       snap.docs.map((doc) => User.fromDoc(doc)).toList());
 });
 
-/// 2) Detalle de usuario
+/// 2) Detalle de usuario - MEJORADO CON DEBUG
 final userDetailsStreamProvider =
     StreamProvider.family<User?, String?>((ref, userId) {
   final col = FirebaseFirestore.instance.collection('users');
 
-  if (userId != null) {
+  print('DEBUG userDetailsStreamProvider: userId = "$userId"');
+
+  if (userId != null && userId.isNotEmpty) {
+    print('DEBUG: Buscando usuario por ID: $userId');
+    
     // Escucha directamente /users/{userId}
-    return col.doc(userId).snapshots().map((snap) =>
-        snap.exists ? User.fromDoc(snap) : null);
+    return col.doc(userId).snapshots().map((snap) {
+      print('DEBUG: Snapshot exists: ${snap.exists}');
+      if (snap.exists) {
+        print('DEBUG: Datos del documento: ${snap.data()}');
+      }
+      
+      return snap.exists ? User.fromDoc(snap) : null;
+    }).handleError((error) {
+      print('ERROR en userDetailsStreamProvider: $error');
+      throw error;
+    });
   } else {
+    print('DEBUG: userId es null o vacío, buscando por email del auth');
+    
     // Busca por email del auth.currentUser
     final auth = fb_auth.FirebaseAuth.instance;
     return auth.authStateChanges().asyncExpand((fbUser) {
-      if (fbUser == null) return Stream.value(null);
+      if (fbUser == null) {
+        print('DEBUG: No hay usuario autenticado');
+        return Stream.value(null);
+      }
+      
+      print('DEBUG: Buscando usuario por email: ${fbUser.email}');
+      
       return col
           .where('email', isEqualTo: fbUser.email)
           .limit(1)
           .snapshots()
-          .map((qs) =>
-              qs.docs.isNotEmpty ? User.fromDoc(qs.docs.first) : null);
+          .map((qs) {
+            print('DEBUG: Documentos encontrados por email: ${qs.docs.length}');
+            return qs.docs.isNotEmpty ? User.fromDoc(qs.docs.first) : null;
+          })
+          .handleError((error) {
+            print('ERROR buscando por email: $error');
+            throw error;
+          });
     });
   }
 });
 
-/// 3) Acciones sobre usuarios
+/// 3) Provider alternativo para casos específicos donde sabemos que el userId no es null
+final userByIdStreamProvider = StreamProvider.family<User?, String>((ref, userId) {
+  final col = FirebaseFirestore.instance.collection('users');
+  
+  print('DEBUG userByIdStreamProvider: userId = "$userId"');
+  
+  return col.doc(userId).snapshots().map((snap) {
+    print('DEBUG userByIdStreamProvider: Snapshot exists: ${snap.exists}');
+    if (snap.exists) {
+      print('DEBUG userByIdStreamProvider: Datos: ${snap.data()}');
+      return User.fromDoc(snap);
+    } else {
+      print('DEBUG userByIdStreamProvider: Documento no existe');
+      return null;
+    }
+  }).handleError((error) {
+    print('ERROR en userByIdStreamProvider: $error');
+    throw error;
+  });
+});
+
+/// 4) Acciones sobre usuarios
 class UserActions {
   final _col = FirebaseFirestore.instance.collection('users');
   final _auth = fb_auth.FirebaseAuth.instance;
@@ -44,52 +92,73 @@ class UserActions {
     return _col.doc(id).update({'available': newValue});
   }
 
-  Future<void> createUser({
-  required String name,
-  required String surname,
-  required String dni,
-  required String email,
-  required String phone,
-  required String provReg,
-  required String specialty,
-  required String role,
-}) async {
-  try {
-    final existingUser = await _col.where('dni', isEqualTo: dni).get();
-    if (existingUser.docs.isNotEmpty) {
-      throw Exception('Ya existe un usuario con ese DNI.');
+  // Método para verificar si un usuario existe
+  Future<bool> userExists(String userId) async {
+    try {
+      final doc = await _col.doc(userId).get();
+      return doc.exists;
+    } catch (e) {
+      print('Error verificando si el usuario existe: $e');
+      return false;
     }
+  }
 
-    final fbUser = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: dni,
-    );
+  // Método para obtener usuario de forma async (alternativa)
+  Future<User?> getUserById(String userId) async {
+    try {
+      final doc = await _col.doc(userId).get();
+      return doc.exists ? User.fromDoc(doc) : null;
+    } catch (e) {
+      print('Error obteniendo usuario: $e');
+      return null;
+    }
+  }
 
-    final uid = fbUser.user!.uid;
+  Future<void> createUser({
+    required String name,
+    required String surname,
+    required String dni,
+    required String email,
+    required String phone,
+    required String provReg,
+    required String specialty,
+    required String role,
+  }) async {
+    try {
+      final existingUser = await _col.where('dni', isEqualTo: dni).get();
+      if (existingUser.docs.isNotEmpty) {
+        throw Exception('Ya existe un usuario con ese DNI.');
+      }
 
-    final newUser = {
-      'firstName': name,
-      'lastName': surname,
-      'dni': dni,
-      'email': email,
-      'phone': phone,
-      'provReg': provReg,
-      'specialty': specialty,
-      'role': role,
-      'needsPasswordChange': true,
-      'available': true,
-      'user': dni,
-      'userId': uid,
-    };
+      final fbUser = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: dni,
+      );
 
-    await _col.doc(uid).set(newUser);
-  } catch (e) {
-    print("Error al crear usuario: $e");
-    rethrow;
+      final uid = fbUser.user!.uid;
+
+      final newUser = {
+        'firstName': name,
+        'lastName': surname,
+        'dni': dni,
+        'email': email,
+        'phone': phone,
+        'provReg': provReg,
+        'specialty': specialty,
+        'role': role,
+        'needsPasswordChange': true,
+        'available': true,
+        'user': dni,
+        'userId': uid,
+      };
+
+      await _col.doc(uid).set(newUser);
+    } catch (e) {
+      print("Error al crear usuario: $e");
+      rethrow;
+    }
   }
 }
-}
-
 
 final userActionsProvider = Provider<UserActions>((ref) {
   return UserActions();
