@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
-import 'package:sikum/presentation/screens/add_patients.dart';
+import 'package:sikum/presentation/screens/patients/data/add_patients.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/filter_buttons.dart';
 import 'package:sikum/presentation/widgets/patient_card.dart';
