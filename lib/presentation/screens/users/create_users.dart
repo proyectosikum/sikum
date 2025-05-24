@@ -5,10 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:sikum/core/theme/app_colors.dart';
 import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
-import 'package:sikum/presentation/widgets/labeled_text_field.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
 class CreateUsers extends ConsumerStatefulWidget {
@@ -19,6 +17,7 @@ class CreateUsers extends ConsumerStatefulWidget {
 }
 
 class _CreateUsersState extends ConsumerState<CreateUsers> {
+  final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _dniController = TextEditingController();
@@ -43,53 +42,32 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
   }
 
   Future<void> _createUser() async {
-    final firstName = _firstNameController.text.trim();
-    final lastName = _lastNameController.text.trim();
-    final dni = _dniController.text.trim();
-    final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
-    final provReg = _provRegController.text.trim();
-    final specialty = _selectedSpecialty;
-    final adminPassword = _adminPasswordController.text.trim();
+    if (!_formKey.currentState!.validate()) return;
 
-    // Email del admin actual
     final adminEmail = fb_auth.FirebaseAuth.instance.currentUser?.email;
-
-    if (firstName.isEmpty ||
-        lastName.isEmpty  ||
-        dni.isEmpty       ||
-        email.isEmpty     ||
-        specialty == null ||
-        adminPassword.isEmpty ||
-        adminEmail == null
-    ) {
+    if (_selectedSpecialty == null || adminEmail == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completá todos los campos obligatorios')),
+        const SnackBar(content: Text('Completa todos los campos obligatorios')),
       );
       return;
     }
 
     setState(() => _isLoading = true);
-
     try {
       await ref.read(userActionsProvider).createUser(
-        firstName: firstName,
-        lastName: lastName,
-        dni: dni,
-        email: email,
-        phone: phone,
-        provReg: provReg,
-        specialty: specialty,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        dni: _dniController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        provReg: _provRegController.text.trim(),
+        specialty: _selectedSpecialty!,
         role: 'user',
         adminEmail: adminEmail,
-        adminPassword: adminPassword,
+        adminPassword: _adminPasswordController.text.trim(),
       );
-
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.go('/usuarios');
-        });
-      }
+      if (!mounted) return;
+      context.go('/usuarios');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,111 +81,120 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
 
   @override
   Widget build(BuildContext context) {
+    const green = Color(0xFF4F959D);
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF8E1),
       appBar: const CustomAppBar(),
       endDrawer: const SideMenu(),
-      backgroundColor: AppColors.background,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const Center(
+                child: Text(
                   'Nuevo Usuario',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 20),
 
-                LabeledTextField(label: 'Nombre', controller: _firstNameController),
-                LabeledTextField(label: 'Apellido', controller: _lastNameController),
-                LabeledTextField(
-                  label: 'DNI',
-                  controller: _dniController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                LabeledTextField(label: 'Email', controller: _emailController),
-                LabeledTextField(
-                  label: 'Teléfono',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                LabeledTextField(label: 'Matrícula Provincial', controller: _provRegController),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(labelText: 'Nombre:'),
+                validator: (v) => v == null || v.isEmpty ? 'Ingrese un nombre' : null,
+              ),
+              const SizedBox(height: 12),
 
-                const Padding(
-                  padding: EdgeInsets.only(left: 4.0, bottom: 4),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Especialidad',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ),
-                DropdownButtonFormField<String>(
-                  value: _selectedSpecialty,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'Neonatología', child: Text('Neonatología')),
-                    DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
-                    DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
-                    DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
-                  ],
-                  onChanged: (value) => setState(() => _selectedSpecialty = value),
-                ),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(labelText: 'Apellido:'),
+                validator: (v) => v == null || v.isEmpty ? 'Ingrese un apellido' : null,
+              ),
+              const SizedBox(height: 12),
 
-                // Campo de contraseña de admin
-                const SizedBox(height: 16),
-                LabeledTextField(
-                  label: 'Ingresá tu contraseña para confirmar',
-                  controller: _adminPasswordController,
-                  obscureText: true,
-                ),
+              TextFormField(
+                controller: _dniController,
+                decoration: const InputDecoration(labelText: 'DNI:'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (v) => v == null || v.isEmpty ? 'Ingrese el DNI' : null,
+              ),
+              const SizedBox(height: 12),
 
-                const SizedBox(height: 20),
-                _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _createUser,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4F959D),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        child: const Text('Crear'),
-                      ),
-                    ),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email:'),
+                validator: (v) => v == null || v.isEmpty ? 'Ingrese un email' : null,
+              ),
+              const SizedBox(height: 12),
 
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: () => context.pop(),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      side: const BorderSide(color: Colors.black),
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(labelText: 'Teléfono:'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _provRegController,
+                decoration: const InputDecoration(labelText: 'Matrícula Provincial:'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 12),
+
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Especialidad:'),
+                value: _selectedSpecialty,
+                items: const [
+                  DropdownMenuItem(value: 'Neonatología', child: Text('Neonatología')),
+                  DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
+                  DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
+                  DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
+                ],
+                onChanged: (v) => setState(() => _selectedSpecialty = v),
+                validator: (v) => v == null ? 'Selecciona una especialidad' : null,
+              ),
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _adminPasswordController,
+                decoration: const InputDecoration(labelText: 'Ingrese su contraseña para confirmar:'),
+                obscureText: true,
+                validator: (v) => v == null || v.isEmpty ? 'Requiere contraseña' : null,
+              ),
+              const SizedBox(height: 30),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  OutlinedButton(
+                    onPressed: _isLoading ? null : () => context.pop(),
                     child: const Text('Cancelar'),
                   ),
-                ),
-              ],
-            ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: green,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: _isLoading ? null : _createUser,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Crear'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

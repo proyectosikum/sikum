@@ -7,6 +7,7 @@ class LabeledTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
 
   const LabeledTextField({
     super.key,
@@ -15,6 +16,7 @@ class LabeledTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.inputFormatters,
+    this.validator,
   });
 
   @override
@@ -31,11 +33,12 @@ class LabeledTextField extends StatelessWidget {
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
-          TextField(
+          TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             obscureText: obscureText,
             inputFormatters: inputFormatters,
+            validator: validator,
             decoration: const InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),

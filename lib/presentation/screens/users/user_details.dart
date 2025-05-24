@@ -136,30 +136,56 @@ class UserDetailsScreen extends StatelessWidget {
 
                         // Borrar o Reactivar
                         _circleButton(
-                          icon: available
-                              ? Icons.delete
-                              : Icons.refresh,       // icono de reactivar
-                          color: available
-                              ? Colors.redAccent
-                              : green,               // color acorde
+                          icon: available ? Icons.delete : Icons.refresh,
+                          color: available ? Colors.redAccent : green,
                           onTap: () async {
-                            // Actualiza el campo 'available'
+                            // 1) Pregunto confirmación
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(
+                                  available
+                                    ? 'Confirmar desactivación'
+                                    : 'Confirmar reactivación'
+                                ),
+                                content: Text(
+                                  available
+                                    ? '¿Estás seguro de que quieres desactivar este usuario?'
+                                    : '¿Estás seguro de que quieres reactivar este usuario?'
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(true),
+                                    child: const Text('Confirmar'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirmed != true) return;
+
+                            // 2) Ejecuto la actualización
                             await FirebaseFirestore.instance
                                 .collection('users')
                                 .doc(id)
                                 .update({'available': !available});
+
+                            // 3) Muestro snackbar con resultado
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
                                   available
-                                      ? 'Usuario desactivado'
-                                      : 'Usuario reactivado',
+                                    ? 'Usuario desactivado'
+                                    : 'Usuario reactivado',
                                 ),
                               ),
                             );
-                            // recargo la misma ruta para refrescar datos
-                            final currentLocation = GoRouter.of(context).location;
-                            context.go(currentLocation);
+
+                            context.pop();
                           },
                         ),
                       ],
