@@ -38,6 +38,7 @@ final userDetailsStreamProvider =
 class UserActions {
   final _col = FirebaseFirestore.instance.collection('users');
   final _auth = fb_auth.FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   Future<void> toggleAvailability(String id, bool newValue) {
     return _col.doc(id).update({'available': newValue});
@@ -99,7 +100,42 @@ class UserActions {
       rethrow;
     }
   }
+
+  Future<void> updateUser({
+    required String id,
+    required String firstName,
+    required String lastName,
+    required String dni,
+    required String email,
+    required String phone,
+    required String provReg,
+    required String specialty,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(id).update({
+        'firstName': firstName,
+        'lastName': lastName,
+        'dni': dni,
+        'email': email,
+        'phone': phone,
+        'provReg': provReg,
+        'specialty': specialty,
+      });
+    } catch (e) {
+      throw Exception('Error al actualizar usuario: $e');
+    }
+  }
+
+  Future<User> getUserById(String id) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
+    final data = doc.data();
+    if (data == null) {
+      throw Exception('Usuario no encontrado');
+  }
+  return User.fromMap(data, doc.id);
+  }
 }
+
 
 final userActionsProvider = Provider<UserActions>((ref) {
   return UserActions();
