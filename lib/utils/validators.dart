@@ -1,6 +1,3 @@
-/// Contiene funciones puras de validación para formularios.
-/// Cada función devuelve `null` si el valor es válido, o un mensaje de error si no lo es.
-
 String? validateNotEmpty(String? value, {String fieldName = 'Este campo'}) {
   if (value == null || value.trim().isEmpty) {
     return '$fieldName es obligatorio';
