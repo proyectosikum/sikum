@@ -11,6 +11,7 @@ class Patient {
   final DateTime? createdAt;
   final String? modifiedByUserId;
   final DateTime? modifiedAt;
+  final Map<String, dynamic>? maternalData;
 
   Patient({
     required this.id,
@@ -23,6 +24,7 @@ class Patient {
     this.createdAt,
     this.modifiedByUserId,
     this.modifiedAt,
+    this.maternalData,
   });
 
   factory Patient.fromFirestore(
@@ -41,6 +43,7 @@ class Patient {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       modifiedByUserId: data['modifiedByUserId'],
       modifiedAt: (data['modifiedAt'] as Timestamp?)?.toDate(),
+      maternalData: data['maternalData'],
     );
   }
 

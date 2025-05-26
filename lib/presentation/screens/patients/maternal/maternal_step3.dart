@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/core/theme/app_colors.dart';
-import 'package:sikum/presentation/widgets/custom_text_field.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/providers/maternal_data_provider.dart';
+import 'package:sikum/presentation/widgets/maternal_test.dart';
 
-class MaternalStep2 extends ConsumerStatefulWidget {
+class MaternalStep3 extends ConsumerStatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
   final Patient patient;
 
-  const MaternalStep2({
+  const MaternalStep3({
     super.key,
     required this.onNext,
     required this.onBack,
@@ -22,36 +21,20 @@ class MaternalStep2 extends ConsumerStatefulWidget {
   });
 
   @override
-  MaternalStep2State createState() => MaternalStep2State();
+  MaternalStep3State createState() => MaternalStep3State();
 }
 
-class MaternalStep2State extends ConsumerState<MaternalStep2> {
-  final List<String> complications = [
-    'Colestasis',
-    'Diabetes gestacional (tto con dieta)',
-    'Diabetes gestacional (tto Insulina)',
-    'Diabetes Pre-Gestacional',
-    'Eclampsia',
-    'Hipertensión / HIE',
-    'Hipotiroidismo',
-    'Infección urinaria',
-    'Pre eclampsia',
-    'RPM',
-    'Sme Anti-fosfolipidico',
-    'Otros',
-  ];
+class MaternalStep3State extends ConsumerState<MaternalStep3> {
+  bool showSecondHalf = false;
 
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(maternalDataFormProvider);
-    final formNotifier = ref.read(maternalDataFormProvider.notifier);
-    final isDataSaved = form.isDataSaved;
+    final maternalNotifier = ref.read(maternalDataFormProvider.notifier);
 
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const CustomAppBar(),
       endDrawer: const SideMenu(),
-
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -59,12 +42,10 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(
-                  child: ScreenSubtitle(text: 'Datos maternos'),
-                ),
+                const Center(child: ScreenSubtitle(text: 'Datos maternos')),
                 const SizedBox(height: 16),
 
-                                /// Tarjetita con datos del paciente
+                // Tarjetita con datos del paciente
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -97,7 +78,6 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                 ),
                 const SizedBox(height: 24),
 
-                /// Título de sección
                 const Text(
                   'Antecedentes médicos',
                   style: TextStyle(
@@ -106,76 +86,35 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                     color: AppColors.black,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8.0),
 
-                CustomTextField(
-                  label: 'Cantidad de gestas',
-                  initialValue: form.gravidity,
-                  onChanged: formNotifier.updateGravidity,
-                  errorText: form.errors['gravidity'],
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  readOnly: isDataSaved,
-                ),
-                CustomTextField(
-                  label: 'Cantidad de partos',
-                  initialValue: form.parity,
-                  onChanged: formNotifier.updateParity,
-                  errorText: form.errors['parity'],
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  readOnly: isDataSaved,
-                ),
-                CustomTextField(
-                  label: 'Cantidad de cesáreas',
-                  initialValue: form.cesareans,
-                  onChanged: formNotifier.updateCesareans,
-                  errorText: form.errors['cesareans'],
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  readOnly: isDataSaved,
-                ),
-                CustomTextField(
-                  label: 'Cantidad de abortos',
-                  initialValue: form.abortions,
-                  onChanged: formNotifier.updateAbortions,
-                  errorText: form.errors['abortions'],
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  readOnly: isDataSaved,
+                // Primer grupo de pruebas
+                Column(
+                  children: [
+                    MaternalTest(testName: 'VDRL'),
+                    MaternalTest(testName: 'Prueba Treponemica', isTreponemalTest: true),
+                    MaternalTest(testName: 'HIV'),
+                    MaternalTest(testName: 'Hepatitis B'),
+                    MaternalTest(testName: 'Chagas'),
+                  ],
                 ),
 
-                // Complicaciones
-                const SizedBox(height: 16),
-                const Text(
-                  'Complicaciones del embarazo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                ...complications.map((complication) {
-                  return CheckboxListTile(
-                    title: Text(complication),
-                    value: form.complications[complication] ?? false,
-                    onChanged: (isDataSaved) // Si está guardado, no se puede cambiar
-                      ? null
-                      :(bool? value) {
-                      formNotifier.updateComplication(
-                        complication,
-                        value ?? false,
-                      );
-                    },
-                  );
-                }),
+                if (showSecondHalf) ...[
+                  MaternalTest(testName: 'Toxo IgG'),
+                  MaternalTest(testName: 'Toxo IgM'),
+                  MaternalTest(testName: 'EGB'),
+                  MaternalTest(testName: 'PCI'),
+                ],
 
                 const SizedBox(height: 32),
-                // Botones: Volver y Siguiente
+                
                 Row(
                   children: [
                     // Botón Volver
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.green),
+                          side: const BorderSide(color: AppColors.green),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         onPressed: widget.onBack,
@@ -197,7 +136,7 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                     ),
                     const SizedBox(width: 16),
 
-                    // Botón Siguiente
+                    // Botón Siguiente o Mostrar más pruebas
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -206,18 +145,31 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         onPressed: () {
-                          final isValid = formNotifier.validateStep2();
-                          if (isValid) {
-                            widget.onNext();
+                          if (showSecondHalf) {
+                            if (maternalNotifier.validateSecondHalfTests()) {
+                              widget.onNext();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Por favor, complete todos los campos de la segunda mitad.'),
+                                ),
+                              );
+                            }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Por favor corrige los errores'),
-                              ),
-                            );
+                            if (maternalNotifier.validateFirstHalfTests()) {
+                              setState(() {
+                                showSecondHalf = true;
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Por favor, complete todos los campos de la primera mitad.'),
+                                ),
+                              );
+                            }
                           }
                         },
-                        child: const Text('Siguiente'),
+                        child: Text(showSecondHalf ? 'Siguiente' : 'Mostrar más pruebas'),
                       ),
                     ),
                   ],
