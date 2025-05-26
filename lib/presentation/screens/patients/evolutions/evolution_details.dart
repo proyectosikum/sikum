@@ -427,6 +427,13 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
       case FieldType.radio:
         displayValue = value?.toString() ?? 'No seleccionado';
         break;
+      case FieldType.datetime:
+        if (value != null) {
+          displayValue = _formatDate(value);
+        } else {
+          displayValue = 'No especificado';
+        }
+        break;
     }
 
     return Container(
@@ -522,6 +529,99 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
                   ),
                 );
               }).toList(),
+            ),
+          ],
+        );
+      
+      case FieldType.datetime:
+        // Obtener el valor actual de fecha
+        DateTime? currentDate;
+        if (value != null) {
+          if (value is DateTime) {
+            currentDate = value;
+          } else {
+            try {
+              // Si es un Timestamp de Firestore
+              currentDate = value.toDate();
+            } catch (e) {
+              // Si es un String, intentar parsearlo
+              try {
+                currentDate = DateTime.parse(value.toString());
+              } catch (e) {
+                currentDate = null;
+              }
+            }
+          }
+        }
+        
+        // Si hay un valor en _formData, usarlo
+        if (_formData[field.key] != null) {
+          currentDate = _formData[field.key] as DateTime;
+        }
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              field.label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: currentDate ?? DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime(2100),
+                );
+                
+                if (pickedDate != null) {
+                  final TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: currentDate != null 
+                        ? TimeOfDay.fromDateTime(currentDate) 
+                        : TimeOfDay.now(),
+                  );
+                  
+                  if (pickedTime != null) {
+                    final DateTime finalDateTime = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      pickedTime.hour,
+                      pickedTime.minute,
+                    );
+                    
+                    setState(() {
+                      _formData[field.key] = finalDateTime;
+                    });
+                  }
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      currentDate != null 
+                          ? _formatDate(currentDate)
+                          : 'Seleccionar fecha y hora',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: currentDate != null ? Colors.black87 : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         );

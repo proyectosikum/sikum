@@ -107,7 +107,7 @@ class UserActions {
   }
 
   // Método para obtener usuario de forma async (alternativa)
-  Future<User?> getUserById(String userId) async {
+  /*Future<User?> getUserById(String userId) async {
     try {
       final doc = await _col.doc(userId).get();
       return doc.exists ? User.fromDoc(doc) : null;
@@ -115,6 +115,15 @@ class UserActions {
       print('Error obteniendo usuario: $e');
       return null;
     }
+  }*/
+
+  Future<User> getUserById(String id) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
+    final data = doc.data();
+    if (data == null) {
+      throw Exception('Usuario no encontrado');
+  }
+  return User.fromMap(data, doc.id);
   }
 
   Future<void> createUser({
@@ -199,14 +208,7 @@ class UserActions {
     }
   }
 
-  Future<User> getUserById(String id) async {
-    final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
-    final data = doc.data();
-    if (data == null) {
-      throw Exception('Usuario no encontrado');
-  }
-  return User.fromMap(data, doc.id);
-  }
+  
 }
 
 final userActionsProvider = Provider<UserActions>((ref) {
