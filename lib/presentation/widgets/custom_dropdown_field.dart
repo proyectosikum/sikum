@@ -6,15 +6,17 @@ class CustomDropdownField extends StatelessWidget {
   final String label;
   final void Function(String?) onChanged;
   final String? errorText;
+  final bool readOnly;
 
   const CustomDropdownField({
-    Key? key,
+    super.key,
     required this.items,
     required this.onChanged,
     required this.label,
     this.value,
     this.errorText,
-  }) : super(key: key);
+    this.readOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,9 @@ class CustomDropdownField extends StatelessWidget {
           child: Text(item),
         );
       }).toList(),
-      onChanged: onChanged,
+      onChanged: readOnly ? null : onChanged,  // Deshabilitamos la interacción si es solo lectura
+      // Si es solo lectura, deshabilitamos el campo
+      icon: readOnly ? null : const Icon(Icons.arrow_drop_down),
     );
   }
 }
