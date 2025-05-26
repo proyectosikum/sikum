@@ -8,10 +8,16 @@ import 'package:sikum/presentation/screens/forgot_password.dart';
 import 'package:sikum/presentation/screens/change_password.dart';
 import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/screens/patients/data/patients.dart';
-import 'package:sikum/presentation/screens/user_details.dart';
-import 'package:sikum/presentation/screens/users.dart';
-import 'package:sikum/services/auth_notifier.dart';
+import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
 import 'package:sikum/presentation/screens/patients/maternal/maternal_form.dart';
+import 'package:sikum/presentation/screens/users/change_password.dart';
+import 'package:sikum/presentation/screens/users/create_users.dart';
+import 'package:sikum/presentation/screens/users/edit_user.dart';
+import 'package:sikum/presentation/screens/users/forgot_password.dart';
+import 'package:sikum/presentation/screens/users/login.dart';
+import 'package:sikum/presentation/screens/users/user_details.dart';
+import 'package:sikum/presentation/screens/users/users.dart';
+import 'package:sikum/services/auth_notifier.dart';
 
 final authChangeNotifier = AuthChangeNotifier();
 
@@ -31,6 +37,12 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(path: '/usuarios/crear',  builder: (_, __) => const CreateUsers()),
+    GoRoute(path: '/usuario/editar',
+    builder: (context, state) {
+      final userId = state.extra as String;
+      return EditUser(userId: userId);
+    },
+  ),
     GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
@@ -79,7 +91,7 @@ GoRoute(
     final loggedIn = user != null;
     final loc      = state.matchedLocation;
 
-    const publicPaths = ['/login','/forgot','/change', '/confirmacion'];
+    const publicPaths = ['/login','/forgot','/change'];
 
     if (!loggedIn && !publicPaths.contains(loc)) {
       return '/login';
@@ -97,6 +109,7 @@ GoRoute(
       final okAdmin = [
         '/usuarios',
         '/usuarios/crear',
+        '/usuario/editar',
         '/perfil',
         '/change',
         '/forgot'

@@ -50,4 +50,53 @@ class User {
       userId: data['userId']              as String? ?? '',
     );
   }
+
+  factory User.fromMap(Map<String, dynamic> map, String id) {
+  return User(
+    id: id,
+    firstName: map['firstName'] ?? '',
+    lastName: map['lastName'] ?? '',
+    dni: map['dni'] ?? '',
+    email: map['email'] ?? '',
+    phone: map['phone'] ?? '',
+    provReg: map['provReg'] ?? '',
+    specialty: map['specialty'] ?? '',
+    role: map['role'] ?? '',
+    needsPasswordChange: map['needsPasswordChange'] ?? false,
+    available: map['available'] ?? false,
+    user: map['user'] ?? '',
+    userId: map['userId'] ?? '',
+  );
+}
+
+  User copyWith({
+  String? firstName,
+  String? lastName,
+  String? dni,
+  String? email,
+  String? phone,
+  String? provReg,
+  String? specialty,
+  String? role,
+  bool? needsPasswordChange,
+  bool? available,
+  String? user,
+  String? userId,
+}) {
+  return User(
+    id: id,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    dni: dni ?? this.dni,
+    email: email ?? this.email,
+    phone: phone ?? this.phone,
+    provReg: provReg ?? this.provReg,
+    specialty: specialty ?? this.specialty,
+    role: role ?? this.role,
+    needsPasswordChange: needsPasswordChange ?? this.needsPasswordChange,
+    available: available ?? this.available,
+    user: user ?? this.user,
+    userId: userId ?? this.userId,
+  );
+  }
 }

@@ -10,8 +10,8 @@ class AuthChangeNotifier extends ChangeNotifier {
   String? lastName;
 
   String get displayName {
-    final fn = firstName?.trim()  ?? '';
-    final sn = lastName?.trim()    ?? '';
+    final fn = firstName?.trim() ?? '';
+    final sn = lastName?.trim() ?? '';
     if (fn.isEmpty && sn.isEmpty) return 'Usuario';
     return '$fn${sn.isEmpty ? '' : ' '}$sn';
   }
@@ -19,10 +19,10 @@ class AuthChangeNotifier extends ChangeNotifier {
   AuthChangeNotifier() {
     FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (user == null) {
-        role         = null;
-        needsChange  = false;
-        firstName    = null;
-        lastName      = null;
+        role = null;
+        needsChange = false;
+        firstName = null;
+        lastName = null;
         notifyListeners();
       } else {
         final q = await FirebaseFirestore.instance
@@ -33,15 +33,15 @@ class AuthChangeNotifier extends ChangeNotifier {
 
         if (q.docs.isNotEmpty) {
           final data = q.docs.first.data();
-          role         = data['role']                as String? ?? 'user';
-          needsChange  = data['needsPasswordChange'] as bool?   ?? false;
-          firstName    = data['name']                as String? ?? '';
-          lastName      = data['lastName']             as String? ?? '';
+          role = data['role'] as String? ?? 'user';
+          needsChange = data['needsPasswordChange'] as bool?   ?? false;
+          firstName = data['firstName'] as String? ?? '';
+          lastName = data['lastName'] as String? ?? '';
         } else {
-          role        = 'user';
+          role = 'user';
           needsChange = false;
-          firstName   = '';
-          lastName     = '';
+          firstName = '';
+          lastName = '';
         }
         notifyListeners();
       }
