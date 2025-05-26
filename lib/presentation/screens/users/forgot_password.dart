@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sikum/presentation/providers/auth_provider.dart';
+import 'package:sikum/services/auth_service.dart';
 
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _userController = TextEditingController();
   bool _loading = false;
 
@@ -34,7 +33,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     setState(() => _loading = true);
 
-    // 1) Buscamos el email en Firestore
     final query = await FirebaseFirestore.instance
         .collection('users')
         .where('user', isEqualTo: user)
@@ -58,9 +56,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       return;
     }
 
-    // 2) Enviamos email de recuperación vía provider
-    final success = await ref.read(authActionsProvider).sendPasswordResetEmail(email);
-
+    final success = await AuthService.instance.sendPasswordResetEmail(email);
     setState(() => _loading = false);
 
     if (success) {

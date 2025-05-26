@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sikum/presentation/providers/auth_provider.dart';
+import 'package:sikum/services/auth_service.dart';
 
-class ChangePasswordScreen extends ConsumerStatefulWidget {
+class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() =>
-      _ChangePasswordScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState
-    extends ConsumerState<ChangePasswordScreen> {
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _oldPassController = TextEditingController();
   final _newPassController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _loading = false;
-
   bool _showOld = true;
   bool _showNew = true;
   bool _showConfirm = true;
@@ -63,7 +59,7 @@ class _ChangePasswordScreenState
 
     setState(() => _loading = true);
 
-    final success = await ref.read(authActionsProvider).changePassword(oldPass, newPass);
+    final success = await AuthService.instance.changePassword(oldPass, newPass);
 
     setState(() => _loading = false);
 
@@ -71,8 +67,7 @@ class _ChangePasswordScreenState
       messenger.showSnackBar(
         const SnackBar(content: Text('Contraseña actualizada')),
       );
-
-      await ref.read(authActionsProvider).logout();
+      await AuthService.instance.logout();
       context.go('/login');
     } else {
       messenger.showSnackBar(
