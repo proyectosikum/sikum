@@ -11,10 +11,13 @@ class EvolutionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatter = DateFormat('dd/MM/yyyy HH:mm');
-    // Capitaliza la primera letra de la especialidad
     final specialty = evolution.specialty.isNotEmpty
-        ? '${evolution.specialty[0].toUpperCase()}${evolution.specialty.substring(1)}'
-        : '';
+    ? evolution.specialty
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .replaceFirst(evolution.specialty.replaceAll('_', ' ').toLowerCase()[0],
+            evolution.specialty.replaceAll('_', ' ').toLowerCase()[0].toUpperCase())
+    : '';
 
     return Container(
       width: double.infinity,

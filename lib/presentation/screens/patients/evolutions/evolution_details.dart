@@ -27,6 +27,7 @@ class EvolutionDetailsScreen extends ConsumerStatefulWidget {
 
 class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen> {
   bool isEditing = false;
+  int _page = 0; // Agregar esta línea para controlar páginas de neonatología
   final Map<String, dynamic> _formData = {};
 
   @override
@@ -77,7 +78,11 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
       _formData.addAll(details);
     }
 
-    final fields = evolutionFormConfig[specialty] ?? [];
+    final fields = specialty == 'neonatologia'
+        ? [...neonatologyPage1, ...neonatologyPage2]
+        : evolutionFormConfig[specialty] ?? [];
+
+    final isNeonato = specialty == 'neonatologia';
 
     return SafeArea(
       child: Column(
@@ -166,14 +171,16 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              for (final field in fields) ...[
-                                _buildFieldWidget(field, details),
-                                const SizedBox(height: 16),
-                              ],
-                            ],
-                          ),
+                          child: isEditing && isNeonato
+                              ? (_page == 0 ? _buildNeonatoPage1() : _buildNeonatoPage2())
+                              : Column(
+                                  children: [
+                                    for (final field in fields) ...[
+                                      _buildFieldWidget(field, details),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  ],
+                                ),
                         ),
                       ),
                     ),
@@ -191,16 +198,28 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _cancelEdit,
-                      child: const Text('Cancelar'),
+                      onPressed: () {
+                        if (isNeonato && _page == 1) {
+                          setState(() => _page = 0);
+                        } else {
+                          _cancelEdit();
+                        }
+                      },
+                      child: Text(isNeonato && _page == 1 ? 'Atrás' : 'Cancelar'),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F959D)),
-                      onPressed: _saveChanges,
-                      child: const Text('Guardar'),
+                      onPressed: () {
+                        if (isNeonato && _page == 0) {
+                          setState(() => _page = 1);
+                        } else {
+                          _saveChanges();
+                        }
+                      },
+                      child: Text(isNeonato && _page == 0 ? 'Siguiente' : 'Guardar'),
                     ),
                   ),
                 ],
@@ -402,6 +421,103 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
   );
 }
 
+  // Agregar estos métodos para las páginas de neonatología
+  Widget _buildNeonatoPage1() {
+    final examValue = _formData['physicalExam'] as String?;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Examen físico', style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Wrap(spacing: 16, children: ['Normal', 'Anormal'].map((opt) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Radio<String>(
+                value: opt, 
+                groupValue: examValue, 
+                onChanged: (v) => setState(() => _formData['physicalExam'] = v)
+              ),
+              Text(opt),
+            ],
+          );
+        }).toList()),
+        if (examValue == 'Anormal') ...[
+          const SizedBox(height: 12),
+          _buildEditableField(neonatologyPage1.firstWhere((f) => f.key == 'abnormalObservation'), _formData['abnormalObservation']),
+        ],
+        const SizedBox(height: 16),
+        for (final f in neonatologyPage1.where((f) => f.key != 'physicalExam' && f.key != 'abnormalObservation')) ...[
+          _buildEditableField(f, _formData[f.key]),
+          const SizedBox(height: 16),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildNeonatoPage2() {
+    const titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Indicaciones', style: titleStyle),
+        const SizedBox(height: 8),
+        CheckboxListTile(
+          title: const Text('PMLD'), 
+          value: _formData['pmld'] as bool? ?? false, 
+          onChanged: (v) => setState(() => _formData['pmld'] = v ?? false)
+        ),
+        CheckboxListTile(
+          title: const Text('CSV por turno'), 
+          value: _formData['csvByShift'] as bool? ?? false, 
+          onChanged: (v) => setState(() => _formData['csvByShift'] = v ?? false)
+        ),
+        const SizedBox(height: 16),
+        Text('Alimentación', style: titleStyle),
+        const SizedBox(height: 8),
+        CheckboxListTile(
+          title: const Text('PMLD'), 
+          value: _formData['feedingPmld'] as bool? ?? false, 
+          onChanged: (v) => setState(() => _formData['feedingPmld'] = v ?? false)
+        ),
+        CheckboxListTile(
+          title: const Text('PMLD + complemento'), 
+          value: _formData['feedingPmldComplement'] as bool? ?? false, 
+          onChanged: (v) => setState(() => _formData['feedingPmldComplement'] = v ?? false)
+        ),
+        if (_formData['feedingPmldComplement'] as bool? ?? false) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 15, bottom: 8), 
+            child: _buildEditableField(
+              neonatologyPage2.firstWhere((f) => f.key == 'feedingMlQuantity'),
+              _formData['feedingMlQuantity']
+            )
+          ),
+        ],
+        CheckboxListTile(
+          title: const Text('LF'), 
+          value: _formData['lf'] as bool? ?? false, 
+          onChanged: (v) => setState(() => _formData['lf'] = v ?? false)
+        ),
+        if (_formData['lf'] as bool? ?? false) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 15, bottom: 8), 
+            child: _buildEditableField(
+              neonatologyPage2.firstWhere((f) => f.key == 'lfMlQuantity'),
+              _formData['lfMlQuantity']
+            )
+          ),
+        ],
+        const SizedBox(height: 16),
+        _buildEditableField(neonatologyPage2.firstWhere((f) => f.key == 'phototherapy'), _formData['phototherapy']),
+        const SizedBox(height: 16),
+        _buildEditableField(neonatologyPage2.firstWhere((f) => f.key == 'medication'), _formData['medication']),
+        const SizedBox(height: 16),
+        _buildEditableField(neonatologyPage2.firstWhere((f) => f.key == 'observations'), _formData['observations']),
+      ],
+    );
+  }
+
   Widget _buildFieldWidget(FieldConfig field, Map<String, dynamic> details) {
     final value = details[field.key];
     
@@ -468,175 +584,189 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
     );
   }
 
-  Widget _buildEditableField(FieldConfig field, dynamic value) {
-    switch (field.type) {
-      case FieldType.text:
-        return TextFormField(
-          initialValue: value?.toString() ?? '',
-          onChanged: (v) => _formData[field.key] = v,
-          decoration: InputDecoration(
-            labelText: field.label,
-            border: const OutlineInputBorder(),
-          ),
-        );
-      
-      case FieldType.number:
-        return TextFormField(
-          initialValue: value?.toString() ?? '',
-          keyboardType: TextInputType.number,
-          onChanged: (v) => _formData[field.key] = v,
-          decoration: InputDecoration(
-            labelText: field.label,
-            border: const OutlineInputBorder(),
-          ),
-        );
-      
-      case FieldType.multiline:
-        return TextFormField(
-          initialValue: value?.toString() ?? '',
-          maxLines: 3,
-          onChanged: (v) => _formData[field.key] = v,
-          decoration: InputDecoration(
-            labelText: field.label,
-            border: const OutlineInputBorder(),
-          ),
-        );
-      
-      case FieldType.checkbox:
-        return CheckboxListTile(
-          title: Text(field.label),
-          value: _formData[field.key] as bool? ?? (value == true),
-          onChanged: (v) => setState(() => _formData[field.key] = v ?? false),
-        );
-      
-      case FieldType.radio:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              field.label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+    Widget _buildEditableField(FieldConfig field, dynamic value) {
+      switch (field.type) {
+        case FieldType.text:
+          return TextFormField(
+            initialValue: value?.toString() ?? '',
+            onChanged: (v) => _formData[field.key] = v,
+            decoration: InputDecoration(
+              labelText: field.label,
+              border: const OutlineInputBorder(),
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: field.options!.map((option) {
-                return Expanded(
-                  child: RadioListTile<String>(
-                    title: Text(option),
-                    value: option,
-                    groupValue: _formData[field.key] as String? ?? value?.toString(),
-                    onChanged: (v) => setState(() => _formData[field.key] = v),
-                  ),
-                );
-              }).toList(),
+          );
+        
+        case FieldType.number:
+          return TextFormField(
+            initialValue: value?.toString() ?? '',
+            keyboardType: TextInputType.number,
+            onChanged: (v) => _formData[field.key] = v,
+            decoration: InputDecoration(
+              labelText: field.label,
+              border: const OutlineInputBorder(),
             ),
-          ],
-        );
-      
-      case FieldType.datetime:
-        // Obtener el valor actual de fecha
-        DateTime? currentDate;
-        if (value != null) {
-          if (value is DateTime) {
-            currentDate = value;
-          } else {
-            try {
-              // Si es un Timestamp de Firestore
-              currentDate = value.toDate();
-            } catch (e) {
-              // Si es un String, intentar parsearlo
+          );
+        
+        case FieldType.multiline:
+          return TextFormField(
+            initialValue: value?.toString() ?? '',
+            maxLines: 3,
+            onChanged: (v) => _formData[field.key] = v,
+            decoration: InputDecoration(
+              labelText: field.label,
+              border: const OutlineInputBorder(),
+            ),
+          );
+        
+        case FieldType.checkbox:
+          return CheckboxListTile(
+            title: Text(field.label),
+            value: _formData[field.key] as bool? ?? (value == true),
+            onChanged: (v) => setState(() => _formData[field.key] = v ?? false),
+          );
+        
+        case FieldType.radio:
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              // Cambiar de Row con Expanded a Wrap para mejor distribución
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  runAlignment: WrapAlignment.start,
+                  crossAxisAlignment: WrapCrossAlignment.start,
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: field.options!.map((option) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Radio<String>(
+                          value: option,
+                          groupValue: _formData[field.key] as String? ?? value?.toString(),
+                          onChanged: (v) => setState(() => _formData[field.key] = v),
+                        ),
+                        Text(option),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          );
+        
+        case FieldType.datetime:
+          // Obtener el valor actual de fecha
+          DateTime? currentDate;
+          if (value != null) {
+            if (value is DateTime) {
+              currentDate = value;
+            } else {
               try {
-                currentDate = DateTime.parse(value.toString());
+                // Si es un Timestamp de Firestore
+                currentDate = value.toDate();
               } catch (e) {
-                currentDate = null;
+                // Si es un String, intentar parsearlo
+                try {
+                  currentDate = DateTime.parse(value.toString());
+                } catch (e) {
+                  currentDate = null;
+                }
               }
             }
           }
-        }
-        
-        // Si hay un valor en _formData, usarlo
-        if (_formData[field.key] != null) {
-          currentDate = _formData[field.key] as DateTime;
-        }
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              field.label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: () async {
-                final DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: currentDate ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
-                );
-                
-                if (pickedDate != null) {
-                  final TimeOfDay? pickedTime = await showTimePicker(
+          
+          // Si hay un valor en _formData, usarlo
+          if (_formData[field.key] != null) {
+            currentDate = _formData[field.key] as DateTime;
+          }
+          
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final DateTime? pickedDate = await showDatePicker(
                     context: context,
-                    initialTime: currentDate != null 
-                        ? TimeOfDay.fromDateTime(currentDate) 
-                        : TimeOfDay.now(),
+                    initialDate: currentDate ?? DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100),
                   );
                   
-                  if (pickedTime != null) {
-                    final DateTime finalDateTime = DateTime(
-                      pickedDate.year,
-                      pickedDate.month,
-                      pickedDate.day,
-                      pickedTime.hour,
-                      pickedTime.minute,
+                  if (pickedDate != null) {
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: currentDate != null 
+                          ? TimeOfDay.fromDateTime(currentDate) 
+                          : TimeOfDay.now(),
                     );
                     
-                    setState(() {
-                      _formData[field.key] = finalDateTime;
-                    });
+                    if (pickedTime != null) {
+                      final DateTime finalDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                      );
+                      
+                      setState(() {
+                        _formData[field.key] = finalDateTime;
+                      });
+                    }
                   }
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      currentDate != null 
-                          ? _formatDate(currentDate)
-                          : 'Seleccionar fecha y hora',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: currentDate != null ? Colors.black87 : Colors.grey,
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        currentDate != null 
+                            ? _formatDate(currentDate)
+                            : 'Seleccionar fecha y hora',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: currentDate != null ? Colors.black87 : Colors.grey,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
+            ],
+          );
+      }
     }
-  }
 
   void _toggleEdit() {
     setState(() {
       isEditing = true;
+      _page = 0; // Empezar en la primera página
     });
   }
 
   void _cancelEdit() {
     setState(() {
       isEditing = false;
+      _page = 0; // Resetear a la primera página
       _formData.clear(); // Limpiar cambios
     });
   }
@@ -649,6 +779,7 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
       
       setState(() {
         isEditing = false;
+        _page = 0; // Resetear página
       });
       
       if (mounted) {
@@ -665,24 +796,15 @@ Widget _buildProfessionalInfo(String createdByUserId, String specialty, dynamic 
     }
   }
 
-  String _getSpecialtyDisplayName(String specialty) {
-    switch (specialty) {
-      case 'enfermeria':
-        return 'Enfermería';
-      case 'puericultura_servsocial':
-        return 'Puericultura / Servicio Social';
-      case 'fonoaudiologia':
-        return 'Fonoaudiología';
-      case 'vacunatorio':
-        return 'Vacunatorio';
-      case 'interconsultor':
-        return 'Interconsultor';
-      default:
-        return specialty.isNotEmpty 
-            ? '${specialty[0].toUpperCase()}${specialty.substring(1)}'
-            : specialty;
+    String _getSpecialtyDisplayName(String specialty) {
+      return specialty.isNotEmpty 
+          ? specialty
+              .replaceAll('_', ' ')
+              .toLowerCase()
+              .replaceFirst(specialty.replaceAll('_', ' ').toLowerCase()[0],
+                  specialty.replaceAll('_', ' ').toLowerCase()[0].toUpperCase())
+          : specialty;
     }
-  }
 
   String _formatDate(dynamic dateValue) {
     if (dateValue == null) return '';
