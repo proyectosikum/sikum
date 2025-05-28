@@ -31,7 +31,7 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
   @override
   Widget build(BuildContext context) {
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
-    final form = ref.watch(maternalDataFormProvider);
+    final form = ref.read(maternalDataFormProvider);
 
     return Scaffold(
       body: patientAsync.when(
