@@ -22,5 +22,5 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
     );
-  } 
+  }
 }

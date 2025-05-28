@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/patient.dart';
@@ -28,7 +27,7 @@ class _SuccessDialog extends StatelessWidget {
 
 class _ErrorDialog extends StatelessWidget {
   final String message;
-  
+
   const _ErrorDialog({required this.message});
 
   @override
@@ -49,7 +48,7 @@ class _ErrorDialog extends StatelessWidget {
 
 class _DuplicateDniDialog extends StatelessWidget {
   final int dni;
-  
+
   const _DuplicateDniDialog({required this.dni});
 
   @override
@@ -111,18 +110,18 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
   bool _isDniAlreadyExists(int dniToCheck) {
     final maybePatients = ref.read(patientsStreamProvider).value;
     final patients = maybePatients ?? [];
-    
+
     return patients.any((patient) => patient.dni == dniToCheck);
   }
 
   /// Capitaliza la primera letra de cada palabra
   String _capitalizeWords(String text) {
     if (text.isEmpty) return text;
-    
+
     return text
         .split(' ')
-        .map((word) => word.isEmpty 
-            ? word 
+        .map((word) => word.isEmpty
+            ? word
             : word[0].toUpperCase() + word.substring(1).toLowerCase())
         .join(' ');
   }
@@ -134,7 +133,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     final dniInt = int.tryParse(dni);
     if (dniInt == null) {
       showDialog(
-        context: context, 
+        context: context,
         builder: (_) => const _ErrorDialog(
           message: "El DNI debe ser un número válido."
         )
@@ -144,7 +143,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
 
     if (_isDniAlreadyExists(dniInt)) {
       showDialog(
-        context: context, 
+        context: context,
         builder: (_) => _DuplicateDniDialog(dni: dniInt)
       );
       return;
@@ -175,7 +174,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     } catch (e) {
       if (mounted) {
         showDialog(
-          context: context, 
+          context: context,
           builder: (_) => const _ErrorDialog(
             message: "Se produjo un problema al intentar registrar el alta del paciente.\n"
                     "Por favor, verifica la conexión o los datos ingresados.\n"
@@ -193,16 +192,16 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     if (value == null || value.isEmpty) {
       return 'Ingrese el DNI';
     }
-    
+
     final dniInt = int.tryParse(value);
     if (dniInt == null) {
       return 'El DNI debe ser un número válido';
     }
-    
+
     if (value.length < 7 || value.length > 8) {
       return 'El DNI debe tener entre 7 y 8 dígitos';
     }
-    
+
     return null;
   }
 
@@ -210,7 +209,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
   Widget build(BuildContext context) {
     // Escuchamos el stream de pacientes para tener los datos actualizados
     final patientsAsync = ref.watch(patientsStreamProvider);
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: const CustomAppBar(),

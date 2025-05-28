@@ -10,6 +10,19 @@ import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/router/app_router.dart';
+
+const Map<String, List<String>> _labelToKeys = {
+  'Enfermería': [
+    'enfermeria',
+    'enfermeria_fei',
+    'enfermeria_test_saturacion',
+  ],
+  'Neonatología': [
+    'neonatologia',
+    'neonatologia_adicional',
+  ]
+};
 
 class EvolutionFormScreen extends ConsumerStatefulWidget {
   final String patientId;
@@ -20,7 +33,10 @@ class EvolutionFormScreen extends ConsumerStatefulWidget {
 }
 
 class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
-  late String selectedSpec = evolutionFormConfig.keys.first;
+  List<String> _allowedSpecs = [];
+  String selectedSpec = '';
+  String? _prevSpecialty;
+
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
   int _page = 0;
@@ -28,7 +44,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   @override
   void initState() {
     super.initState();
-    _resetFormForSpec(selectedSpec);
   }
 
   @override
@@ -57,7 +72,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         _formData[f.key] = '';
         _controllers[f.key] = TextEditingController();
         break;
-      }
+    }
   }
 
   void _resetFormForSpec(String spec) {
@@ -67,7 +82,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     _controllers.clear();
     _formData.clear();
 
-    final List<FieldConfig> fields = spec == 'neonatologia'
+    final fields = spec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[spec]!;
     for (final f in fields) {
@@ -76,10 +91,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   }
 
   Future<void> _save() async {
-    final List<FieldConfig> fields = selectedSpec == 'neonatologia'
+    final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec]!;
-    final Map<String, dynamic> details = {};
+    final details = <String, dynamic>{};
     for (final f in fields) {
       final v = _formData[f.key];
       details[f.key] = (f.type == FieldType.datetime && v is DateTime)
@@ -106,14 +121,35 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         error: (_, __) => const Center(child: Text('Error al cargar paciente')),
         data: (p) {
           if (p == null) return const Center(child: Text('Paciente no encontrado'));
-          return _buildForm(context, p);
+
+          // Reacciona al cambio de specialty del usuario
+          return AnimatedBuilder(
+            animation: authChangeNotifier,
+            builder: (context, _) {
+              final userSpec = authChangeNotifier.specialty ?? '';
+              if (userSpec != _prevSpecialty) {
+                _prevSpecialty = userSpec;
+
+                _allowedSpecs = _labelToKeys[userSpec] ?? [
+                  evolutionFormConfig.keys.firstWhere(
+                      (k) => _specLabel(k) == userSpec,
+                      orElse: () => evolutionFormConfig.keys.first)
+                ];
+
+                selectedSpec = _allowedSpecs.first;
+
+                _resetFormForSpec(selectedSpec);
+              }
+
+              return _buildForm(context, p, green);
+            },
+          );
         },
       ),
     );
   }
 
-  Widget _buildForm(BuildContext context, Patient p) {
-    const green = Color(0xFF4F959D);
+  Widget _buildForm(BuildContext context, Patient p, Color green) {
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
     final isNeonato = selectedSpec == 'neonatologia';
@@ -122,12 +158,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Título
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
             child: Center(
               child: Text('Evolución', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: black)),
             ),
           ),
+          // Tarjeta paciente
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -142,6 +180,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          // Formulario
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -171,6 +210,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               ),
             ),
           ),
+          // Botones
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
@@ -218,6 +258,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
   Widget _buildSpecSelector(Color green, Color cream) {
     return PopupMenuButton<String>(
+      enabled: _allowedSpecs.length > 1,
       color: cream,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: green)),
       initialValue: selectedSpec,
@@ -228,7 +269,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           _page = 0;
         });
       },
-      itemBuilder: (_) => evolutionFormConfig.keys.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s)))).toList(),
+      itemBuilder: (_) => _allowedSpecs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s)))).toList(),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
