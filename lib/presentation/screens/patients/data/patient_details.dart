@@ -57,13 +57,27 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Detalle de paciente',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                  // Título con flecha de atrás
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => context.pop(),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Detalle de paciente',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      // SizedBox para balancear el espacio que ocupa el IconButton
+                      const SizedBox(width: 48),
+                    ],
                   ),
                   const SizedBox(height: 32),
                   Container(

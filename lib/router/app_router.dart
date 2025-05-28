@@ -1,14 +1,15 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sikum/presentation/screens/users/create_users.dart';
+import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
+import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
+import 'package:sikum/presentation/screens/users/login.dart';
+import 'package:sikum/presentation/screens/users/forgot_password.dart';
+import 'package:sikum/presentation/screens/users/change_password.dart';
 import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/screens/patients/data/patients.dart';
-import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
 import 'package:sikum/presentation/screens/patients/maternal/maternal_form.dart';
-import 'package:sikum/presentation/screens/users/change_password.dart';
-import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/users/edit_user.dart';
-import 'package:sikum/presentation/screens/users/forgot_password.dart';
-import 'package:sikum/presentation/screens/users/login.dart';
 import 'package:sikum/presentation/screens/users/user_details.dart';
 import 'package:sikum/presentation/screens/users/users.dart';
 import 'package:sikum/services/auth_notifier.dart';
@@ -31,12 +32,13 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(path: '/usuarios/crear',  builder: (_, __) => const CreateUsers()),
-    GoRoute(path: '/usuario/editar',
-    builder: (context, state) {
-      final userId = state.extra as String;
-      return EditUser(userId: userId);
-    },
-  ),
+    GoRoute(
+      path: '/usuario/editar',
+      builder: (context, state) {
+        final userId = state.extra as String;
+        return EditUser(userId: userId);
+      },
+    ),
     GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
@@ -59,6 +61,17 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['patientId']!;
         return MaternalForm(patientId: id);
+      },
+    ),
+      GoRoute(
+      path: '/pacientes/:patientId/evolutions/:evolutionId',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        final evolutionId = state.pathParameters['evolutionId']!;
+        return EvolutionDetailsScreen(
+          patientId: patientId,
+          evolutionId: evolutionId,
+        );
       },
     ),
   ],
@@ -103,7 +116,7 @@ final GoRouter appRouter = GoRouter(
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
-        || loc.startsWith('/pacientes') && loc.contains('/maternos');
+        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions'));
 
       if (!isAdmin && !okUser) {
         return '/pacientes';

@@ -16,7 +16,29 @@ final evolutionsStreamProvider =
           snap.docs.map((d) => Evolution.fromFirestore(d)).toList());
 });
 
-/// 2) Actions para agregar una evolución
+/// 2) Provider para obtener el detalle de una evolución específica
+final evolutionDetailsProvider =
+    StreamProvider.family<Map<String, dynamic>?, String>((ref, evolutionId) {
+  final doc = FirebaseFirestore.instance
+      .collection('evolutions')
+      .doc(evolutionId);
+  
+  return doc.snapshots().map((snap) {
+    if (!snap.exists) return null;
+    final data = snap.data()!;
+    return {
+      'id': snap.id,
+      'specialty': data['specialty'],
+      'details': data['details'],
+      'createdAt': data['createdAt'],
+      'patientId': data['patientId'],
+      'available': data['available'],
+      'createdByUserId': data['createdByUserId'],
+    };
+  });
+});
+
+/// 3) Actions para agregar y actualizar evoluciones
 class EvolutionActions {
   final String patientId;
   EvolutionActions(this.patientId);
@@ -39,9 +61,25 @@ class EvolutionActions {
       'createdByUserId': createdBy,
     });
   }
+
+  /// Actualiza una evolución existente
+  Future<void> updateEvolution(String evolutionId, Map<String, dynamic> newDetails) async {
+    await _col.doc(evolutionId).update({
+      'details': newDetails,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Marca una evolución como no disponible (soft delete)
+  Future<void> deleteEvolution(String evolutionId) async {
+    await _col.doc(evolutionId).update({
+      'available': false,
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }
 
-/// 3) Proveedor de acciones parametrizado por patientId
+/// 4) Proveedor de acciones parametrizado por patientId
 final evolutionActionsProvider =
     Provider.family<EvolutionActions, String>((ref, patientId) {
   return EvolutionActions(patientId);
