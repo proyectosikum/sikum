@@ -8,6 +8,7 @@ class AuthChangeNotifier extends ChangeNotifier {
 
   String? firstName;
   String? lastName;
+  String? specialty;
 
   String get displayName {
     final fn = firstName?.trim() ?? '';
@@ -23,6 +24,7 @@ class AuthChangeNotifier extends ChangeNotifier {
         needsChange = false;
         firstName = null;
         lastName = null;
+        specialty = null;
         notifyListeners();
       } else {
         final q = await FirebaseFirestore.instance
@@ -34,14 +36,16 @@ class AuthChangeNotifier extends ChangeNotifier {
         if (q.docs.isNotEmpty) {
           final data = q.docs.first.data();
           role = data['role'] as String? ?? 'user';
-          needsChange = data['needsPasswordChange'] as bool?   ?? false;
+          needsChange = data['needsPasswordChange'] as bool? ?? false;
           firstName = data['firstName'] as String? ?? '';
           lastName = data['lastName'] as String? ?? '';
+          specialty = data['specialty'] as String? ?? '';
         } else {
           role = 'user';
           needsChange = false;
           firstName = '';
           lastName = '';
+          specialty = '';
         }
         notifyListeners();
       }

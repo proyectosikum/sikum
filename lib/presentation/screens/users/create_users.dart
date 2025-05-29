@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
@@ -24,7 +23,6 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _provRegController = TextEditingController();
-  final _adminPasswordController = TextEditingController();
 
   String? _selectedSpecialty;
   bool _isLoading = false;
@@ -37,15 +35,13 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
     _emailController.dispose();
     _phoneController.dispose();
     _provRegController.dispose();
-    _adminPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _createUser() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final adminEmail = fb_auth.FirebaseAuth.instance.currentUser?.email;
-    if (_selectedSpecialty == null || adminEmail == null) {
+    if (_selectedSpecialty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Completa todos los campos obligatorios')),
       );
@@ -62,9 +58,7 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
         phone: _phoneController.text.trim(),
         provReg: _provRegController.text.trim(),
         specialty: _selectedSpecialty!,
-        role: 'user',
-        adminEmail: adminEmail,
-        adminPassword: _adminPasswordController.text.trim(),
+        role: 'user'
       );
       if (!mounted) return;
       context.go('/usuarios');
@@ -154,17 +148,12 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
                   DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
                   DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
                   DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
+                  DropdownMenuItem(value: 'Puericultura', child: Text('Puericultura')),
+                  DropdownMenuItem(value: 'Servicio Social', child: Text('Servicio Social')),
+                  DropdownMenuItem(value: 'Vacunatorio', child: Text('Vacunatorio')),
                 ],
                 onChanged: (v) => setState(() => _selectedSpecialty = v),
                 validator: (v) => v == null ? 'Selecciona una especialidad' : null,
-              ),
-              const SizedBox(height: 12),
-
-              TextFormField(
-                controller: _adminPasswordController,
-                decoration: const InputDecoration(labelText: 'Ingrese su contraseña para confirmar:'),
-                obscureText: true,
-                validator: (v) => v == null || v.isEmpty ? 'Requiere contraseña' : null,
               ),
               const SizedBox(height: 30),
 

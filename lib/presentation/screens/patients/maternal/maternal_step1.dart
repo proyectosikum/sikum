@@ -23,7 +23,7 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
   @override
   Widget build(BuildContext context) {
     final form = ref.watch(maternalDataFormProvider);
-    final formNotifier = ref.read(maternalDataFormProvider.notifier);
+    final formNotifier = ref.read(maternalDataFormProvider);
     final idTypeOptions = ['DNI', 'Pasaporte', 'LC', 'LE'];
     final isDataSaved = form.isDataSaved;
 

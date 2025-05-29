@@ -87,7 +87,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       appBar: AppBar(
         backgroundColor: green,
         elevation: 0,
-        leading: const BackButton(color: cream),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: cream),
+          onPressed: () async {
+            await AuthService.instance.logout();
+            context.go('/login');
+          },
+        ),
       ),
       body: SafeArea(
         child: Center(
@@ -166,7 +172,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             child: SizedBox(
                               height: 45,
                               child: OutlinedButton(
-                                onPressed: _loading ? null : () => context.pop(),
+                                onPressed: _loading
+                                    ? null
+                                    : () async {
+                                        await AuthService.instance.logout();
+                                        context.go('/login');
+                                      },
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: green,
                                   side: const BorderSide(color: cream),
