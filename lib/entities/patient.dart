@@ -60,4 +60,11 @@ class Patient {
       if (modifiedAt != null) 'modifiedAt': modifiedAt,
     };
   }
+
+  Map<String, dynamic> toMap() {
+  final map = toFirestore();
+  map['maternalData'] = maternalData;
+  return map;
+}
+
 }

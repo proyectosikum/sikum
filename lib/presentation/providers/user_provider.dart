@@ -200,6 +200,15 @@ class UserActions {
       throw Exception('Error al actualizar usuario: $e');
     }
   }
+
+  Future<List<User>> getAllUsers() async {
+  try {
+    final querySnapshot = await _firestore.collection('users').get();
+    return querySnapshot.docs.map((doc) => User.fromDoc(doc)).toList();
+  } catch (e) {
+    throw Exception('Error al obtener usuarios: $e');
+    }
+  }
 }
 
 final userActionsProvider = Provider<UserActions>((ref) {
