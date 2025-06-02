@@ -1,4 +1,3 @@
-// lib/presentation/providers/user_provider.dart
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -198,6 +197,15 @@ class UserActions {
       });
     } catch (e) {
       throw Exception('Error al actualizar usuario: $e');
+    }
+  }
+
+  Future<List<User>> getAllUsers() async {
+  try {
+    final querySnapshot = await _firestore.collection('users').get();
+    return querySnapshot.docs.map((doc) => User.fromDoc(doc)).toList();
+  } catch (e) {
+    throw Exception('Error al obtener usuarios: $e');
     }
   }
 }

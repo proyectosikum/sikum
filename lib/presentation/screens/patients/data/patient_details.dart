@@ -45,6 +45,7 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
     );
   }
 
+
   Widget _buildContent(BuildContext context, Patient p) {
     const green = Color(0xFF4F959D);
     const cream = Color(0xFFFFF8E1);
@@ -116,16 +117,32 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                   ),
                   const SizedBox(height: 24),
                   Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLink(context, 'Datos maternos', '/pacientes/${p.id}/maternos', green),
-                        const SizedBox(height: 8),
-                        _buildLink(context, 'Datos de nacimiento', '/pacientes/${p.id}/nacimiento', green),
-                      ],
-                    ),
-                  ),
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLink(context, 'Datos maternos', '/pacientes/${p.id}/maternos', green),
+                                  const SizedBox(height: 8),
+                                  _buildLink(context, 'Datos de nacimiento', '/pacientes/${p.id}/nacimiento', green),
+                                ],
+                              ),
+                          ),
+      TextButton.icon(
+        onPressed: () => context.push('/pacientes/editar/${p.id}', extra: p.toMap()),
+        style: TextButton.styleFrom(
+          foregroundColor: green,
+        ),
+        icon: const Icon(Icons.edit, size: 18),
+        label: const Text('Editar perfil'),
+      ),
+    ],
+  ),
+),
                   const SizedBox(height: 32),
 
                   // Título + PopupMenuButton de especialidades
