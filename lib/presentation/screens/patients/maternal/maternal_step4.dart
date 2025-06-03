@@ -8,16 +8,13 @@ import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/providers/maternal_data_provider.dart';
 import 'package:sikum/presentation/widgets/custom_dropdown_field.dart';
 import 'package:sikum/presentation/widgets/custom_text_field.dart';
+import 'package:go_router/go_router.dart';
 
 class MaternalStep4 extends ConsumerStatefulWidget {
   final VoidCallback onBack;
   final Patient patient;
 
-  const MaternalStep4({
-    super.key,
-    required this.onBack,
-    required this.patient,
-  });
+  const MaternalStep4({super.key, required this.onBack, required this.patient});
 
   static const List<String> bloodTypeOptions = [
     'A+',
@@ -38,8 +35,8 @@ class MaternalStep4 extends ConsumerStatefulWidget {
 class _MaternalStep4State extends ConsumerState<MaternalStep4> {
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(maternalDataFormProvider);
-    final formNotifier = ref.read(maternalDataFormProvider.notifier);
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id)); // solo agregué el (widget.patient.id)
+    final formNotifier = ref.read(maternalDataFormProvider(widget.patient.id).notifier); // solo agregué el (widget.patient.id)
 
     final isDataSaved = form.isDataSaved;
 
@@ -105,10 +102,7 @@ class _MaternalStep4State extends ConsumerState<MaternalStep4> {
                 // Campo libre: Serologías maternas
                 const Text(
                   'Serologías maternas',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -167,57 +161,80 @@ class _MaternalStep4State extends ConsumerState<MaternalStep4> {
                     const SizedBox(width: 16),
 
                     // Enviar
+
                     Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green,
-                          foregroundColor: AppColors.cream,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        onPressed: () async {
-                          // Guardamos el contexto antes de la operación asincrónica
-                          final scaffoldMessenger = ScaffoldMessenger.of(context);
-                          
-                          // Validar que los campos de Step 4 estén correctos
-                          final valid = formNotifier.validateStep4();
-
-                          if (valid) {
-                            try {
-                              // Submit para grabar en Firebase (en provider)
-                              final patientId = widget.patient.id;  // Acceder correctamente al paciente
-                              await formNotifier.submitMaternalData(patientId);
-
-                              // Mostrar el SnackBar solo si el widget está montado
-                              if (mounted) {
-                                scaffoldMessenger.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('¡Datos maternos guardados exitosamente!'),
+                      child:
+                          form.isDataSaved
+                              ? ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:AppColors.green, 
+                                  foregroundColor: AppColors.cream,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
                                   ),
-                                );
-                              }
-                            } catch (e) {
-                              // Si hubo un error, mostramos un mensaje
-                              if (mounted) {
-                                scaffoldMessenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al guardar: $e'),
-                                  ),
-                                );
-                              }
-                            }
-                          } else {
-                            // Si la validación falla, mostrar un mensaje de error
-                            if (mounted) {
-                              scaffoldMessenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Por favor, complete los campos obligatorios.'),
                                 ),
-                              );
-                            }
-                          }
-                        },
-                        child: const Text('Guardar'),
-                      ),
+                                onPressed: formNotifier.enableEditing,
+                                child: const Text('Editar'),
+                              )
+                              : ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.green,
+                                  foregroundColor: AppColors.cream,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  final messenger = ScaffoldMessenger.of(
+                                    context,
+                                  );
+                                  final goRouter = GoRouter.of(context);
+
+                                  final valid = formNotifier.validateStep4();
+
+                                  if (valid) {
+                                    try {
+                                      final patientId = widget.patient.id;
+                                      await formNotifier.submitMaternalData(
+                                        patientId,
+                                      );
+
+                                      messenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            '¡Datos maternos guardados exitosamente!',
+                                          ),
+                                        ),
+                                      );
+
+                                      await Future.delayed(
+                                        const Duration(seconds: 1),
+                                      );
+
+                                      if (mounted) {
+                                        goRouter.go(
+                                          '/pacientes',
+                                        );
+                                      }
+                                    } catch (e) {
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error al guardar: $e'),
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    messenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Por favor, complete los campos obligatorios.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text('Guardar'),
+                              ),
                     ),
                   ],
                 ),
