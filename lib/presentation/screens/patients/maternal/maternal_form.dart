@@ -31,7 +31,7 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
   @override
   Widget build(BuildContext context) {
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
-    final form = ref.watch(maternalDataFormProvider);
+    final form = ref.read(maternalDataFormProvider(widget.patientId));//-> solo agregué el (widget.patientId)
 
     return Scaffold(
       body: patientAsync.when(
@@ -41,11 +41,17 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
         error: (e, st) => Center(child: Text('Error: $e')),
         data: (patient) {
           Future.microtask(() {
+
+            final notifier = ref.read(maternalDataFormProvider(widget.patientId).notifier);//-> solo agregué el (widget.patientId)
+            final form = ref.read(maternalDataFormProvider(widget.patientId));//->vane solo agregué el (widget.patientId)
+            // Si ya estamos editando, no sobreescribas el estado actual ->vane
+            if (form.isLoadedForCurrentPatient) return;
+
             final maternalData = patient?.maternalData;
-            final notifier = ref.read(maternalDataFormProvider.notifier);
+            
             if (maternalData != null) {
-              notifier.loadMaternalData(maternalData);
-              notifier.markDataAsSaved();
+              notifier.loadMaternalData(maternalData, widget.patientId);
+              //notifier.markDataAsSaved(); ->vane
             } else {
               notifier.reset();
             }

@@ -22,8 +22,9 @@ class MaternalStep1 extends ConsumerStatefulWidget {
 class MaternalStep1State extends ConsumerState<MaternalStep1> {
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(maternalDataFormProvider);
-    final formNotifier = ref.read(maternalDataFormProvider.notifier);
+    //final patientId = widget.patient.patientId;
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id)); //-> solo agregué el (widget.patient.id)
+    final formNotifier = ref.read(maternalDataFormProvider(widget.patient.id)); //-> solo agrugué el (widget.patient.id)
     final idTypeOptions = ['DNI', 'Pasaporte', 'LC', 'LE'];
     final isDataSaved = form.isDataSaved;
 
@@ -110,7 +111,7 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                   errorText: form.errors['idType'],
                   onChanged: (val) {
                     // Solo actualiza si no está guardado
-                    if (val != null && !isDataSaved) {  
+                    if (val != null && !isDataSaved) {
                       formNotifier.updateIdType(val);
                     }
                   },
@@ -179,36 +180,54 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                 ),
                 const SizedBox(height: 24),
 
-                /// Botones: Cancelar y Siguiente
+                /// Botones: Cancelar o editar y siguiente
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        // Usamos OutlinedButton en lugar de ElevatedButton
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.green),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        onPressed: () {
-                          _handleExit(); 
-                        },
-                        child: Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            color: AppColors.green, 
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
+                      child:
+                          isDataSaved
+                              ? ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.green,
+                                  foregroundColor: AppColors.cream,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  final notifier = ref.read(
+                                    maternalDataFormProvider(widget.patient.id).notifier,
+                                  );//-> solo agregué el (widget.patient.id)
+                                  notifier.enableEditing();
+                                },
+                                child: const Text('Editar'),
+                              )
+                              : OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.green),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _handleExit();
+                                },
+                                child: Text(
+                                  'Cancelar',
+                                  style: TextStyle(
+                                    color: AppColors.green,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
                     ),
-                    const SizedBox(width: 16), // Espaciado entre botones
+                    const SizedBox(width: 16),
 
-                    // Botón Siguiente
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green, 
-                          foregroundColor: AppColors.cream, 
+                          backgroundColor: AppColors.green,
+                          foregroundColor: AppColors.cream,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         onPressed: () {
@@ -245,16 +264,28 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
       builder:
           (context) => AlertDialog(
             backgroundColor: AppColors.green,
-            title: const Text('¿Salir sin guardar?', style: TextStyle(color: AppColors.cream)),
-            content: const Text('Se perderán los datos ingresados.', style: TextStyle(color: AppColors.cream)),
+            title: const Text(
+              '¿Salir sin guardar?',
+              style: TextStyle(color: AppColors.cream),
+            ),
+            content: const Text(
+              'Se perderán los datos ingresados.',
+              style: TextStyle(color: AppColors.cream),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancelar', style: TextStyle(color: AppColors.cream),),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: AppColors.cream),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Salir', style: TextStyle(color: AppColors.cream),),
+                child: const Text(
+                  'Salir',
+                  style: TextStyle(color: AppColors.cream),
+                ),
               ),
             ],
           ),
@@ -262,9 +293,10 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
 
     if (!mounted) return; // Verifica nuevamente si el widget sigue montado después de la espera
     if (shouldPop == true) {
-      //puedes reseteao de los datos
-      final formNotifier = ref.read(maternalDataFormProvider.notifier);
-      formNotifier.reset(); 
+
+      final formNotifier = ref.read(maternalDataFormProvider(widget.patient.id).notifier); //-> solo agregué el (widget.patient.id)
+      formNotifier.discardChangesAndRestore(widget.patient.id); //nueva función descartar cambios o restore campos
+
 
       Navigator.of(context).pop(); // Cierre de pantalla
     }

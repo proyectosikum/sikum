@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sikum/presentation/screens/patients/data/edit_patient.dart';
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
@@ -42,6 +43,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
     GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
     GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
+    GoRoute(
+      path: '/pacientes/editar/:patientId',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        final patientData = state.extra as Map<String, dynamic>;
+        return EditPatient(
+          patientId: patientId,
+          patientData: patientData,
+        );
+      },
+    ),
     GoRoute(
       path: '/paciente/detalle/:patientId',
       builder: (context, state) {
@@ -116,7 +128,7 @@ final GoRouter appRouter = GoRouter(
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
-        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions'));
+        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions') || loc.contains('/editar'));
 
       if (!isAdmin && !okUser) {
         return '/pacientes';

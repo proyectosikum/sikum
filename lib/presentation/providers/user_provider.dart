@@ -1,8 +1,8 @@
-// lib/presentation/providers/user_provider.dart
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/user.dart';
 
@@ -22,14 +22,14 @@ final userDetailsStreamProvider =
 
   if (userId != null && userId.isNotEmpty) {
     print('DEBUG: Buscando usuario por ID: $userId');
-    
+
     // Escucha directamente /users/{userId}
     return col.doc(userId).snapshots().map((snap) {
       print('DEBUG: Snapshot exists: ${snap.exists}');
       if (snap.exists) {
         print('DEBUG: Datos del documento: ${snap.data()}');
       }
-      
+
       return snap.exists ? User.fromDoc(snap) : null;
     }).handleError((error) {
       print('ERROR en userDetailsStreamProvider: $error');
@@ -37,7 +37,7 @@ final userDetailsStreamProvider =
     });
   } else {
     print('DEBUG: userId es null o vacío, buscando por email del auth');
-    
+
     // Busca por email del auth.currentUser
     final auth = fb_auth.FirebaseAuth.instance;
     return auth.authStateChanges().asyncExpand((fbUser) {
@@ -45,9 +45,9 @@ final userDetailsStreamProvider =
         print('DEBUG: No hay usuario autenticado');
         return Stream.value(null);
       }
-      
+
       print('DEBUG: Buscando usuario por email: ${fbUser.email}');
-      
+
       return col
           .where('email', isEqualTo: fbUser.email)
           .limit(1)
@@ -67,9 +67,9 @@ final userDetailsStreamProvider =
 /// 3) Provider alternativo para casos específicos donde sabemos que el userId no es null
 final userByIdStreamProvider = StreamProvider.family<User?, String>((ref, userId) {
   final col = FirebaseFirestore.instance.collection('users');
-  
+
   print('DEBUG userByIdStreamProvider: userId = "$userId"');
-  
+
   return col.doc(userId).snapshots().map((snap) {
     print('DEBUG userByIdStreamProvider: Snapshot exists: ${snap.exists}');
     if (snap.exists) {
@@ -88,7 +88,6 @@ final userByIdStreamProvider = StreamProvider.family<User?, String>((ref, userId
 /// 4) Acciones sobre usuarios
 class UserActions {
   final _col = FirebaseFirestore.instance.collection('users');
-  final _auth = fb_auth.FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
   Future<void> toggleAvailability(String id, bool newValue) {
@@ -106,17 +105,6 @@ class UserActions {
     }
   }
 
-  // Método para obtener usuario de forma async (alternativa)
-  /*Future<User?> getUserById(String userId) async {
-    try {
-      final doc = await _col.doc(userId).get();
-      return doc.exists ? User.fromDoc(doc) : null;
-    } catch (e) {
-      print('Error obteniendo usuario: $e');
-      return null;
-    }
-  }*/
-
   Future<User> getUserById(String id) async {
     final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
     final data = doc.data();
@@ -124,6 +112,13 @@ class UserActions {
       throw Exception('Usuario no encontrado');
   }
   return User.fromMap(data, doc.id);
+  }
+
+  Future<FirebaseApp> _initSecondaryApp() {
+    return Firebase.initializeApp(
+      name: 'Secondary',
+      options: Firebase.app().options,
+    );
   }
 
   Future<void> createUser({
@@ -134,9 +129,7 @@ class UserActions {
     required String phone,
     required String provReg,
     required String specialty,
-    required String role,
-    required String adminEmail,
-    required String adminPassword,
+    required String role
   }) async {
     try {
       // 1) Evita duplicados por DNI
@@ -145,14 +138,19 @@ class UserActions {
         throw Exception('Ya existe un usuario con ese DNI.');
       }
 
-      // 2) Crea el nuevo usuario
-      final fbUser = await _auth.createUserWithEmailAndPassword(
-        email: email,
+      // 2) Inicializa la app secundaria
+      final secondaryApp = await _initSecondaryApp();
+      // 3) Crea un auth ligado a esa app
+      final secondaryAuth = fb_auth.FirebaseAuth.instanceFor(app: secondaryApp);
+
+      // 4) Crea el usuario “en background”
+      final fbUser = await secondaryAuth.createUserWithEmailAndPassword(
+        email:    email,
         password: dni,
       );
       final uid = fbUser.user!.uid;
 
-      // 3) Guarda el perfil en Firestore
+      // 5) Guarda el perfil en Firestore
       final newUser = {
         'firstName': firstName,
         'lastName': lastName,
@@ -169,14 +167,8 @@ class UserActions {
       };
       await _col.doc(uid).set(newUser);
 
-      // 4) Cierra sesión del usuario nuevo
-      await _auth.signOut();
-
-      // 5) Loguea nuevamente como admin
-      await _auth.signInWithEmailAndPassword(
-        email:    adminEmail,
-        password: adminPassword,
-      );
+      await secondaryAuth.signOut();
+      await secondaryApp.delete();
     } catch (e) {
       print("Error al crear usuario: $e");
       rethrow;
@@ -208,7 +200,14 @@ class UserActions {
     }
   }
 
-  
+  Future<List<User>> getAllUsers() async {
+  try {
+    final querySnapshot = await _firestore.collection('users').get();
+    return querySnapshot.docs.map((doc) => User.fromDoc(doc)).toList();
+  } catch (e) {
+    throw Exception('Error al obtener usuarios: $e');
+    }
+  }
 }
 
 final userActionsProvider = Provider<UserActions>((ref) {

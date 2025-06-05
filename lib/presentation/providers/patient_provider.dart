@@ -83,6 +83,31 @@ class PatientActions {
       rethrow;
     }
   }
+
+  Future<void> updatePatient({
+  required String patientId,
+  required String nombre,
+  required String apellido,
+  required String dni,
+  required String telefono,
+  required String email,
+}) async {
+  try {
+    final docRef = _col.doc(patientId);
+    await docRef.update({
+      'firstName': nombre,
+      'lastName': apellido,
+      'dni': dni,
+      'medicalRecordNumber': telefono,
+      'email': email,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    debugPrint('Error al actualizar paciente: $e');
+    rethrow;
+  }
+}
+
 }
 
 final patientActionsProvider = Provider<PatientActions>((ref) {

@@ -66,34 +66,55 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
     }
   }
 
-  Future<void> _updateUser() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-    try {
-      await ref.read(userActionsProvider).updateUser(
-        id: widget.userId,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        dni: _dniController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        provReg: _provRegController.text.trim(),
-        specialty: _selectedSpecialty!,
-      );
-
-      if (!mounted) return;
-      context.go('/usuarios');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al actualizar el usuario: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  Future<bool> _isDniOrEmailDuplicated(String dni, String email) async {
+  final allUsers = await ref.read(userActionsProvider).getAllUsers();
+  return allUsers.any((user) =>
+    user.id != widget.userId &&
+    (user.dni == dni || user.email.toLowerCase() == email.toLowerCase()));
   }
+
+
+  Future<void> _updateUser() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  final dni = _dniController.text.trim();
+  final email = _emailController.text.trim();
+
+  final duplicated = await _isDniOrEmailDuplicated(dni, email);
+  if (duplicated) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('El DNI o el email ya están en uso por otro usuario.')),
+    );
+    return;
+  }
+
+  setState(() => _isLoading = true);
+  try {
+    await ref.read(userActionsProvider).updateUser(
+      id: widget.userId,
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      dni: dni,
+      email: email,
+      phone: _phoneController.text.trim(),
+      provReg: _provRegController.text.trim(),
+      specialty: _selectedSpecialty!,
+    );
+
+    if (!mounted) return;
+    context.go('/usuarios');
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar el usuario: $e')),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +191,9 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
                   DropdownMenuItem(value: 'Enfermería', child: Text('Enfermería')),
                   DropdownMenuItem(value: 'Fonoaudiología', child: Text('Fonoaudiología')),
                   DropdownMenuItem(value: 'Interconsultor', child: Text('Interconsultor')),
+                  DropdownMenuItem(value: 'Interconsultor', child: Text('Puericultura')),
+                  DropdownMenuItem(value: 'Interconsultor', child: Text('Servicio Social')),
+                  DropdownMenuItem(value: 'Vacunatorio', child: Text('Vacunatorio'))
                 ],
                 onChanged: (value) {
                   setState(() {

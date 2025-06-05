@@ -43,8 +43,8 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
 
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(maternalDataFormProvider);
-    final formNotifier = ref.read(maternalDataFormProvider.notifier);
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id)); // solo agregué el (widget.patient.id)
+    final formNotifier = ref.read(maternalDataFormProvider(widget.patient.id).notifier); // solo agregué el (widget.patient.id)
     final isDataSaved = form.isDataSaved;
 
     return Scaffold(
