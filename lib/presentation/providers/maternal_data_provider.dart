@@ -60,6 +60,9 @@ class MaternalDataFormNotifier extends ChangeNotifier {
   MaternalData? _originalData;
   String? _loadedPatientId;
 
+  //solución para cargar data guardada de cada paciente
+  bool get isLoadedForCurrentPatient => _loadedPatientId != null;
+
   // Mapa de errores para cada campo
   final Map<String, String?> errors = {};
 
