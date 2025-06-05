@@ -45,7 +45,7 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
             final notifier = ref.read(maternalDataFormProvider(widget.patientId).notifier);//-> solo agregué el (widget.patientId)
             final form = ref.read(maternalDataFormProvider(widget.patientId));//->vane solo agregué el (widget.patientId)
             // Si ya estamos editando, no sobreescribas el estado actual ->vane
-            if (!form.isDataSaved) return;
+            if (form.isLoadedForCurrentPatient) return;
 
             final maternalData = patient?.maternalData;
             
