@@ -17,21 +17,19 @@ class CustomCheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: [
-          Checkbox(
-            value: value,
-            onChanged: isDataSaved // Si los datos están guardados, no permite cambiar el valor
-                ? null // Si está guardado, no se puede interactuar
-                : (bool? newValue) {
-              onChanged(newValue ?? false);
-            },
-            activeColor: AppColors.green, 
-          ),
-          Text(label),
-        ],
-      ),
+    return Row(
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: isDataSaved
+              ? null // Si está guardado, no se puede interactuar
+              : (bool? newValue) {
+                  onChanged(newValue ?? false);
+                },
+          activeColor: AppColors.green,
+        ),
+        Text(label),
+      ],
     );
   }
 }
