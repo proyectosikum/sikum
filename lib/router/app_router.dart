@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sikum/presentation/screens/patients/data/edit_patient.dart';
+import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
@@ -47,10 +47,10 @@ final GoRouter appRouter = GoRouter(
       path: '/pacientes/editar/:patientId',
       builder: (context, state) {
         final patientId = state.pathParameters['patientId']!;
-        final patientData = state.extra as Map<String, dynamic>;
-        return EditPatient(
+        // Ya no necesitamos pasar patientData como extra
+        // El nuevo widget obtiene los datos directamente del provider
+        return EditPatientScreen(
           patientId: patientId,
-          patientData: patientData,
         );
       },
     ),

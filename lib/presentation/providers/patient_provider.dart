@@ -84,24 +84,12 @@ class PatientActions {
     }
   }
 
-  Future<void> updatePatient({
-  required String patientId,
-  required String nombre,
-  required String apellido,
-  required String dni,
-  required String telefono,
-  required String email,
-}) async {
+
+
+Future<void> updatePatient(Patient patient) async {
   try {
-    final docRef = _col.doc(patientId);
-    await docRef.update({
-      'firstName': nombre,
-      'lastName': apellido,
-      'dni': dni,
-      'medicalRecordNumber': telefono,
-      'email': email,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    final docRef = _col.doc(patient.id);
+    await docRef.update(patient.toFirestore());
   } catch (e) {
     debugPrint('Error al actualizar paciente: $e');
     rethrow;
