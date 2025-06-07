@@ -75,46 +75,63 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
 
 
   Future<void> _updateUser() async {
-  if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return;
 
-  final dni = _dniController.text.trim();
-  final email = _emailController.text.trim();
+    final dni = _dniController.text.trim();
+    final email = _emailController.text.trim();
 
-  final duplicated = await _isDniOrEmailDuplicated(dni, email);
-  if (duplicated) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('El DNI o el email ya están en uso por otro usuario.')),
-    );
-    return;
-  }
-
-  setState(() => _isLoading = true);
-  try {
-    await ref.read(userActionsProvider).updateUser(
-      id: widget.userId,
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      dni: dni,
-      email: email,
-      phone: _phoneController.text.trim(),
-      provReg: _provRegController.text.trim(),
-      specialty: _selectedSpecialty!,
-    );
-
-    if (!mounted) return;
-    context.go('/usuarios');
-  } catch (e) {
-    if (mounted) {
+    final duplicated = await _isDniOrEmailDuplicated(dni, email);
+    if (duplicated) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar el usuario: $e')),
+        const SnackBar(content: Text('El DNI o el email ya están en uso por otro usuario.')),
       );
+      return;
     }
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
-  }
-}
 
-  
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(userActionsProvider).updateUser(
+        id: widget.userId,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        dni: dni,
+        email: email,
+        phone: _phoneController.text.trim(),
+        provReg: _provRegController.text.trim(),
+        specialty: _selectedSpecialty!,
+      );
+
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFFFFF8E1),
+          title: const Text("Usuario actualizado con éxito ✅"),
+          content: const Text("Los datos del usuario se han actualizado correctamente."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.go('/usuarios');
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar el usuario: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
