@@ -134,12 +134,12 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: () => context.push('/pacientes/editar/${p.id}', extra: p.toMap()),
+                          onPressed: () => context.push('/pacientes/editar/${p.id}'),
                           style: TextButton.styleFrom(
                             foregroundColor: green,
                           ),
                           icon: const Icon(Icons.edit, size: 18),
-                          label: const Text('Editar perfil'),
+                          label: const Text('Editar paciente'),
                         ),
                       ],
                     ),
