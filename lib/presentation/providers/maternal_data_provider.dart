@@ -56,6 +56,13 @@ class MaternalDataFormNotifier extends ChangeNotifier {
   // para verificar si ya hay datos guardados
   bool isDataSaved = false;
 
+  //para guardar copia de maternal data
+  MaternalData? _originalData;
+  String? _loadedPatientId;
+
+  //solución para cargar data guardada de cada paciente
+  bool get isLoadedForCurrentPatient => _loadedPatientId != null;
+
   // Mapa de errores para cada campo
   final Map<String, String?> errors = {};
 
@@ -170,7 +177,14 @@ class MaternalDataFormNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-void loadMaternalData(Map<String, dynamic> data) {
+  void enableEditing() {
+    isDataSaved = false;
+    notifyListeners();
+  }
+
+
+
+void loadMaternalData(Map<String, dynamic> data, String patientId) {
   final maternalData = MaternalData.fromMap(data);
 
   firstName = maternalData.firstName;
@@ -193,7 +207,18 @@ void loadMaternalData(Map<String, dynamic> data) {
   bloodType = maternalData.bloodType;
   isDataSaved = true;
 
+  _originalData = maternalData;
+  _loadedPatientId = patientId;
+
   notifyListeners();
+}
+
+void discardChangesAndRestore(String patientId) {
+  if (_originalData != null && _loadedPatientId == patientId) {
+    loadMaternalData(_originalData!.toMap(), patientId);
+  } else {
+    reset();
+  }
 }
 
   // Validación para las pruebas de la primera mitad
@@ -343,6 +368,6 @@ void loadMaternalData(Map<String, dynamic> data) {
   
 }
 
-final maternalDataFormProvider = ChangeNotifierProvider<MaternalDataFormNotifier>((ref) {
+final maternalDataFormProvider = ChangeNotifierProvider.family<MaternalDataFormNotifier, String>((ref, patientId) {
   return MaternalDataFormNotifier();
 });
