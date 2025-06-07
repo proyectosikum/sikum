@@ -10,11 +10,15 @@ class BirthDataNotifier extends Notifier<BirthData>{
   @override
   BirthData build() {
     return BirthData(
-      birthType:BirthTypeEnum.Unknown.getValue(),
-      presentation:PresentationEnum.Unknown.getValue(),
-      ruptureOfMembrane:RuptureOfMembraneEnum.Unknown.getValue(),
-      amnioticFluid: AmnioticFluidEnum.Unknown.getValue(),
-      sex: SexEnum.Unknown.getValue(),
+      birthType:BirthTypeEnum.unknown.getValue(),
+      presentation:PresentationEnum.unknown.getValue(),
+      ruptureOfMembrane:RuptureOfMembraneEnum.unknown.getValue(),
+      amnioticFluid: AmnioticFluidEnum.unknown.getValue(),
+      sex: SexEnum.unknown.getValue(),
+      twin: TwinEnum.no.getValue(),
+      firstApgarScore: ApgarScoreEnum.one.getValue(),
+      secondApgarScore: ApgarScoreEnum.one.getValue(),
+      thirdApgarScore: ApgarScoreEnum.one.getValue(),
     );
   }
 
@@ -37,6 +41,25 @@ class BirthDataNotifier extends Notifier<BirthData>{
     void updateSex(String sex) {
     state = state.copyWith(sex:sex);
   }
+
+    void updateTwin(String twin) {
+    state = state.copyWith(twin:twin);
+  }
+
+    void updateFirstApgar(String apgarScore) {
+    state = state.copyWith(firstApgarScore:apgarScore);
+  }
+
+    void updateSecondApgar(String apgarScore) {
+    state = state.copyWith(secondApgarScore:apgarScore);
+  }
+
+      void updateThirdApgar(String apgarScore) {
+    state = state.copyWith(thirdApgarScore:apgarScore);
+  }
+
+  
+
 
 
 

@@ -3,10 +3,10 @@ abstract class EnumWithValue {
 }
 
 enum BirthTypeEnum implements EnumWithValue{ 
-  Vaginal("Vaginal") ,
-  Cesarean ("Cesarea"),
-  Forceps("Forcipal"), 
-  Unknown("Desconocido");
+  vaginal("Vaginal") ,
+  cesarean ("Cesarea"),
+  forceps("Forcipal"), 
+  unknown("Desconocido");
 
   final String value;
   const BirthTypeEnum(this.value);
@@ -18,9 +18,9 @@ enum BirthTypeEnum implements EnumWithValue{
   }
 
 enum PresentationEnum implements EnumWithValue{
-  Cephalic("Cefalica"),
-  Breech("Podalica"),
-  Unknown("Desconocido");
+  cephalic("Cefalica"),
+  breech("Podalica"),
+  unknown("Desconocido");
 
   final String value;
   const PresentationEnum(this.value);
@@ -33,9 +33,9 @@ enum PresentationEnum implements EnumWithValue{
 }
 
 enum RuptureOfMembraneEnum implements EnumWithValue{
-  Artificial("Artificial"),
-  Spontaneous("Espontanea"), 
-  Unknown("Desconocido");
+  atificial("Artificial"),
+  spontaneous("Espontanea"), 
+  unknown("Desconocido");
 
   final String value;
   const RuptureOfMembraneEnum(this.value);
@@ -48,10 +48,10 @@ enum RuptureOfMembraneEnum implements EnumWithValue{
 }
 
 enum AmnioticFluidEnum implements EnumWithValue{
-  Clear("Claro"),
-  MeconiumStained("Meconial"),
-  Hemorrhagic("Hemorragico"),
-  Unknown("Desconocido");
+  clear("Claro"),
+  meconiumStained("Meconial"),
+  hemorrhagic("Hemorragico"),
+  unknown("Desconocido");
 
   final String value;
   const AmnioticFluidEnum(this.value);
@@ -62,9 +62,9 @@ enum AmnioticFluidEnum implements EnumWithValue{
   }
 
   enum SexEnum implements EnumWithValue{
-  Female("Femenino"),
-  Male("Masculino"),
-  Unknown("En estudio");
+  female("Femenino"),
+  male("Masculino"),
+  unknown("En estudio");
 
   final String value;
 
@@ -73,6 +73,48 @@ enum AmnioticFluidEnum implements EnumWithValue{
   String getValue() {
     return value;
   }
+}
+
+enum TwinEnum implements EnumWithValue{
+
+no('No'),
+twin1('Gemelar °1'),
+twin2('Gemelar °2'),
+twin3('Gemelar °3');
+
+  final String value;
+
+  const TwinEnum(this.value);
+  @override
+  String getValue() {
+    return value;
+  }
+
+}
+
+enum ApgarScoreEnum implements EnumWithValue{
+
+one('1'),
+two('2'),
+three('3'),
+four('4'),
+five('5'),
+six('6'),
+seven('7'),
+eigth('8'),
+nine('9'),
+ten('10'),
+vigorous('VIGOROSO');
+
+
+  final String value;
+
+  const ApgarScoreEnum(this.value);
+  @override
+  String getValue() {
+    return value;
+  }
+
 }
 
 

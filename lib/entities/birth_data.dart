@@ -5,6 +5,10 @@ class BirthData{
   String ruptureOfMembrane;
   String amnioticFluid;
   String sex;
+  String? twin;
+  String? firstApgarScore;
+  String? secondApgarScore;
+  String? thirdApgarScore;
   
 
 BirthData({
@@ -13,7 +17,10 @@ BirthData({
   required this.ruptureOfMembrane,
   required this.amnioticFluid,
   required this.sex,
-  
+  this.twin,
+  this.firstApgarScore,
+  this.secondApgarScore,
+  this.thirdApgarScore
 });
 
   BirthData copyWith({
@@ -22,7 +29,10 @@ BirthData({
     String? ruptureOfMembrane,
     String? amnioticFluid,
     String? sex,
-    
+    String? twin,
+    String? firstApgarScore,
+    String? secondApgarScore,
+    String? thirdApgarScore,
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -30,7 +40,10 @@ BirthData({
     ruptureOfMembrane: ruptureOfMembrane ?? this.ruptureOfMembrane,
     amnioticFluid: amnioticFluid?? this.amnioticFluid,
     sex: sex?? this.sex,
-    
+    twin: twin ?? this.twin,
+    firstApgarScore: firstApgarScore?? this.firstApgarScore,
+    secondApgarScore: secondApgarScore?? this.secondApgarScore,
+    thirdApgarScore: thirdApgarScore ?? this.thirdApgarScore,   
     );
   }
 
@@ -41,7 +54,10 @@ BirthData({
       'ruptureOfMembrane':ruptureOfMembrane,
       'amnioticFluid':amnioticFluid,
       'sex':sex,
-      
+      'twin': twin,
+      'firstApgarScore': firstApgarScore,
+      'secondApgarScore': secondApgarScore,
+      'thirdApgarScore': thirdApgarScore
     };
   }
 
@@ -52,6 +68,10 @@ BirthData({
       ruptureOfMembrane: map['ruptureOfMembrane'],
       amnioticFluid: map['amnioticFluid'],
       sex: map['sex'],
+      twin: map['twin'],
+      firstApgarScore: map['firstApgarScore'],
+      secondApgarScore: map['secondApgarScore'],
+      thirdApgarScore: map['thirdApgarScore']
     );
   }
 

@@ -68,6 +68,10 @@ class BirthDataForm extends ConsumerWidget {
       String ruptureOfMembraneSelectedOption= ref.watch(birthDataProvider).ruptureOfMembrane;
       String amnioticFluidSelectedOption= ref.watch(birthDataProvider).amnioticFluid;
       String sexSelectedOption= ref.watch(birthDataProvider).sex;
+      String? twinSelectedOption= ref.watch(birthDataProvider).twin;
+      String? fisrtApgarSelectedOption= ref.watch(birthDataProvider).firstApgarScore;
+      String? secondApgarSelectedOption= ref.watch(birthDataProvider).secondApgarScore;
+      String? thirdApgarSelectedOption= ref.watch(birthDataProvider).thirdApgarScore;
 
 
       return ListView(   
@@ -85,7 +89,7 @@ class BirthDataForm extends ConsumerWidget {
                           return RadioListTile<BirthTypeEnum>(
                             title: Text(option.getValue()),
                             value: option,
-                            groupValue: BirthTypeEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).birthType,orElse: () => BirthTypeEnum.Unknown),
+                            groupValue: BirthTypeEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).birthType,orElse: () => BirthTypeEnum.unknown),
                             onChanged: (option) =>ref.read(birthDataProvider.notifier).updateBirthType(option!.getValue()),
                           );
                         }).toList(),
@@ -105,7 +109,7 @@ class BirthDataForm extends ConsumerWidget {
                         return RadioListTile<PresentationEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: PresentationEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).presentation,orElse: () => PresentationEnum.Unknown),
+                          groupValue: PresentationEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).presentation,orElse: () => PresentationEnum.unknown),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updatePresentation(option!.getValue()),
                         );
                       }).toList(),
@@ -125,7 +129,7 @@ class BirthDataForm extends ConsumerWidget {
                         return RadioListTile<RuptureOfMembraneEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: RuptureOfMembraneEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).ruptureOfMembrane,orElse: () => RuptureOfMembraneEnum.Unknown),
+                          groupValue: RuptureOfMembraneEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).ruptureOfMembrane,orElse: () => RuptureOfMembraneEnum.unknown),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateRuptureOfMembrane(option!.getValue()),
                         );
                       }).toList(),
@@ -145,7 +149,7 @@ class BirthDataForm extends ConsumerWidget {
                         return RadioListTile<AmnioticFluidEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: AmnioticFluidEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).ruptureOfMembrane,orElse: () => AmnioticFluidEnum.Unknown),
+                          groupValue: AmnioticFluidEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).amnioticFluid,orElse: () => AmnioticFluidEnum.unknown),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateAmnioticFluid(option!.getValue()),
                         );
                       }).toList(),
@@ -165,8 +169,92 @@ class BirthDataForm extends ConsumerWidget {
                         return RadioListTile<SexEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: SexEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).sex,orElse: () => SexEnum.Unknown),
+                          groupValue: SexEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).sex,orElse: () => SexEnum.unknown),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSex(option!.getValue()),
+                        );
+                      }).toList(),
+                  )
+                )
+              ]
+            ),
+            ExpansionTile(
+              title: Text('Gemelar'),
+              subtitle: Text(twinSelectedOption?? 'Sin eleccion'),
+              children: [
+                Container(
+                  color: const Color.fromARGB(255, 179, 207, 209),
+                  child: Column(
+                    children: 
+                        TwinEnum.values.map((option) {
+                        return RadioListTile<TwinEnum>(
+                          title: Text(option.getValue()),
+                          value: option,
+                          groupValue: TwinEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).twin,
+                                      orElse: () => TwinEnum.no),
+                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateTwin(option!.getValue()),
+                        );
+                      }).toList(),
+                  )
+                )
+              ]
+            ),
+            ExpansionTile(
+              title: Text('Apgar 1`'),
+              subtitle: Text(fisrtApgarSelectedOption?? 'Sin eleccion'),
+              children: [
+                Container(
+                  color: const Color.fromARGB(255, 179, 207, 209),
+                  child: Column(
+                    children: 
+                        ApgarScoreEnum.values.map((option) {
+                        return RadioListTile<ApgarScoreEnum>(
+                          title: Text(option.getValue()),
+                          value: option,
+                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).firstApgarScore,
+                                      orElse: () => ApgarScoreEnum.one),
+                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateFirstApgar(option!.getValue()),
+                        );
+                      }).toList(),
+                  )
+                )
+              ]
+            ),
+                        ExpansionTile(
+              title: Text('Apgar 5`'),
+              subtitle: Text(secondApgarSelectedOption?? 'Sin eleccion'),
+              children: [
+                Container(
+                  color: const Color.fromARGB(255, 179, 207, 209),
+                  child: Column(
+                    children: 
+                        ApgarScoreEnum.values.map((option) {
+                        return RadioListTile<ApgarScoreEnum>(
+                          title: Text(option.getValue()),
+                          value: option,
+                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).secondApgarScore,
+                                      orElse: () => ApgarScoreEnum.one),
+                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSecondApgar(option!.getValue()),
+                        );
+                      }).toList(),
+                  )
+                )
+              ]
+            ),
+                        ExpansionTile(
+              title: Text('Apgar 10`'),
+              subtitle: Text(thirdApgarSelectedOption?? 'Sin eleccion'),
+              children: [
+                Container(
+                  color: const Color.fromARGB(255, 179, 207, 209),
+                  child: Column(
+                    children: 
+                        ApgarScoreEnum.values.map((option) {
+                        return RadioListTile<ApgarScoreEnum>(
+                          title: Text(option.getValue()),
+                          value: option,
+                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider).thirdApgarScore,
+                                      orElse: () => ApgarScoreEnum.one),
+                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updatethirdApgar(option!.getValue()),
                         );
                       }).toList(),
                   )
