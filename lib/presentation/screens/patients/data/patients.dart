@@ -9,6 +9,7 @@ import 'package:sikum/presentation/widgets/patient_card.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/search_field.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/presentation/providers/discharge_status_provider.dart'; // VANE
 
 class Patients extends ConsumerStatefulWidget {
   const Patients({super.key});
@@ -93,16 +94,30 @@ class _PatientsState extends ConsumerState<Patients> {
                     return const Center(child: Text('No se encontraron pacientes.'));
                   }
 
+                 //VANE
                   return ListView.builder(
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final p = filtered[index];
-                      return PatientCard(
-                        patient: p,
-                        onTap: () => context.push('/paciente/detalle/${p.id}'),
+                      final dischargeStatus = ref.watch(dischargeStatusProvider(p));
+
+                      return dischargeStatus.when(
+                        data: (status) => PatientCard(
+                          patient: p,
+                          onTap: () => context.push('/paciente/detalle/${p.id}'),
+                          status: status, 
+                        ),
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => ListTile(
+                          title: Text('${p.firstName} ${p.lastName}'),
+                          subtitle: const Text('Error al evaluar estado de alta'),
+                          trailing: const Icon(Icons.error, color: Colors.red),
+                        ),
                       );
                     },
-                  );
+                  ); 
+
+
                 },
               ),
             ),
