@@ -29,7 +29,11 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
 
   @override
   Widget build(BuildContext context) {
-    final maternalNotifier = ref.read(maternalDataFormProvider.notifier);
+    final maternalNotifier = ref.read(maternalDataFormProvider(widget.patient.id).notifier); // solo agregué el (widget.patient.id) 
+    //cambios tres finals
+    final maternalDataProvider = ref.watch(maternalDataFormProvider(widget.patient.id)); //->vane cambio: usar ref.watch y guardar en variable para no repetir
+    final firstHalfTests = allTests.take(5).toList(); //->vane cambio: primeros 5 tests
+    final secondHalfTests = allTests.skip(5).toList(); //->vane cambio: últimos 4 tests
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -88,23 +92,36 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                 ),
                 const SizedBox(height: 8.0),
 
-                // Primer grupo de pruebas
+              // Primer grupo de pruebas (siempre se muestra)
                 Column(
-                  children: [
-                    MaternalTest(testName: 'VDRL'),
-                    MaternalTest(testName: 'Prueba Treponemica', isTreponemalTest: true),
-                    MaternalTest(testName: 'HIV'),
-                    MaternalTest(testName: 'Hepatitis B'),
-                    MaternalTest(testName: 'Chagas'),
-                  ],
+                  children: firstHalfTests.map((testName) {
+                    return MaternalTest(
+                      testName: testName,
+                      result: maternalDataProvider.testResults[testName] ?? '',
+                      date: maternalDataProvider.testDates[testName] ?? '',
+                      isDataSaved: maternalDataProvider.isDataSaved,
+                      isTreponemalTest: testName == 'Prueba Treponemica',
+                      onResultChanged: (val) => maternalNotifier.updateTestResult(testName, val),
+                      onDateChanged: (val) => maternalNotifier.updateTestDate(testName, val),
+                    );
+                  }).toList(),
                 ),
 
-                if (showSecondHalf) ...[
-                  MaternalTest(testName: 'Toxo IgG'),
-                  MaternalTest(testName: 'Toxo IgM'),
-                  MaternalTest(testName: 'EGB'),
-                  MaternalTest(testName: 'PCI'),
-                ],
+                // Segundo grupo de pruebas (solo si se mostró la segunda mitad)
+                if (showSecondHalf)
+                  Column(
+                    children: secondHalfTests.map((testName) {
+                      return MaternalTest(
+                        testName: testName,
+                        result: maternalDataProvider.testResults[testName] ?? '',
+                        date: maternalDataProvider.testDates[testName] ?? '',
+                        isDataSaved: maternalDataProvider.isDataSaved,
+                        isTreponemalTest: false,
+                        onResultChanged: (val) => maternalNotifier.updateTestResult(testName, val),
+                        onDateChanged: (val) => maternalNotifier.updateTestDate(testName, val),
+                      );
+                    }).toList(),
+                  ),
 
                 const SizedBox(height: 32),
                 
