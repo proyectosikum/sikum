@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sikum/entities/birth_data.dart';
 
 class Patient {
   final String id;
@@ -12,6 +13,7 @@ class Patient {
   final String? modifiedByUserId;
   final DateTime? modifiedAt;
   final Map<String, dynamic>? maternalData;
+  final BirthData? birthData;
 
   Patient({
     required this.id,
@@ -25,6 +27,7 @@ class Patient {
     this.modifiedByUserId,
     this.modifiedAt,
     this.maternalData,
+    this.birthData,
   });
 
   factory Patient.fromFirestore(
@@ -44,6 +47,7 @@ class Patient {
       modifiedByUserId: data['modifiedByUserId'],
       modifiedAt: (data['modifiedAt'] as Timestamp?)?.toDate(),
       maternalData: data['maternalData'],
+      birthData: data['birthData'] != null ? BirthData.fromMap(data['birthData']) : BirthData(),
     );
   }
 
@@ -58,6 +62,7 @@ class Patient {
       if (createdAt != null) 'createdAt': createdAt,
       if (modifiedByUserId != null) 'modifiedByUserId': modifiedByUserId,
       if (modifiedAt != null) 'modifiedAt': modifiedAt,
+      'birthData': birthData?.toMap(),
     };
   }
 

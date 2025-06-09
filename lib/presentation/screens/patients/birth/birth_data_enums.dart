@@ -117,4 +117,25 @@ vigorous('VIGOROSO');
 
 }
 
+enum DispositionEnum implements EnumWithValue{
+ 
+  roomingInHospitalization('Internacion Conjunta'),
+  ucin('UCIN'),
+  intermediateCare('Cuidados Intermedios'),
+  minimalCare('Cuidados minimos'),
+  middle('El medio'),
+  isolation('Aislamiento'),
+  hospitalDischarge('Egreso Hospitalario'),
+  neonatalDeath('Obito en sala de partos');
+
+  final String value;
+  const DispositionEnum(this.value);
+  
+  @override
+  String getValue() {
+    return value;
+  }
+
+}
+
 

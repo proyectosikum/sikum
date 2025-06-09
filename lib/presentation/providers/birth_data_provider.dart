@@ -1,88 +1,86 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/birth_data.dart';
-import 'package:sikum/presentation/screens/patients/birth/birth_data_enums.dart';
+import 'package:sikum/entities/patient.dart';
 
-final birthDataProvider = NotifierProvider<BirthDataNotifier,BirthData>(BirthDataNotifier.new);
+final birthDataProvider = NotifierProvider<BirthDataNotifier,BirthData?>(BirthDataNotifier.new);
 
-class BirthDataNotifier extends Notifier<BirthData>{
+class BirthDataNotifier extends Notifier<BirthData?>{
+
+  Patient? _patient;
 
   @override
-  BirthData build() {
-    return BirthData(
-      birthType:BirthTypeEnum.unknown.getValue(),
-      presentation:PresentationEnum.unknown.getValue(),
-      ruptureOfMembrane:RuptureOfMembraneEnum.unknown.getValue(),
-      amnioticFluid: AmnioticFluidEnum.unknown.getValue(),
-      sex: SexEnum.unknown.getValue(),
-      twin: TwinEnum.no.getValue(),
-      firstApgarScore: ApgarScoreEnum.one.getValue(),
-      secondApgarScore: ApgarScoreEnum.one.getValue(),
-      thirdApgarScore: ApgarScoreEnum.one.getValue(),
-    );
+  BirthData? build() {
+    return _patient?.birthData ?? BirthData(
+    hasHepatitisBVaccine: _patient?.birthData?.hasHepatitisBVaccine ?? false,
+    hasVitaminK : _patient?.birthData?.hasVitaminK ?? false ,
+    hasOphthalmicDrops : _patient?.birthData?.hasOphthalmicDrops ?? false,
+  );
   }
 
-    void updateBirthType(String type) {
-    state = state.copyWith(birthType:type);
+  void setPatient(Patient p){
+    _patient=p;
+    print('paso id: $_patient');
+  }
+
+  void reset(){
+    BirthData();
+  }
+
+   Future<void> updateBirthType(String type) async {
+    state = state?.copyWith(birthType:type);
   }
   
     void updatePresentation(String presentation) {
-    state = state.copyWith(presentation:presentation);
+    state = state?.copyWith(presentation:presentation);
   }
 
     void updateRuptureOfMembrane(String ruptureOfMembrane) {
-    state = state.copyWith(ruptureOfMembrane:ruptureOfMembrane);
+    state = state?.copyWith(ruptureOfMembrane:ruptureOfMembrane);
   }
 
     void updateAmnioticFluid(String amnioticFluid) {
-    state = state.copyWith(amnioticFluid:amnioticFluid);
+    state = state?.copyWith(amnioticFluid:amnioticFluid);
   }
 
     void updateSex(String sex) {
-    state = state.copyWith(sex:sex);
+    state = state?.copyWith(sex:sex);
   }
 
     void updateTwin(String twin) {
-    state = state.copyWith(twin:twin);
+    state = state?.copyWith(twin:twin);
   }
 
     void updateFirstApgar(String apgarScore) {
-    state = state.copyWith(firstApgarScore:apgarScore);
+    state = state?.copyWith(firstApgarScore:apgarScore);
   }
 
     void updateSecondApgar(String apgarScore) {
-    state = state.copyWith(secondApgarScore:apgarScore);
+    state = state?.copyWith(secondApgarScore:apgarScore);
   }
 
-      void updateThirdApgar(String apgarScore) {
-    state = state.copyWith(thirdApgarScore:apgarScore);
+    void updateThirdApgar(String apgarScore) {
+    state = state?.copyWith(thirdApgarScore:apgarScore);
   }
 
-  
-
-
-
-
- Future<void> submitBirthData(String patientId) async {
-    // Primero validar todo
-  //  if (!validateAll()) {
-    //  throw Exception('Hay errores en el formulario, por favor revisa los campos');
-   // }
-
-
-
-   try {
-    // Guardamos los datos en Firestore
-    final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
-    
-    await docRef.set({
-      'birthData': state.toMap(),
-    }, SetOptions(merge: true)); // merge para no borrar otros campos del paciente
-    print('Guardado en la DB');
-    
-  } catch (e) {
-    throw Exception('Error al guardar datos maternos: $e');
+    void updateHasHepatitisBVaccine(bool value ) {
+    state = state?.copyWith(hasHepatitisBVaccine:value);
   }
-}
 
+    void updateHasVitaminK(bool value ) {
+    state = state?.copyWith(hasVitaminK:value);
+  }
+
+    void updateHasOphthalmicDrops(bool value ) {
+    state = state?.copyWith(hasOphthalmicDrops:value);
+  }
+
+      void updateDisposition(String value ) {
+    state = state?.copyWith(disposition:value);
+  }
+
+      void updateGestationalAge(int value ) {
+    state = state?.copyWith(gestationalAge:value);
+  }
+
+ 
 }

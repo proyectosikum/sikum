@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/patient.dart';
 
 /// ----------------------------------------
@@ -93,6 +94,22 @@ Future<void> updatePatient(Patient patient) async {
   } catch (e) {
     debugPrint('Error al actualizar paciente: $e');
     rethrow;
+  }
+}
+
+Future<void> submitBirthData(String patientId, BirthData data) async {
+
+   try {
+    // Guardamos los datos en Firestore
+    final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
+    
+    await docRef.set({
+      'birthData': data.toMap(),
+    }, SetOptions(merge: true)); // merge para no borrar otros campos del paciente
+    print('Guardado en la DB');
+    
+  } catch (e) {
+    throw Exception('Error al guardar datos maternos: $e');
   }
 }
 

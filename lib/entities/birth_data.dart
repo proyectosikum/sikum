@@ -1,26 +1,35 @@
 class BirthData{
 
-  String birthType;
-  String presentation;
-  String ruptureOfMembrane;
-  String amnioticFluid;
-  String sex;
+  String? birthType;
+  String? presentation;
+  String? ruptureOfMembrane;
+  String? amnioticFluid;
+  String? sex;
   String? twin;
   String? firstApgarScore;
   String? secondApgarScore;
   String? thirdApgarScore;
-  
+  bool hasHepatitisBVaccine;
+  bool hasVitaminK;
+  bool hasOphthalmicDrops;
+  String? disposition;
+  int? gestationalAge;
 
 BirthData({
-  required this.birthType,
-  required this.presentation,
-  required this.ruptureOfMembrane,
-  required this.amnioticFluid,
-  required this.sex,
+  this.birthType,
+  this.presentation,
+  this.ruptureOfMembrane,
+  this.amnioticFluid,
+  this.sex,
   this.twin,
   this.firstApgarScore,
   this.secondApgarScore,
-  this.thirdApgarScore
+  this.thirdApgarScore,
+  this.hasHepatitisBVaccine =false,
+  this.hasVitaminK =false ,
+  this.hasOphthalmicDrops =false,
+  this.disposition,
+  this.gestationalAge,
 });
 
   BirthData copyWith({
@@ -33,6 +42,11 @@ BirthData({
     String? firstApgarScore,
     String? secondApgarScore,
     String? thirdApgarScore,
+    bool? hasHepatitisBVaccine,
+    bool? hasVitaminK,
+    bool? hasOphthalmicDrops,
+    String? disposition,
+    int? gestationalAge
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -43,7 +57,12 @@ BirthData({
     twin: twin ?? this.twin,
     firstApgarScore: firstApgarScore?? this.firstApgarScore,
     secondApgarScore: secondApgarScore?? this.secondApgarScore,
-    thirdApgarScore: thirdApgarScore ?? this.thirdApgarScore,   
+    thirdApgarScore: thirdApgarScore ?? this.thirdApgarScore, 
+    hasHepatitisBVaccine: hasHepatitisBVaccine ?? this.hasHepatitisBVaccine,
+    hasVitaminK: hasVitaminK ?? this.hasVitaminK,
+    hasOphthalmicDrops: hasOphthalmicDrops ?? this.hasOphthalmicDrops,
+    disposition: disposition?? this.disposition ,
+    gestationalAge : gestationalAge?? this.gestationalAge
     );
   }
 
@@ -57,7 +76,12 @@ BirthData({
       'twin': twin,
       'firstApgarScore': firstApgarScore,
       'secondApgarScore': secondApgarScore,
-      'thirdApgarScore': thirdApgarScore
+      'thirdApgarScore': thirdApgarScore,
+      'hasHepatitisBVaccine': hasHepatitisBVaccine,
+      'hasVitaminK': hasVitaminK,
+      'hasOphthalmicDrops': hasOphthalmicDrops,
+      'disposition': disposition, 
+      'gestationalAge': gestationalAge
     };
   }
 
@@ -71,7 +95,12 @@ BirthData({
       twin: map['twin'],
       firstApgarScore: map['firstApgarScore'],
       secondApgarScore: map['secondApgarScore'],
-      thirdApgarScore: map['thirdApgarScore']
+      thirdApgarScore: map['thirdApgarScore'],
+      hasHepatitisBVaccine: map['hasHepatitisBVaccine'] ?? false,
+      hasVitaminK: map['hasVitaminK'] ?? false,
+      hasOphthalmicDrops: map['hasOphthalmicDrops']?? false,
+      disposition: map['disposition'],
+      gestationalAge: map['gestationalAge']      
     );
   }
 
