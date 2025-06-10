@@ -1,13 +1,17 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/birth_data_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/patients/birth/birth_data_enums.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
+import 'package:sikum/presentation/widgets/custom_date_picker.dart';
 import 'package:sikum/presentation/widgets/custom_text_field.dart';
+import 'package:sikum/presentation/widgets/custom_time_picker.dart';
 import 'package:sikum/presentation/widgets/patient_summary.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
@@ -68,6 +72,8 @@ class BirthDataForm extends ConsumerWidget {
         ruptureOfMembrane: ref.watch(birthDataProvider)?.ruptureOfMembrane, 
         amnioticFluid: ref.watch(birthDataProvider)?.amnioticFluid , 
         sex: ref.watch(birthDataProvider)?.sex, 
+        birthDate: ref.watch(birthDataProvider)?.birthDate,
+        birthTime: ref.watch(birthDataProvider)?.birthTime,
         twin: ref.watch(birthDataProvider)?.twin,
         firstApgarScore: ref.watch(birthDataProvider)?.firstApgarScore,
         secondApgarScore: ref.watch(birthDataProvider)?.secondApgarScore,
@@ -76,28 +82,9 @@ class BirthDataForm extends ConsumerWidget {
         hasVitaminK: ref.watch(birthDataProvider)?.hasVitaminK ?? p.birthData?.hasVitaminK , 
         hasOphthalmicDrops: ref.watch(birthDataProvider)?.hasOphthalmicDrops,
         disposition: ref.watch(birthDataProvider)?.disposition,
-        gestationalAge: ref.watch(birthDataProvider)?.gestationalAge
-      );
+        gestationalAge: ref.watch(birthDataProvider)?.gestationalAge,
 
-/*
-    BirthData data = BirthData(
-        birthType: p.birthData?.birthType,
-        presentation: p.birthData?.presentation, 
-        ruptureOfMembrane: p.birthData?.ruptureOfMembrane, 
-        amnioticFluid: p.birthData?.amnioticFluid, 
-        sex: p.birthData?.sex, 
-        twin: p.birthData?.twin,
-        firstApgarScore: p.birthData?.firstApgarScore,
-        secondApgarScore: p.birthData?.secondApgarScore,
-        thirdApgarScore: p.birthData?.thirdApgarScore,
-        hasHepatitisBVaccine: p.birthData?.hasHepatitisBVaccine ?? false, 
-        hasVitaminK: p.birthData?.hasVitaminK ?? false  , 
-        hasOphthalmicDrops: p.birthData?.hasOphthalmicDrops ?? false,
-        disposition: p.birthData?.disposition,
-        gestationalAge: p.birthData?.gestationalAge
       );
-
-*/
 
       TextEditingController ageController = TextEditingController(text: data.gestationalAge.toString());
 
@@ -205,20 +192,61 @@ class BirthDataForm extends ConsumerWidget {
                 )
               ]
             ),
-            TextField(
-              controller: ageController,
-              keyboardType: TextInputType.number, // Solo permite números
-              decoration: InputDecoration(
-                labelText: "Edad gestacional",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                if (value.isNotEmpty) {
-                  //int? age = int.tryParse(value);
-                  ref.read(birthDataProvider.notifier).updateGestationalAge(value);
-                }
-              },
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: double.infinity, // Hace que ocupe todo el ancho disponible de la columna
+                  child: CustomDatePicker(
+                    label: "Seleccionar fecha de nacimiento",
+                    initialDate: data.birthDate != null 
+                        ? DateFormat('dd/MM/yyyy').format(data.birthDate!.toDate()) 
+                        : null,
+                    isDataSaved: false,
+                    onDateChanged: (formattedDate) {
+                      DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(formattedDate);
+                      ref.read(birthDataProvider.notifier).updateBirthDate(Timestamp.fromDate(parsedDate));
+                    },
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8),
+                CustomTimePicker(
+                  label: "Seleccionar hora de nacimiento",
+                  initialTime: data.birthTime, // Si hay una hora guardada, se muestra
+                  isDataSaved: false, // Puedes cambiar esto para bloquearlo
+                  onTimeChanged: (formattedTime) {
+                    ref.read(birthDataProvider.notifier).updateBirthTime(formattedTime);
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+                Text("Edad gestacional", 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                SizedBox(height: 8),
+                TextFormField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF4F959D)), // ✅ Borde verde al seleccionar
+                    ),
+                  ),
+                  onChanged: (value) {
+                    int? parsedValue = int.tryParse(value);
+                    if (parsedValue != null) {
+                      ref.read(birthDataProvider.notifier).updateGestationalAge(parsedValue);
+                    }
+                  },
+                ),
+
             ExpansionTile(
               title: Text('Gemelar'),
               subtitle: Text(data.twin?? 'Sin eleccion'),
@@ -261,7 +289,7 @@ class BirthDataForm extends ConsumerWidget {
                 )
               ]
             ),
-                        ExpansionTile(
+            ExpansionTile(
               title: Text('Apgar 5`'),
               subtitle: Text(data.secondApgarScore?? 'Sin eleccion'),
               children: [
@@ -303,6 +331,52 @@ class BirthDataForm extends ConsumerWidget {
                 )
               ]
             ),
+            Text("Peso (grs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+              SizedBox(height: 8),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  int? parsedValue = int.tryParse(value);
+                  if (parsedValue != null) {
+                    ref.read(birthDataProvider.notifier).updateWeight(parsedValue);
+                  }
+                },
+              ),
+              SizedBox(height: 16),
+              Text("Talla (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+              SizedBox(height: 8),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  int? parsedValue = int.tryParse(value);
+                  if (parsedValue != null) {
+                    ref.read(birthDataProvider.notifier).updateLength(parsedValue);
+                  }
+                },
+              ),
+              SizedBox(height: 16),
+              Text("Perímetro Cefálico (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+              SizedBox(height: 8),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  int? parsedValue = int.tryParse(value);
+                  if (parsedValue != null) {
+                    ref.read(birthDataProvider.notifier).updateHeadCircumference(parsedValue);
+                  }
+                },
+              ),
+              SizedBox(height: 16),
+
             CheckboxListTile(
               title: Text('Vacuna de Hepatitis B'),
               value: (data.hasHepatitisBVaccine), 
@@ -318,6 +392,27 @@ class BirthDataForm extends ConsumerWidget {
               value: (data.hasOphthalmicDrops), 
               onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value??false),
             ),
+            
+            Text("Número de pulsera", 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                SizedBox(height: 8),
+                TextFormField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF4F959D)),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    int? parsedValue = int.tryParse(value);
+                    if (parsedValue != null) {
+                      ref.read(birthDataProvider.notifier).updateBraceletNumber(parsedValue);
+                    }
+                  },
+                ),
+            SizedBox(height: 16),
             ExpansionTile(
               title: Text('Destino'),
               subtitle: Text(data.disposition?? 'Sin eleccion'),
@@ -332,29 +427,165 @@ class BirthDataForm extends ConsumerWidget {
                           value: option,
                           groupValue: DispositionEnum.values.firstWhere((e) => e.getValue() == data.disposition,
                                       orElse: () => DispositionEnum.roomingInHospitalization),
-                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updatethirdApgar(option!.getValue()),
+                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDispotition(option!.getValue()),
                         );
                       }).toList(),
                   )
                 )
               ]
             ),
-           //Input: edad gestacional
-           CustomTextField(
-            label: 'Edad gestacional',
-           ),
-            ElevatedButton(
-              onPressed: () async { try {
-                              ref.read(patientActionsProvider).submitBirthData(p.id, data);
-                              ref.read(birthDataProvider.notifier).reset();
-                            } catch (e) {
-                                print('ERROR:$e');
-                            }}, 
-              child: Text('Guardar'))
+            SizedBox(height: 16),
+           //BOTONES DE ACCION
+           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los botones equitativamente
+            children: [
+              // Botón "Cancelar" - Fondo claro con bordes y letras en verde
+              OutlinedButton(
+                onPressed: () {
+                  showConfirmationDialog(
+                    context: context,
+                    title: 'Confirmar cancelación',
+                    content: 'Si continúas, perderás los cambios realizados. ¿Deseas continuar?',
+                    onConfirm: () {
+                      Navigator.pop(context); // Vuelve a la pantalla anterior
+                      ref.read(birthDataProvider.notifier).setPatient(p); // Restaura los datos originales
+                    },
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Color(0xFF4F959D),
+                  side: BorderSide(color: Color(0xFF4F959D)), 
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                ),
+                child: Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+
+              // Botón "Aceptar" - Verde con letras claras
+              ElevatedButton(
+                onPressed: () {
+                  showConfirmationDialog(
+                    context: context,
+                    title: 'Confirmar guardado',
+                    content: '¿Estás seguro de que quieres guardar estos cambios?',
+                    onConfirm: () async {
+                      try {
+                        await ref.read(patientActionsProvider).submitBirthData(p.id, data);
+                        ref.read(birthDataProvider.notifier).reset();
+                        if (!context.mounted) return; // Asegura que el contexto sigue existiendo
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Datos guardados correctamente'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return; //Asegura que el contexto sigue existiendo
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error al guardar los datos: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF4F959D),
+                  foregroundColor: Color(0xFFFFF8E1), 
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                ),
+                child: Text("Aceptar", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
           ]
       );
 
     }
+ ///Funciones aux
+    void showConfirmationDialog({
+      required BuildContext context,
+      required String title,
+      required String content,
+      required VoidCallback onConfirm,
+    }) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(content),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context), // Cierra el modal sin hacer cambios
+                child: Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Cierra el modal antes de ejecutar la acción
+                  onConfirm();
+                },
+                child: Text('Confirmar'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Future<void> _selectDate(BuildContext context, WidgetRef ref) async {
+      DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1900),
+        lastDate: DateTime.now(),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              primaryColor: Colors.green, // Color del encabezado
+              hintColor: Colors.green, // Color de selección
+              colorScheme: ColorScheme.light(primary: Colors.green), // Gama verde
+              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedDate != null) {
+        ref.read(birthDataProvider.notifier).state =
+            ref.read(birthDataProvider.notifier).state?.copyWith(
+                  birthDate: Timestamp.fromDate(pickedDate),
+                );
+      }
+    }
+
+    Future<void> _selectTime(BuildContext context, WidgetRef ref) async {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              primaryColor: Color(0xFF4F959D), // ✅ Gama verde
+              hintColor: Color(0xFF4F959D),
+              colorScheme: ColorScheme.light(primary: Color(0xFF4F959D)),
+              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null) {
+        final formattedTime = '${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}';
+        ref.read(birthDataProvider.notifier).updateBirthTime(formattedTime);
+      }
+    }
+
   
 }
 
