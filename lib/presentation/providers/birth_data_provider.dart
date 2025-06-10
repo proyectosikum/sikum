@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/patient.dart';
@@ -23,10 +24,10 @@ class BirthDataNotifier extends Notifier<BirthData?>{
   }
 
   void reset(){
-    BirthData();
+    state=BirthData();
   }
 
-   Future<void> updateBirthType(String type) async {
+   void updateBirthType(String type) {
     state = state?.copyWith(birthType:type);
   }
   
@@ -81,6 +82,26 @@ class BirthDataNotifier extends Notifier<BirthData?>{
       void updateGestationalAge(int value ) {
     state = state?.copyWith(gestationalAge:value);
   }
+
+  void updateBirthDate(Timestamp birthDate) {
+  state = state?.copyWith(birthDate: birthDate);
+}
+
+void updateBirthTime(String birthTime) {
+  state = state?.copyWith(birthTime: birthTime);
+}
+
+void updateWeight(int weight) {
+  state = state?.copyWith(weight: weight);
+}
+
+void updateLength(int length) {
+  state = state?.copyWith(length: length);
+}
+
+void updateHeadCircumference(int headCircumference) {
+  state = state?.copyWith(headCircumference: headCircumference);
+}
 
  
 }
