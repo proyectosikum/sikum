@@ -39,6 +39,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
+  final Map<String, String?> _validationErrors = {}; // Para errores de validación
   int _page = 0;
 
   @override
@@ -73,6 +74,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         _controllers[f.key] = TextEditingController();
         break;
     }
+    // Limpiar cualquier error de validación previo
+    _validationErrors[f.key] = null;
   }
 
   void _resetFormForSpec(String spec) {
@@ -81,6 +84,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
     _controllers.clear();
     _formData.clear();
+    _validationErrors.clear();
 
     final fields = spec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
@@ -90,7 +94,66 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
   }
 
+  // Función para validar campos obligatorios
+  bool _validateRequiredFields() {
+    bool isValid = true;
+    final fields = selectedSpec == 'neonatologia'
+        ? [...neonatologyPage1, ...neonatologyPage2]
+        : evolutionFormConfig[selectedSpec]!;
+
+    setState(() {
+      _validationErrors.clear();
+    });
+
+    for (final field in fields) {
+      if (field.isRequired) {
+        final value = _formData[field.key];
+        bool isEmpty = false;
+
+        switch (field.type) {
+          case FieldType.text:
+          case FieldType.multiline:
+            isEmpty = value == null || (value as String).trim().isEmpty;
+            break;
+          case FieldType.number:
+            isEmpty = value == null || value == '' || value == 0;
+            break;
+          case FieldType.datetime:
+            isEmpty = value == null;
+            break;
+          case FieldType.radio:
+            isEmpty = value == null;
+            break;
+          case FieldType.checkbox:
+            // Para checkbox, generalmente no aplica ser obligatorio, pero si lo fuera:
+            isEmpty = false;
+            break;
+        }
+
+        if (isEmpty) {
+          _validationErrors[field.key] = 'Este campo es obligatorio';
+          isValid = false;
+        }
+      }
+    }
+
+    setState(() {});
+    return isValid;
+  }
+
   Future<void> _save() async {
+    // Validar campos obligatorios antes de guardar
+    if (!_validateRequiredFields()) {
+      // Mostrar mensaje de error
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, complete todos los campos obligatorios'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec]!;
@@ -356,35 +419,114 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   }
 
   Widget _buildFieldWidget(FieldConfig f) {
+    final hasError = _validationErrors[f.key] != null;
+    final errorColor = Colors.red;
+
     switch (f.type) {
       case FieldType.text:
-        return TextField(
-          controller: _controllers[f.key],
-          onChanged: (v) => _formData[f.key] = v,
-          decoration: InputDecoration(labelText: f.label),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controllers[f.key],
+              onChanged: (v) {
+                _formData[f.key] = v;
+                // Limpiar error si el usuario empieza a escribir
+                if (hasError && v.trim().isNotEmpty) {
+                  setState(() {
+                    _validationErrors[f.key] = null;
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                labelText: f.label,
+                errorText: _validationErrors[f.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+              ),
+            ),
+          ],
         );
       case FieldType.number:
-        return TextField(
-          controller: _controllers[f.key],
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (v) => _formData[f.key] = num.tryParse(v) ?? 0,
-          decoration: InputDecoration(labelText: f.label),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controllers[f.key],
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (v) {
+                _formData[f.key] = num.tryParse(v) ?? 0;
+                // Limpiar error si el usuario empieza a escribir
+                if (hasError && v.trim().isNotEmpty) {
+                  setState(() {
+                    _validationErrors[f.key] = null;
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                labelText: f.label,
+                errorText: _validationErrors[f.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+              ),
+            ),
+          ],
         );
       case FieldType.multiline:
-        return TextField(
-          controller: _controllers[f.key],
-          maxLines: 3,
-          onChanged: (v) => _formData[f.key] = v,
-          decoration: InputDecoration(labelText: f.label),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controllers[f.key],
+              maxLines: 3,
+              onChanged: (v) {
+                _formData[f.key] = v;
+                // Limpiar error si el usuario empieza a escribir
+                if (hasError && v.trim().isNotEmpty) {
+                  setState(() {
+                    _validationErrors[f.key] = null;
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                labelText: f.label,
+                errorText: _validationErrors[f.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+              ),
+            ),
+          ],
         );
       case FieldType.checkbox:
-        return CheckboxListTile(title: Text(f.label), value: _formData[f.key] as bool, onChanged: (v) => setState(() => _formData[f.key] = v));
+        return CheckboxListTile(
+          title: Text(f.label),
+          value: _formData[f.key] as bool,
+          onChanged: (v) => setState(() => _formData[f.key] = v),
+        );
       case FieldType.radio:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(f.label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              f.label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: hasError ? errorColor : Colors.black,
+              ),
+            ),
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerLeft,
@@ -401,7 +543,15 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                       Radio<String>(
                         value: opt,
                         groupValue: _formData[f.key] as String?,
-                        onChanged: (v) => setState(() => _formData[f.key] = v),
+                        onChanged: (v) {
+                          setState(() {
+                            _formData[f.key] = v;
+                            // Limpiar error cuando se selecciona una opción
+                            if (hasError) {
+                              _validationErrors[f.key] = null;
+                            }
+                          });
+                        },
                       ),
                       Text(opt),
                     ],
@@ -409,26 +559,55 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 }).toList(),
               ),
             ),
+            if (hasError) ...[
+              const SizedBox(height: 4),
+              Text(
+                _validationErrors[f.key]!,
+                style: TextStyle(color: errorColor, fontSize: 12),
+              ),
+            ],
           ],
         );
       case FieldType.datetime:
-        return TextField(
-          controller: _controllers[f.key],
-          readOnly: true,
-          decoration: InputDecoration(labelText: f.label),
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: _formData[f.key] ?? DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
-            );
-            if (picked != null) {
-              _formData[f.key] = picked;
-              _controllers[f.key]!.text = DateFormat('dd/MM/yyyy').format(picked);
-              setState(() {});
-            }
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controllers[f.key],
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: f.label,
+                errorText: _validationErrors[f.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                ),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _formData[f.key] ?? DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  _formData[f.key] = picked;
+                  _controllers[f.key]!.text = DateFormat('dd/MM/yyyy').format(picked);
+                  // Limpiar error cuando se selecciona una fecha
+                  if (hasError) {
+                    setState(() {
+                      _validationErrors[f.key] = null;
+                    });
+                  } else {
+                    setState(() {});
+                  }
+                }
+              },
+            ),
+          ],
         );
     }
   }

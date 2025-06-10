@@ -5,12 +5,14 @@ class FieldConfig {
   final String label;
   final FieldType type;
   final List<String>? options;
+  final bool isRequired; // Nuevo campo para indicar si es obligatorio
 
   const FieldConfig({
     required this.key,
     required this.label,
     required this.type,
     this.options,
+    this.isRequired = false, // Por defecto no es obligatorio
   });
 }
 
@@ -28,10 +30,10 @@ const Map<String, List<FieldConfig>> evolutionFormConfig = {
     FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
   ],
 
-  // Enfermería FEI
+  // Enfermería FEI - CAMPOS OBLIGATORIOS
   'enfermeria_fei': [
-    FieldConfig(key: 'feiDate',       label: 'Fecha',                                        type: FieldType.datetime),
-    FieldConfig(key: 'recordNumber',  label: 'Número de cartón',                             type: FieldType.number),
+    FieldConfig(key: 'feiDate',       label: 'Fecha *',                                        type: FieldType.datetime, isRequired: true),
+    FieldConfig(key: 'recordNumber',  label: 'Número de cartón *',                             type: FieldType.number, isRequired: true),
   ],
 
   // Enfermería Test Saturación
