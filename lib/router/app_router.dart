@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sikum/presentation/screens/patients/birth/birth_data_form.dart';
 import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
@@ -86,6 +87,13 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/pacientes/:patientId/nacimiento',
+      builder: (context, state) {
+        final id = state.pathParameters['patientId']!;
+        return BirthDataForm(patientId: id);
+      },
+    ),
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
@@ -128,7 +136,8 @@ final GoRouter appRouter = GoRouter(
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
-        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions') || loc.contains('/editar'));
+        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions') || loc.contains('/editar'))
+        || loc.startsWith('/pacientes') && loc.contains('/nacimiento');
 
       if (!isAdmin && !okUser) {
         return '/pacientes';
