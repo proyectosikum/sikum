@@ -138,4 +138,20 @@ enum DispositionEnum implements EnumWithValue{
 
 }
 
+enum PlacesEnum implements EnumWithValue{
+ 
+  hospTigre('HospitalFEscardo (tigre)'),
+  outpatient('Extra hospitalario'),
+  other('Otro');
+
+  final String value;
+  const PlacesEnum(this.value);
+  
+  @override
+  String getValue() {
+    return value;
+  }
+
+}
+
 
