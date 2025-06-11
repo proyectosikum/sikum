@@ -8,9 +8,9 @@ import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/birth_data_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/patients/birth/birth_data_enums.dart';
+import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/custom_date_picker.dart';
-import 'package:sikum/presentation/widgets/custom_text_field.dart';
 import 'package:sikum/presentation/widgets/custom_time_picker.dart';
 import 'package:sikum/presentation/widgets/patient_summary.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
@@ -83,15 +83,63 @@ class BirthDataForm extends ConsumerWidget {
         hasOphthalmicDrops: ref.watch(birthDataProvider)?.hasOphthalmicDrops,
         disposition: ref.watch(birthDataProvider)?.disposition,
         gestationalAge: ref.watch(birthDataProvider)?.gestationalAge,
-
+        weight: ref.watch(birthDataProvider)?.weight,
+        length: ref.watch(birthDataProvider)?.length,
+        headCircumference: ref.watch(birthDataProvider)?.headCircumference,
+        physicalExamination:  ref.watch(birthDataProvider)?.physicalExamination,
+        physicalExaminationDetails: ref.watch(birthDataProvider)?.physicalExaminationDetails,
+        birthPlace : ref.watch(birthDataProvider)?.birthPlace,
+        birthPlaceDetails: ref.watch(birthDataProvider)?.birthPlaceDetails,
       );
-
-      TextEditingController ageController = TextEditingController(text: data.gestationalAge.toString());
 
       return ListView(   
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           children: [
+            ExpansionTile(
+              title: Text('Lugar de nacimiento'),
+              subtitle: Text(data.birthPlace ?? 'No asignado'),
+              children: [
+                Container(
+                  color: const Color.fromARGB(255, 179, 207, 209), 
+                  child: Column(
+                    children: PlacesEnum.values.map((option) {
+                      return RadioListTile<PlacesEnum>(
+                        title: Text(option.getValue()),
+                        value: option,
+                        activeColor: Color(0xFF4F959D),
+                        groupValue: PlacesEnum.values.firstWhere(
+                          (e) => e.getValue() == data.birthPlace,
+                          orElse: () => PlacesEnum.hospTigre,
+                        ),
+                        onChanged: (option) {
+                          ref.read(birthDataProvider.notifier).updateBirthPlace(option!.getValue());
+                          if (option.getValue() != "Otro") {
+                            ref.read(birthDataProvider.notifier).updateBirthPlaceDetails("");
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: "Especificar otro lugar",
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF4F959D)), 
+                      ),
+                    ),
+                    enabled: data.birthPlace == "Otro", 
+                    onChanged: (value) {
+                      ref.read(birthDataProvider.notifier).updateBirthPlaceDetails(value);
+                    },
+                  ),
+                ),
+              ],
+            ),
             ExpansionTile(
                 title: Text('Tipo de Nacimiento'),
                 subtitle: Text(data.birthType ?? 'No asignado'),
@@ -376,133 +424,209 @@ class BirthDataForm extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 16),
-
-            CheckboxListTile(
-              title: Text('Vacuna de Hepatitis B'),
-              value: (data.hasHepatitisBVaccine), 
-              onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasHepatitisBVaccine(value),
-            ),
-            CheckboxListTile(
-              title: Text('Vitamina K'),
-              value: (data.hasVitaminK), 
-              onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasVitaminK(value?? false),
-            ),
-            CheckboxListTile(
-              title: Text('Colirio oftalmologico'),
-              value: (data.hasOphthalmicDrops), 
-              onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value??false),
-            ),
-            
-            Text("Número de pulsera", 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-                SizedBox(height: 8),
-                TextFormField(
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF4F959D)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Examen físico",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // Opción "Normal"
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: Text("Normal"),
+                          value: "Normal",
+                          groupValue: data.physicalExamination,
+                          onChanged: (value) {
+                            ref.read(birthDataProvider.notifier).updatePhysicalExamination(value!);
+                            ref.read(birthDataProvider.notifier).updatePhysicalExaminationDetails(""); // Borra texto si cambia a "Normal"
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: Text("Otros"),
+                          value: "Otros",
+                          groupValue: data.physicalExamination,
+                          onChanged: (value) {
+                            ref.read(birthDataProvider.notifier).updatePhysicalExamination(value!);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Campo de texto solo cuando se selecciona "Otros"
+                  if (data.physicalExamination == "Otros") ...[
+                    SizedBox(height: 8),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Detalles del examen físico",
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF4F959D)),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        ref.read(birthDataProvider.notifier).updatePhysicalExaminationDetails(value);
+                      },
+                    ),
+                  ],
+                ],
+              ),
+              SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Recibió...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
-                  onChanged: (value) {
-                    int? parsedValue = int.tryParse(value);
-                    if (parsedValue != null) {
-                      ref.read(birthDataProvider.notifier).updateBraceletNumber(parsedValue);
-                    }
-                  },
-                ),
-            SizedBox(height: 16),
-            ExpansionTile(
-              title: Text('Destino'),
-              subtitle: Text(data.disposition?? 'Sin eleccion'),
-              children: [
-                Container(
-                  color: const Color.fromARGB(255, 179, 207, 209),
-                  child: Column(
-                    children: 
-                        DispositionEnum.values.map((option) {
-                        return RadioListTile<DispositionEnum>(
-                          title: Text(option.getValue()),
-                          value: option,
-                          groupValue: DispositionEnum.values.firstWhere((e) => e.getValue() == data.disposition,
-                                      orElse: () => DispositionEnum.roomingInHospitalization),
-                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDispotition(option!.getValue()),
-                        );
-                      }).toList(),
-                  )
-                )
-              ]
-            ),
-            SizedBox(height: 16),
-           //BOTONES DE ACCION
-           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los botones equitativamente
-            children: [
-              // Botón "Cancelar" - Fondo claro con bordes y letras en verde
-              OutlinedButton(
-                onPressed: () {
-                  showConfirmationDialog(
-                    context: context,
-                    title: 'Confirmar cancelación',
-                    content: 'Si continúas, perderás los cambios realizados. ¿Deseas continuar?',
-                    onConfirm: () {
-                      Navigator.pop(context); // Vuelve a la pantalla anterior
-                      ref.read(birthDataProvider.notifier).setPatient(p); // Restaura los datos originales
-                    },
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Color(0xFF4F959D),
-                  side: BorderSide(color: Color(0xFF4F959D)), 
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
-                ),
-                child: Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
+                  SizedBox(height: 8), 
+                  CheckboxListTile(
+                    title: Text('Vacuna de Hepatitis B'),
+                    value: (data.hasHepatitisBVaccine), 
+                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasHepatitisBVaccine(value),
+                  ),
 
-              // Botón "Aceptar" - Verde con letras claras
-              ElevatedButton(
-                onPressed: () {
-                  showConfirmationDialog(
-                    context: context,
-                    title: 'Confirmar guardado',
-                    content: '¿Estás seguro de que quieres guardar estos cambios?',
-                    onConfirm: () async {
-                      try {
-                        await ref.read(patientActionsProvider).submitBirthData(p.id, data);
-                        ref.read(birthDataProvider.notifier).reset();
-                        if (!context.mounted) return; // Asegura que el contexto sigue existiendo
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Datos guardados correctamente'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      } catch (e) {
-                        if (!context.mounted) return; //Asegura que el contexto sigue existiendo
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error al guardar los datos: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                  CheckboxListTile(
+                    title: Text('Vitamina K'),
+                    value: (data.hasVitaminK), 
+                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasVitaminK(value ?? false),
+                  ),
+
+                  CheckboxListTile(
+                    title: Text('Colirio oftalmológico'),
+                    value: (data.hasOphthalmicDrops), 
+                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value ?? false),
+                  ),
+                ],
+              ),
+              
+              Text("Número de pulsera", 
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF4F959D)),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      int? parsedValue = int.tryParse(value);
+                      if (parsedValue != null) {
+                        ref.read(birthDataProvider.notifier).updateBraceletNumber(parsedValue);
                       }
                     },
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4F959D),
-                  foregroundColor: Color(0xFFFFF8E1), 
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
-                ),
-                child: Text("Aceptar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+              SizedBox(height: 16),
+              ExpansionTile(
+                title: Text('Destino'),
+                subtitle: Text(data.disposition?? 'Sin eleccion'),
+                children: [
+                  Container(
+                    color: const Color.fromARGB(255, 179, 207, 209),
+                    child: Column(
+                      children: 
+                          DispositionEnum.values.map((option) {
+                          return RadioListTile<DispositionEnum>(
+                            title: Text(option.getValue()),
+                            value: option,
+                            groupValue: DispositionEnum.values.firstWhere((e) => e.getValue() == data.disposition,
+                                        orElse: () => DispositionEnum.roomingInHospitalization),
+                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDispotition(option!.getValue()),
+                          );
+                        }).toList(),
+                    )
+                  )
+                ]
               ),
-            ],
-          ),
-          ]
-      );
+              SizedBox(height: 16),
+            //BOTONES DE ACCION
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los botones equitativamente
+              children: [
+                // Botón "Cancelar" - Fondo claro con bordes y letras en verde
+                OutlinedButton(
+                  onPressed: () {
+                    showConfirmationDialog(
+                      context: context,
+                      title: 'Confirmar cancelación',
+                      content: 'Si continúas, perderás los cambios realizados. ¿Deseas continuar?',
+                      onConfirm: () {
+                        Navigator.pop(context); // Vuelve a la pantalla anterior
+                        ref.read(birthDataProvider.notifier).setPatient(p); // Restaura los datos originales
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => PatientDetailsScreen(patientId: p.id)), // Reemplazar con la pantalla destino
+                        );
+                      },
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Color(0xFF4F959D),
+                    side: BorderSide(color: Color(0xFF4F959D)), 
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                  ),
+                  child: Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    showConfirmationDialog(
+                      context: context,
+                      title: 'Confirmar guardado',
+                      content: '¿Estás seguro de que quieres guardar estos cambios?',
+                      onConfirm: () async {
+                        try {
+                          await ref.read(patientActionsProvider).submitBirthData(p.id, data);
+                          ref.read(birthDataProvider.notifier).reset();
+                          if (!context.mounted) return; // Asegura que el contexto sigue existiendo
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Datos guardados correctamente'),
+                              backgroundColor: Color(0xFF4F959D),
+                            ),
+                          );
+                          //Redirigir a la pantalla después de guardar
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PatientDetailsScreen(patientId: p.id)),
+                          );
+
+                        } catch (e) {
+                          if (!context.mounted) return; //Asegura que el contexto sigue existiendo
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al guardar los datos: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4F959D),
+                    foregroundColor: Color(0xFFFFF8E1), 
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                  ),
+                  child: Text("Aceptar", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            ]
+        );
 
     }
  ///Funciones aux
