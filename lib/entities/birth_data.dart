@@ -21,7 +21,10 @@ class BirthData{
   int? weight;
   int? length; 
   int? headCircumference;
-
+  String? physicalExamination;
+  String? physicalExaminationDetails;
+  String? birthPlace;
+  String? birthPlaceDetails;
 
 BirthData({
   this.birthType,
@@ -42,7 +45,11 @@ BirthData({
   this.birthTime,
   this.weight,
   this.length,
-  this.headCircumference
+  this.headCircumference,
+  this.physicalExamination,
+  this.physicalExaminationDetails,
+  this.birthPlace,
+  this.birthPlaceDetails,
 });
 
   BirthData copyWith({
@@ -65,6 +72,10 @@ BirthData({
     int? weight, 
     int? length,
     int? headCircumference,
+    String? physicalExamination,
+    String? physicalExaminationDetails,
+    String? birthPlace,
+     String? birthPlaceDetails,
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -86,6 +97,10 @@ BirthData({
     weight: weight?? this.weight,
     length: length?? this.length,
     headCircumference: headCircumference??this.headCircumference,
+    physicalExamination: physicalExamination ?? this.physicalExamination,
+    physicalExaminationDetails: physicalExaminationDetails ?? this.physicalExaminationDetails,
+    birthPlace: birthPlace ?? this.birthPlace,
+    birthPlaceDetails: birthPlaceDetails ?? this.birthPlaceDetails,
     );
   }
 
@@ -108,8 +123,12 @@ BirthData({
       'birthDate': birthDate,
       'birthTime': birthTime,
       'weight': weight,
-      'length': length, // Talla (cm)
-      'headCircumference': headCircumference, // Perímetro cefálico (cm)'
+      'length': length,
+      'headCircumference': headCircumference,
+      'physicalExamination': physicalExamination,
+      'physicalExaminationDetails': physicalExaminationDetails,
+      'birthPlace': birthPlace,
+      'birthPlaceDetails':birthPlaceDetails,
     };
   }
 
@@ -133,7 +152,11 @@ BirthData({
       birthTime: map['birthTime'],
       weight: map['weight'],
       length: map['length'],
-      headCircumference: map['headCircumference']   
+      headCircumference: map['headCircumference'],
+      physicalExamination: map['physicalExamination'],
+      physicalExaminationDetails: map['physicalExaminationDetails'], 
+      birthPlace: map['birthPlace'],
+      birthPlaceDetails: map['birthPlaceDetails'],  
     );
   }
 

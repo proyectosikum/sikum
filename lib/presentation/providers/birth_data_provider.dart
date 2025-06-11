@@ -103,5 +103,25 @@ void updateHeadCircumference(int headCircumference) {
   state = state?.copyWith(headCircumference: headCircumference);
 }
 
+void updatePhysicalExamination(String physicalExamination) {
+  state = state?.copyWith(physicalExamination: physicalExamination);
+}
+
+void updatePhysicalExaminationDetails(String details) {
+  state = state?.copyWith(physicalExaminationDetails: details);
+}
+
+void updateBirthPlace(String birthPlace) {
+  state = state?.copyWith(birthPlace: birthPlace);
+}
+
+void updateBirthPlaceDetails(String details) {
+  state = state?.copyWith(birthPlaceDetails: details);
+}
+
+void updateDispotition(String details) {
+  state = state?.copyWith(disposition: details);
+}
+
  
 }
