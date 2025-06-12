@@ -245,6 +245,7 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                     context.push('/paciente/evolucionar/${p.id}');
                     break;
                   case 'cerrar':
+                    context.push('/pacientes/${p.id}/cerrar');
                     break;
                   case 'descargar':
                     _downloadPdf(p);

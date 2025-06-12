@@ -5,25 +5,30 @@ class FieldConfig {
   final String label;
   final FieldType type;
   final List<String>? options;
-  final bool isRequired; // Nuevo campo para indicar si es obligatorio
+  final bool isRequired;
+  final num? min;
+  final num? max;
 
   const FieldConfig({
     required this.key,
     required this.label,
     required this.type,
     this.options,
-    this.isRequired = false, // Por defecto no es obligatorio
+    this.isRequired = false,
+    this.min,
+    this.max,
   });
 }
+
 
 /// Mapa: especialidad -> lista de campos
 const Map<String, List<FieldConfig>> evolutionFormConfig = {
   // Enfermería / general
   'enfermeria': [
-    FieldConfig(key: 'temperature',  label: 'Temperatura (°C)',                             type: FieldType.number),
-    FieldConfig(key: 'respiratory',  label: 'Frecuencia respiratoria (resp/min)',           type: FieldType.number),
-    FieldConfig(key: 'cardiac',      label: 'Frecuencia cardíaca (lat/min)',                type: FieldType.number),
-    FieldConfig(key: 'weight',       label: 'Peso (gr)',                                    type: FieldType.number),
+    FieldConfig(key: 'temperature',  label: 'Temperatura (°C)', type: FieldType.number, min: 35, max: 40),
+    FieldConfig(key: 'respiratory',  label: 'Frecuencia respiratoria (resp/min)', type: FieldType.number, min: 30, max: 100),
+    FieldConfig(key: 'cardiac',      label: 'Frecuencia cardíaca (lat/min)', type: FieldType.number, min: 60, max: 200),
+    FieldConfig(key: 'weight',       label: 'Peso (gr)', type: FieldType.number, min: 1900, max: 6000),
     FieldConfig(key: 'diuresis',     label: 'Diuresis',                                     type: FieldType.radio,   options: ['Negativo', 'Positivo']),
     FieldConfig(key: 'catarsis',     label: 'Catarsis',                                     type: FieldType.radio,   options: ['Negativo', 'Positivo']),
     FieldConfig(key: 'bilirubin',    label: 'Bilirrubina',                                  type: FieldType.radio,   options: ['No', 'Sí']),
@@ -38,10 +43,8 @@ const Map<String, List<FieldConfig>> evolutionFormConfig = {
 
   // Enfermería Test Saturación
   'enfermeria_test_saturacion': [
-    FieldConfig(key: 'preDuctalOxygenSaturation',    label: 'Saturación pre ductal',                   type: FieldType.number),
-    FieldConfig(key: 'preDuctalSaturationResult',    label: 'Resultado saturación pre ductal',         type: FieldType.text),
-    FieldConfig(key: 'postDuctalOxygenSaturation',   label: 'Saturación post ductal',                  type: FieldType.number),
-    FieldConfig(key: 'postDuctalSaturationResult',   label: 'Resultado saturación post ductal',        type: FieldType.text),
+    FieldConfig(key: 'preDuctalOxygenSaturation', label: 'Saturación pre ductal', type: FieldType.number, min: 0, max: 100),
+    FieldConfig(key: 'postDuctalOxygenSaturation', label: 'Saturación post ductal', type: FieldType.number, min: 0, max: 100),
   ],
 
   // Vacunatorio

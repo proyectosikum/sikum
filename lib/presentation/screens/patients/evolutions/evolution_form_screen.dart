@@ -94,7 +94,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
   }
 
-  // Función para validar campos obligatorios
+    // Función para validar campos obligatorios
   bool _validateRequiredFields() {
     bool isValid = true;
     final fields = selectedSpec == 'neonatologia'
@@ -106,34 +106,38 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     });
 
     for (final field in fields) {
-      if (field.isRequired) {
-        final value = _formData[field.key];
-        bool isEmpty = false;
+      final value = _formData[field.key];
+      bool isEmpty = false;
 
-        switch (field.type) {
-          case FieldType.text:
-          case FieldType.multiline:
-            isEmpty = value == null || (value as String).trim().isEmpty;
-            break;
-          case FieldType.number:
-            isEmpty = value == null || value == '' || value == 0;
-            break;
-          case FieldType.datetime:
-            isEmpty = value == null;
-            break;
-          case FieldType.radio:
-            isEmpty = value == null;
-            break;
-          case FieldType.checkbox:
-            // Para checkbox, generalmente no aplica ser obligatorio, pero si lo fuera:
-            isEmpty = false;
-            break;
-        }
+      switch (field.type) {
+        case FieldType.text:
+        case FieldType.multiline:
+          isEmpty = value == null || (value as String).trim().isEmpty;
+          break;
+        case FieldType.number:
+          final numVal = value is num ? value : num.tryParse(value.toString());
+          if (field.isRequired) {
+            isEmpty = numVal == null || numVal == 0;
+          }
+          if (numVal != null && ((field.min != null && numVal < field.min!) || (field.max != null && numVal > field.max!))) {
+            _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
+            isValid = false;
+          }
+          break;
+        case FieldType.datetime:
+          isEmpty = value == null;
+          break;
+        case FieldType.radio:
+          isEmpty = value == null;
+          break;
+        case FieldType.checkbox:
+          isEmpty = false;
+          break;
+      }
 
-        if (isEmpty) {
-          _validationErrors[field.key] = 'Este campo es obligatorio';
-          isValid = false;
-        }
+      if (field.isRequired && isEmpty) {
+        _validationErrors[field.key] ??= 'Este campo es obligatorio';
+        isValid = false;
       }
     }
 
@@ -142,12 +146,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   }
 
   Future<void> _save() async {
-    // Validar campos obligatorios antes de guardar
     if (!_validateRequiredFields()) {
-      // Mostrar mensaje de error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, complete todos los campos obligatorios'),
+          content: Text('Por favor, chequee los errores en los campos indicados'),
           backgroundColor: Colors.red,
         ),
       );
@@ -460,13 +462,18 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (v) {
-                _formData[f.key] = num.tryParse(v) ?? 0;
-                // Limpiar error si el usuario empieza a escribir
-                if (hasError && v.trim().isNotEmpty) {
-                  setState(() {
+                final parsed = num.tryParse(v);
+                if (parsed != null) {
+                  if ((f.min != null && parsed < f.min!) || (f.max != null && parsed > f.max!)) {
+                    _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max}';
+                  } else {
                     _validationErrors[f.key] = null;
-                  });
+                  }
+                  _formData[f.key] = parsed;
+                } else {
+                  _formData[f.key] = 0;
                 }
+                setState(() {});
               },
               decoration: InputDecoration(
                 labelText: f.label,
@@ -481,6 +488,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
             ),
           ],
         );
+
       case FieldType.multiline:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
