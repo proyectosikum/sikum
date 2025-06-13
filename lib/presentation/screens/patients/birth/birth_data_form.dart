@@ -543,7 +543,7 @@ class BirthDataForm extends ConsumerWidget {
                             value: option,
                             groupValue: DispositionEnum.values.firstWhere((e) => e.getValue() == data.disposition,
                                         orElse: () => DispositionEnum.roomingInHospitalization),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDispotition(option!.getValue()),
+                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDisposition(option!.getValue()),
                           );
                         }).toList(),
                     )

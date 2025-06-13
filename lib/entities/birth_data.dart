@@ -25,6 +25,7 @@ class BirthData{
   String? physicalExaminationDetails;
   String? birthPlace;
   String? birthPlaceDetails;
+  int? braceletNumber;
 
 BirthData({
   this.birthType,
@@ -50,6 +51,7 @@ BirthData({
   this.physicalExaminationDetails,
   this.birthPlace,
   this.birthPlaceDetails,
+  this.braceletNumber,
 });
 
   BirthData copyWith({
@@ -75,7 +77,8 @@ BirthData({
     String? physicalExamination,
     String? physicalExaminationDetails,
     String? birthPlace,
-     String? birthPlaceDetails,
+    String? birthPlaceDetails,
+    int? braceletNumber
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -101,6 +104,7 @@ BirthData({
     physicalExaminationDetails: physicalExaminationDetails ?? this.physicalExaminationDetails,
     birthPlace: birthPlace ?? this.birthPlace,
     birthPlaceDetails: birthPlaceDetails ?? this.birthPlaceDetails,
+    braceletNumber: braceletNumber?? this.braceletNumber,
     );
   }
 
@@ -129,6 +133,7 @@ BirthData({
       'physicalExaminationDetails': physicalExaminationDetails,
       'birthPlace': birthPlace,
       'birthPlaceDetails':birthPlaceDetails,
+      'braceletNumber': braceletNumber,
     };
   }
 
@@ -156,7 +161,8 @@ BirthData({
       physicalExamination: map['physicalExamination'],
       physicalExaminationDetails: map['physicalExaminationDetails'], 
       birthPlace: map['birthPlace'],
-      birthPlaceDetails: map['birthPlaceDetails'],  
+      birthPlaceDetails: map['birthPlaceDetails'],
+      braceletNumber: map['braceletNumber']  
     );
   }
 
