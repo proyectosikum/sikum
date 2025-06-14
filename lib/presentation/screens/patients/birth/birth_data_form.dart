@@ -37,8 +37,12 @@ class BirthDataForm extends ConsumerWidget {
           data: (p) {
             if (p == null) {
               return const Center(child: Text('Paciente no encontrado'));
-            }
+            } else {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ref.read(birthDataProvider.notifier).setPatient(p);
+              });
             return _completeFormView(context, p, ref);
+            }
           },
         ),
       );
@@ -64,34 +68,35 @@ class BirthDataForm extends ConsumerWidget {
 
     Widget _form(BuildContext context, Patient p, ref) {
 
-      ref.read(birthDataProvider.notifier).setPatient(p);
+      final data = ref.watch(birthDataProvider);
 
+/*
       BirthData data = BirthData(
-        birthType: ref.watch(birthDataProvider)?.birthType,
-        presentation: ref.watch(birthDataProvider)?.presentation, 
-        ruptureOfMembrane: ref.watch(birthDataProvider)?.ruptureOfMembrane, 
-        amnioticFluid: ref.watch(birthDataProvider)?.amnioticFluid , 
-        sex: ref.watch(birthDataProvider)?.sex, 
-        birthDate: ref.watch(birthDataProvider)?.birthDate,
-        birthTime: ref.watch(birthDataProvider)?.birthTime,
-        twin: ref.watch(birthDataProvider)?.twin,
-        firstApgarScore: ref.watch(birthDataProvider)?.firstApgarScore,
-        secondApgarScore: ref.watch(birthDataProvider)?.secondApgarScore,
-        thirdApgarScore: ref.watch(birthDataProvider)?.thirdApgarScore,
-        hasHepatitisBVaccine: ref.watch(birthDataProvider)?.hasHepatitisBVaccine, 
-        hasVitaminK: ref.watch(birthDataProvider)?.hasVitaminK ?? p.birthData?.hasVitaminK , 
-        hasOphthalmicDrops: ref.watch(birthDataProvider)?.hasOphthalmicDrops,
-        disposition: ref.watch(birthDataProvider)?.disposition,
-        gestationalAge: ref.watch(birthDataProvider)?.gestationalAge,
-        weight: ref.watch(birthDataProvider)?.weight,
-        length: ref.watch(birthDataProvider)?.length,
-        headCircumference: ref.watch(birthDataProvider)?.headCircumference,
-        physicalExamination:  ref.watch(birthDataProvider)?.physicalExamination,
-        physicalExaminationDetails: ref.watch(birthDataProvider)?.physicalExaminationDetails,
-        birthPlace : ref.watch(birthDataProvider)?.birthPlace,
-        birthPlaceDetails: ref.watch(birthDataProvider)?.birthPlaceDetails,
-        braceletNumber: ref.watch(birthDataProvider)?.braceletNumber,
+        birthType: birthData?.birthType,
+        presentation: birthData?.presentation, 
+        ruptureOfMembrane: birthData?.ruptureOfMembrane, 
+        amnioticFluid: birthData?.amnioticFluid , 
+        sex: birthData?.sex, 
+        birthDate: birthData?.birthDate,
+        birthTime: birthData?.birthTime,
+        twin: birthData?.twin,
+        firstApgarScore: birthData?.firstApgarScore,
+        secondApgarScore: birthData?.secondApgarScore,
+        thirdApgarScore: birthData?.thirdApgarScore,
+        hasHepatitisBVaccine: birthData?.hasHepatitisBVaccine, 
+        hasVitaminK: birthData?.hasVitaminK ?? p.birthData?.hasVitaminK , 
+        hasOphthalmicDrops: birthData?.hasOphthalmicDrops,
+        disposition: birthData?.disposition,
+        gestationalAge: birthData?.gestationalAge,
+        length: birthData?.length,
+        headCircumference: birthData?.headCircumference,
+        physicalExamination:  birthData?.physicalExamination,
+        physicalExaminationDetails: birthData?.physicalExaminationDetails,
+        birthPlace : birthData?.birthPlace,
+        birthPlaceDetails: birthData?.birthPlaceDetails,
+        braceletNumber: birthData?.braceletNumber,
       );
+    */
 
       return ListView(   
           shrinkWrap: true,
@@ -515,6 +520,7 @@ class BirthDataForm extends ConsumerWidget {
                   ),
                   SizedBox(height: 8),
                   TextFormField(
+                    //initialValue: data?.braceletNumber?.toString(),
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -591,7 +597,7 @@ class BirthDataForm extends ConsumerWidget {
                         try {
 
                           await ref.read(patientActionsProvider).submitBirthData(p.id, data);
-                          ref.read(birthDataProvider.notifier).reset();
+                          //ref.read(birthDataProvider.notifier).reset();
                           if (!context.mounted) return; // Asegura que el contexto sigue existiendo
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

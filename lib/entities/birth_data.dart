@@ -138,32 +138,60 @@ BirthData({
   }
 
   factory BirthData.fromMap(Map<String, dynamic> map) {
+    print("Datos de la base: $map");
+
     return BirthData(
-      birthType: map['birthType'],
-      presentation: map['presentation'],
-      ruptureOfMembrane: map['ruptureOfMembrane'],
-      amnioticFluid: map['amnioticFluid'],
-      sex: map['sex'],
-      twin: map['twin'],
-      firstApgarScore: map['firstApgarScore'],
-      secondApgarScore: map['secondApgarScore'],
-      thirdApgarScore: map['thirdApgarScore'],
+      birthType: map['birthType'] ?? '',
+      presentation: map['presentation'] ?? '' ,
+      ruptureOfMembrane: map['ruptureOfMembrane'] ?? '',
+      amnioticFluid: map['amnioticFluid'] ?? '',
+      sex: map['sex'] ?? '',
+      twin: map['twin'] ?? '',
+      firstApgarScore: map['firstApgarScore'] ?? '',
+      secondApgarScore: map['secondApgarScore'] ?? '',
+      thirdApgarScore: map['thirdApgarScore'] ?? '',
       hasHepatitisBVaccine: map['hasHepatitisBVaccine'] ?? false,
       hasVitaminK: map['hasVitaminK'] ?? false,
       hasOphthalmicDrops: map['hasOphthalmicDrops']?? false,
-      disposition: map['disposition'],
+      disposition: map['disposition'] ?? '',
       gestationalAge: map['gestationalAge'],
       birthDate:  map['birthDate'] != null ? (map['birthDate'] as Timestamp).toDate() : null, 
       birthTime: map['birthTime'],
-      weight: map['weight'],
+      weight: map['weight'] ,
       length: map['length'],
       headCircumference: map['headCircumference'],
       physicalExamination: map['physicalExamination'],
       physicalExaminationDetails: map['physicalExaminationDetails'], 
-      birthPlace: map['birthPlace'],
-      birthPlaceDetails: map['birthPlaceDetails'],
-      braceletNumber: map['braceletNumber']  
+      birthPlace: map['birthPlace'] ?? '' ,
+      birthPlaceDetails: map['birthPlaceDetails'] ?? '',
+      braceletNumber: map['braceletNumber'],
     );
   }
+
+
+  @override
+String toString() {
+  return '''
+  BirthData {
+    birthType: $birthType,
+    presentation: $presentation,
+    ruptureOfMembrane: $ruptureOfMembrane,
+    amnioticFluid: $amnioticFluid,
+    sex: $sex,
+    twin: $twin,
+    disposition: $disposition,
+    physicalExamination: $physicalExamination,
+    physicalExaminationDetails: $physicalExaminationDetails,
+    birthPlace: $birthPlace,
+    birthPlaceDetails: $birthPlaceDetails,
+    braceletNumber: $braceletNumber,
+    birthDate: $birthDate,
+    birthTime: $birthTime,
+    weight: $weight,
+    length: $length,
+    headCircumference: $headCircumference,
+  }
+  ''';
+}
 
 }
