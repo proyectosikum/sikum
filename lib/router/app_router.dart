@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sikum/presentation/screens/patients/birth/birth_data_form.dart';
 import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
+import 'package:sikum/presentation/screens/statistics/statistics.dart';
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
@@ -94,6 +95,10 @@ final GoRouter appRouter = GoRouter(
         return BirthDataForm(patientId: id);
       },
     ),
+    GoRoute(
+      path: '/estadisticas',
+      builder: (_, __) => const Statistics(),
+    ),
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
@@ -121,7 +126,8 @@ final GoRouter appRouter = GoRouter(
         '/usuario/editar',
         '/perfil',
         '/change',
-        '/forgot'
+        '/forgot',
+        '/estadisticas'
       ].any((p) => p == loc) || loc.startsWith('/usuario/detalle');
 
       if (isAdmin && !okAdmin) {
@@ -133,6 +139,7 @@ final GoRouter appRouter = GoRouter(
         '/perfil',
         '/change',
         '/forgot',
+        '/estadisticas'
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
