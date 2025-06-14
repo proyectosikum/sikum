@@ -123,5 +123,10 @@ void updateDispotition(String details) {
   state = state?.copyWith(disposition: details);
 }
 
+void updateBraceletNumber(int value) {
+  state = state?.copyWith(braceletNumber: value);
+}
+
+
  
 }
