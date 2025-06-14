@@ -8,10 +8,14 @@ final birthDataProvider = NotifierProvider<BirthDataNotifier,BirthData?>(BirthDa
 class BirthDataNotifier extends Notifier<BirthData?>{
 
   Patient? _patient;
+  bool isUpdateView = false;
 
   @override
   BirthData? build() {
-    print(_patient?.birthData.toString());
+    if(_patient?.birthData !=null){
+      isUpdateView=true;
+    }
+    print('NOTIFIER MODO CONSULTA $isUpdateView');
     return  state ?? _patient?.birthData;
   }
 

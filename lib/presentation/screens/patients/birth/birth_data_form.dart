@@ -16,14 +16,22 @@ import 'package:sikum/presentation/widgets/patient_summary.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
 // ignore: must_be_immutable
-class BirthDataForm extends ConsumerWidget {
+class BirthDataForm extends ConsumerStatefulWidget {
+
   final String patientId;
   
   const BirthDataForm({super.key, required this.patientId});
 
+  @override
+  ConsumerState<BirthDataForm> createState() => _BirthDataFormState();
+}
+
+class _BirthDataFormState extends ConsumerState<BirthDataForm> {
+  bool _isInitialized = false;
+
   @override  
-  Widget build(BuildContext context, ref) {
-      final detailAsync = ref.watch(patientDetailsStreamProvider(patientId));
+  Widget build(BuildContext context) {
+      final detailAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
       const green = Color(0xFF4F959D);
 
       return Scaffold(
@@ -37,12 +45,15 @@ class BirthDataForm extends ConsumerWidget {
           data: (p) {
             if (p == null) {
               return const Center(child: Text('Paciente no encontrado'));
-            } else {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ref.read(birthDataProvider.notifier).setPatient(p);
-              });
+            } 
+             if (!_isInitialized) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _initializeBirthData(p);
+            });
+            _isInitialized = true;
+          }
             return _completeFormView(context, p, ref);
-            }
+       
           },
         ),
       );
@@ -66,37 +77,19 @@ class BirthDataForm extends ConsumerWidget {
         );
     }
 
+      void _initializeBirthData(Patient p) {
+        final notifier = ref.read(birthDataProvider.notifier);
+        
+        // Evita recargar si es el mismo paciente
+        if (notifier.patient?.id == p.id) return;
+
+        notifier.reset();      // limpia estado anterior
+        notifier.setPatient(p); // carga datos del paciente actual
+      }
+
     Widget _form(BuildContext context, Patient p, ref) {
 
       final data = ref.watch(birthDataProvider);
-
-/*
-      BirthData data = BirthData(
-        birthType: birthData?.birthType,
-        presentation: birthData?.presentation, 
-        ruptureOfMembrane: birthData?.ruptureOfMembrane, 
-        amnioticFluid: birthData?.amnioticFluid , 
-        sex: birthData?.sex, 
-        birthDate: birthData?.birthDate,
-        birthTime: birthData?.birthTime,
-        twin: birthData?.twin,
-        firstApgarScore: birthData?.firstApgarScore,
-        secondApgarScore: birthData?.secondApgarScore,
-        thirdApgarScore: birthData?.thirdApgarScore,
-        hasHepatitisBVaccine: birthData?.hasHepatitisBVaccine, 
-        hasVitaminK: birthData?.hasVitaminK ?? p.birthData?.hasVitaminK , 
-        hasOphthalmicDrops: birthData?.hasOphthalmicDrops,
-        disposition: birthData?.disposition,
-        gestationalAge: birthData?.gestationalAge,
-        length: birthData?.length,
-        headCircumference: birthData?.headCircumference,
-        physicalExamination:  birthData?.physicalExamination,
-        physicalExaminationDetails: birthData?.physicalExaminationDetails,
-        birthPlace : birthData?.birthPlace,
-        birthPlaceDetails: birthData?.birthPlaceDetails,
-        braceletNumber: birthData?.braceletNumber,
-      );
-    */
 
       return ListView(   
           shrinkWrap: true,
@@ -291,7 +284,7 @@ class BirthDataForm extends ConsumerWidget {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF4F959D)), // ✅ Borde verde al seleccionar
+                      borderSide: BorderSide(color: Color(0xFF4F959D)),
                     ),
                   ),
                   onChanged: (value) {
@@ -671,54 +664,7 @@ class BirthDataForm extends ConsumerWidget {
         },
       );
     }
-/*
-    Future<void> _selectDate(BuildContext context, WidgetRef ref) async {
-      DateTime? pickedDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(1900),
-        lastDate: DateTime.now(),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData.light().copyWith(
-              primaryColor: Colors.green, // Color del encabezado
-              hintColor: Colors.green, // Color de selección
-              colorScheme: ColorScheme.light(primary: Colors.green), // Gama verde
-              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-            ),
-            child: child!,
-          );
-        },
-      );
 
-     if (pickedDate != null) {
-        ref.read(birthDataProvider.notifier).updateBirthDate(pickedDate);
-      }
-    }
-
-    Future<void> _selectTime(BuildContext context, WidgetRef ref) async {
-      TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData.light().copyWith(
-              primaryColor: Color(0xFF4F959D), // ✅ Gama verde
-              hintColor: Color(0xFF4F959D),
-              colorScheme: ColorScheme.light(primary: Color(0xFF4F959D)),
-              buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-            ),
-            child: child!,
-          );
-        },
-      );
-
-      if (pickedTime != null) {
-        final formattedTime = '${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}';
-        ref.read(birthDataProvider.notifier).updateBirthTime(formattedTime);
-      }
-    }
-*/
   
 }
 
