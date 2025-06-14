@@ -7,6 +7,7 @@ import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/services/epicrisis_pdf_service.dart';
 
 class ClinicalDischargeForm extends ConsumerStatefulWidget {
   final String patientId;
@@ -73,30 +74,24 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Cierre de internación realizado'),
-        content: const Text('Motivo: Alta clínica'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.go('/pacientes/${patient.id}');
+              context.go('/pacientes');
             },
             child: const Text('Cerrar'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _downloadEpicrisisPdf(patient);
+              EpicrisisPdfService.downloadEpicrisisPdf(patient);
+              context.go('/pacientes');
             },
             child: const Text('Descargar Epicrisis'),
           ),
         ],
       ),
-    );
-  }
-
-  void _downloadEpicrisisPdf(Patient p) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función de descarga aún no implementada en esta pantalla')),
     );
   }
 

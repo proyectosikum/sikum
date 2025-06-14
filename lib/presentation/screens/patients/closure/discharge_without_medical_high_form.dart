@@ -55,7 +55,6 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Cierre de internación realizado'),
-        content: const Text('Motivo: Egreso sin alta médica'),
         actions: [
           TextButton(
             onPressed: () {

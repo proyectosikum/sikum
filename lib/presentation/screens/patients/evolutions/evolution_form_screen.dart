@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,6 @@ class EvolutionFormScreen extends ConsumerStatefulWidget {
 class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   List<String> _allowedSpecs = [];
   String selectedSpec = '';
-  String? _prevSpecialty;
 
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
@@ -45,6 +45,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   @override
   void initState() {
     super.initState();
+
+    final userSpec = authChangeNotifier.specialty ?? '';
+
+    // 1.2) Carga _allowedSpecs con un fallback seguro
+    _allowedSpecs = _labelToKeys[userSpec]
+        ?? [evolutionFormConfig.keys.first];
+
+    // 1.3) Inicializa selectedSpec y el formulario
+    selectedSpec = _allowedSpecs.first;
+    _resetFormForSpec(selectedSpec);
   }
 
   @override
@@ -94,68 +104,74 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
   }
 
-    // Función para validar campos obligatorios
-  bool _validateRequiredFields() {
+  /// Valida todos los campos obligatorios y comprueba rangos en los FieldType.number
+  bool _validateForm() {
+    _validationErrors.clear();
     bool isValid = true;
+
+    // 1) Recoge los FieldConfig según la especialidad
     final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[selectedSpec]!;
+        : evolutionFormConfig[selectedSpec] ?? [];
 
-    setState(() {
-      _validationErrors.clear();
-    });
+    for (final f in fields) {
+      final val = _formData[f.key];
+      bool empty = false;
 
-    for (final field in fields) {
-      final value = _formData[field.key];
-      bool isEmpty = false;
-
-      switch (field.type) {
+      // 2) Chequeo de obligatoriedad
+      switch (f.type) {
         case FieldType.text:
         case FieldType.multiline:
-          isEmpty = value == null || (value as String).trim().isEmpty;
+          empty = (val as String?)?.trim().isEmpty ?? true;
           break;
         case FieldType.number:
-          final numVal = value is num ? value : num.tryParse(value.toString());
-          if (field.isRequired) {
-            isEmpty = numVal == null || numVal == 0;
-          }
-          if (numVal != null && ((field.min != null && numVal < field.min!) || (field.max != null && numVal > field.max!))) {
-            _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
-            isValid = false;
-          }
+          empty = val == null || val.toString().isEmpty;
           break;
         case FieldType.datetime:
-          isEmpty = value == null;
-          break;
         case FieldType.radio:
-          isEmpty = value == null;
+          empty = val == null;
           break;
         case FieldType.checkbox:
-          isEmpty = false;
+          empty = false;
           break;
       }
 
-      if (field.isRequired && isEmpty) {
-        _validationErrors[field.key] ??= 'Este campo es obligatorio';
+      if (f.isRequired && empty) {
+        _validationErrors[f.key] = 'Este campo es obligatorio';
         isValid = false;
+        continue; // no chequeamos rango si está vacío
+      }
+
+      // 3) Si es numérico, chequea min/max
+      if (f.type == FieldType.number && val != null && val.toString().isNotEmpty) {
+        final numVal = val is num ? val : num.tryParse(val.toString());
+        if (numVal != null) {
+          if ((f.min != null && numVal < f.min!) ||
+              (f.max != null && numVal > f.max!)) {
+            _validationErrors[f.key] =
+                'Debe estar entre ${f.min} y ${f.max}';
+            isValid = false;
+          }
+        }
       }
     }
 
-    setState(() {});
+    setState(() {}); // refresca los errores en pantalla
     return isValid;
   }
 
   Future<void> _save() async {
-    if (!_validateRequiredFields()) {
+    if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, chequee los errores en los campos indicados'),
+          content: Text('Por favor, corrige los errores en el formulario'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // 1) Reúne los datos…
     final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec]!;
@@ -166,16 +182,56 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           ? Timestamp.fromDate(v)
           : v;
     }
-    await ref
-        .read(evolutionActionsProvider(widget.patientId))
-        .addEvolution({'specialty': selectedSpec, 'details': details});
-    if (mounted) context.pop();
+
+    try {
+      // 2) Guarda en Firestore
+      await ref
+          .read(evolutionActionsProvider(widget.patientId))
+          .addEvolution({'specialty': selectedSpec, 'details': details});
+
+      if (!mounted) return;
+
+      // 3) Muestra el diálogo de éxito **sin hacer ningún pop previo**
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          backgroundColor: const Color(0xFFFFF8E1),
+          title: const Text("Evolución registrada ✅"),
+          content: const Text("La evolución se ha guardado correctamente."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // (a) Cierro el diálogo
+                Navigator.of(context).pop();
+                // (b) Ahora sí cierro la pantalla de formulario
+                context.pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar evolución: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     const green = Color(0xFF4F959D);
+
+    // 1) Stream de paciente
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
+    // 2) Stream de evoluciones
+    final evolutionsAsync = ref.watch(evolutionsStreamProvider(widget.patientId));
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
@@ -187,26 +243,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         data: (p) {
           if (p == null) return const Center(child: Text('Paciente no encontrado'));
 
-          // Reacciona al cambio de specialty del usuario
-          return AnimatedBuilder(
-            animation: authChangeNotifier,
-            builder: (context, _) {
-              final userSpec = authChangeNotifier.specialty ?? '';
-              if (userSpec != _prevSpecialty) {
-                _prevSpecialty = userSpec;
-
-                _allowedSpecs = _labelToKeys[userSpec] ?? [
-                  evolutionFormConfig.keys.firstWhere(
-                      (k) => _specLabel(k) == userSpec,
-                      orElse: () => evolutionFormConfig.keys.first)
-                ];
-
-                selectedSpec = _allowedSpecs.first;
-
-                _resetFormForSpec(selectedSpec);
-              }
-
-              return _buildForm(context, p, green);
+          // Esperamos al stream de evoluciones
+          return evolutionsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator(color: green)),
+            // Si hay error, en lugar de bloquear con un Center(...), simplemente construimos el form con hasFei=false
+            error: (_, __) => _buildForm(context, p, green, false),
+            data: (evolutions) {
+              final hasFei = evolutions.any((e) => e.specialty == 'enfermeria_fei');
+              return _buildForm(context, p, green, hasFei);
             },
           );
         },
@@ -214,9 +258,27 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     );
   }
 
-  Widget _buildForm(BuildContext context, Patient p, Color green) {
+  Widget _buildForm(BuildContext context, Patient p, Color green, bool hasFei) {
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
+
+    if (_allowedSpecs.isEmpty) {
+      // Programa la inicialización justo después de este frame
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          final userSpec = authChangeNotifier.specialty ?? '';
+          _allowedSpecs = _labelToKeys[userSpec] ??
+              [
+                evolutionFormConfig.keys
+                    .firstWhere((k) => _specLabel(k) == userSpec,
+                        orElse: () => evolutionFormConfig.keys.first)
+              ];
+          selectedSpec = _allowedSpecs.first;
+          _resetFormForSpec(selectedSpec);
+        });
+      });
+    }
+
     final isNeonato = selectedSpec == 'neonatologia';
 
     return SafeArea(
@@ -254,7 +316,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
                 child: Column(
                   children: [
-                    _buildSpecSelector(green, cream),
+                    _buildSpecSelector(green, cream, hasFei),
                     const SizedBox(height: 16),
                     Expanded(
                       child: SingleChildScrollView(
@@ -321,11 +383,40 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     );
   }
 
-  Widget _buildSpecSelector(Color green, Color cream) {
+  Widget _buildSpecSelector(Color green, Color cream, bool hasFei) {
+    // Filtramos la lista local de _allowedSpecs
+    final specs = _allowedSpecs
+        .where((s) => !(hasFei && s == 'enfermeria_fei'))
+        .toList();
+
+    if (specs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: cream,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: green),
+        ),
+        child: const Text(
+          'No hay especialidades disponibles',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    // Si el spec seleccionado ya no está en la lista, lo reasignamos
+    if (!specs.contains(selectedSpec)) {
+      selectedSpec = specs.first;
+      _resetFormForSpec(selectedSpec);
+    }
+
     return PopupMenuButton<String>(
-      enabled: _allowedSpecs.length > 1,
+      enabled: specs.length > 1,
       color: cream,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: green)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: green)),
       initialValue: selectedSpec,
       onSelected: (newSpec) {
         _resetFormForSpec(newSpec);
@@ -334,12 +425,20 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           _page = 0;
         });
       },
-      itemBuilder: (_) => _allowedSpecs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s)))).toList(),
+      itemBuilder: (_) =>
+          specs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s))))
+              .toList(),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(_specLabel(selectedSpec)), const Icon(Icons.arrow_drop_down)]),
+        decoration: BoxDecoration(
+            color: cream,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: green)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(_specLabel(selectedSpec)), const Icon(Icons.arrow_drop_down)],
+        ),
       ),
     );
   }
@@ -603,7 +702,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 );
                 if (picked != null) {
                   _formData[f.key] = picked;
-                  _controllers[f.key]!.text = DateFormat('dd/MM/yyyy').format(picked);
+                  final ctrl = _controllers[f.key];
+                  if (ctrl != null) {
+                    ctrl.text = DateFormat('dd/MM/yyyy').format(picked);
+                  }
                   // Limpiar error cuando se selecciona una fecha
                   if (hasError) {
                     setState(() {
