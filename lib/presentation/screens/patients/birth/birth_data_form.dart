@@ -286,6 +286,7 @@ class BirthDataForm extends ConsumerWidget {
                 ),
                 SizedBox(height: 8),
                 TextFormField(
+                  initialValue: data?.gestationalAge?.toString() ?? 'Sin dato',
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -388,6 +389,7 @@ class BirthDataForm extends ConsumerWidget {
             Text("Peso (grs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
+                initialValue: data?.weight?.toString() ?? 'Sin dato',
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -403,6 +405,7 @@ class BirthDataForm extends ConsumerWidget {
               Text("Talla (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
+                initialValue: data?.length?.toString() ?? 'Sin dato',
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -418,6 +421,7 @@ class BirthDataForm extends ConsumerWidget {
               Text("Perímetro Cefálico (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
+                initialValue: data?.headCircumference?.toString() ?? 'Sin dato',
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -468,6 +472,7 @@ class BirthDataForm extends ConsumerWidget {
                   if (data.physicalExamination == "Otros") ...[
                     SizedBox(height: 8),
                     TextFormField(
+                      initialValue: data?.physicalExaminationDetails ?? 'Sin dato',
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Detalles del examen físico",
@@ -520,7 +525,7 @@ class BirthDataForm extends ConsumerWidget {
                   ),
                   SizedBox(height: 8),
                   TextFormField(
-                    //initialValue: data?.braceletNumber?.toString(),
+                    initialValue: data?.braceletNumber?.toString() ?? 'Sin dato',
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -597,7 +602,6 @@ class BirthDataForm extends ConsumerWidget {
                         try {
 
                           await ref.read(patientActionsProvider).submitBirthData(p.id, data);
-                          //ref.read(birthDataProvider.notifier).reset();
                           if (!context.mounted) return; // Asegura que el contexto sigue existiendo
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

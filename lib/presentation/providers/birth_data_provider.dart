@@ -17,8 +17,9 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
   void setPatient(Patient p){ 
     if(_patient==null || p.id != _patient!.id){
+      reset();
       _patient=p;
-      state = p.birthData; 
+      state = p.birthData ?? BirthData();
     }
   }
 
