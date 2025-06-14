@@ -31,6 +31,51 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
   bool isEditing = false;
   int _page = 0; // Para neonatología, controla página 0 o 1
   final Map<String, dynamic> _formData = {};
+  String? _currentSpecialty;
+  final Map<String, String?> _validationErrors = {}; 
+  bool _triedToSave = false; 
+
+  /// Valida todos los campos con isRequired==true según la especialidad actual.
+  /// Muestra un SnackBar y devuelve false si falta alguno.
+  bool _validateRequiredFields() {
+    _triedToSave = true;
+    _validationErrors.clear();
+
+    final spec = _currentSpecialty!;
+    final List<FieldConfig> fields = spec == 'neonatologia'
+        ? [...neonatologyPage1, ...neonatologyPage2]
+        : evolutionFormConfig[spec] ?? [];
+
+    bool isValid = true;
+
+    for (final f in fields.where((f) => f.isRequired)) {
+      final val = _formData[f.key];
+      bool empty = false;
+      switch (f.type) {
+        case FieldType.text:
+        case FieldType.multiline:
+          empty = val == null || (val as String).trim().isEmpty;
+          break;
+        case FieldType.number:
+          empty = val == null || val.toString().isEmpty;
+          break;
+        case FieldType.datetime:
+        case FieldType.radio:
+          empty = val == null;
+          break;
+        case FieldType.checkbox:
+          empty = false;
+          break;
+      }
+      if (empty) {
+        isValid = false;
+        _validationErrors[f.key] = 'Este campo es obligatorio';
+      }
+    }
+
+    setState((){}); // Para que se redibujen los campos con errores
+    return isValid;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +118,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
     // ----------------------------------------------------------------------------------------------------
     // 1) Extraemos de la evolución: specialty, details, createdAt y createdByUserId
     final String specialty = evolution['specialty'] as String;
+    _currentSpecialty ??= specialty;
     final Map<String, dynamic> details = evolution['details'] as Map<String, dynamic>;
     final dynamic createdAt = evolution['createdAt'];                    // Suele ser un Timestamp de Firestore
     final String createdByUserId = evolution['createdByUserId'] as String;
@@ -119,8 +165,15 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
     // ----------------------------------------------------------------------------------------------------
     // 5) Inicializamos _formData con los datos de "details" la primera vez (si viene vacío)
     if (_formData.isEmpty) {
-      _formData.addAll(details);
-    }
+      details.forEach((key, value) {
+        if (value is Timestamp) {
+          // convierte a DateTime
+          _formData[key] = value.toDate();
+        } else {
+          _formData[key] = value;
+        }
+  });
+}
     // ----------------------------------------------------------------------------------------------------
 
     // ----------------------------------------------------------------------------------------------------
@@ -651,6 +704,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           onChanged: (v) => _formData[field.key] = v,
           decoration: InputDecoration(
             labelText: field.label,
+            errorText: _validationErrors[field.key],
             border: const OutlineInputBorder(),
           ),
         );
@@ -662,6 +716,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           onChanged: (v) => _formData[field.key] = v,
           decoration: InputDecoration(
             labelText: field.label,
+            errorText: _validationErrors[field.key],
             border: const OutlineInputBorder(),
           ),
         );
@@ -673,6 +728,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           onChanged: (v) => _formData[field.key] = v,
           decoration: InputDecoration(
             labelText: field.label,
+            errorText: _validationErrors[field.key],
             border: const OutlineInputBorder(),
           ),
         );
@@ -762,7 +818,6 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                   firstDate: DateTime(1900),
                   lastDate: DateTime(2100),
                 );
-
                 if (pickedDate != null) {
                   final TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
@@ -770,7 +825,6 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                         ? TimeOfDay.fromDateTime(currentDate)
                         : TimeOfDay.now(),
                   );
-
                   if (pickedTime != null) {
                     final DateTime finalDateTime = DateTime(
                       pickedDate.year,
@@ -779,9 +833,12 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                       pickedTime.hour,
                       pickedTime.minute,
                     );
-
                     setState(() {
                       _formData[field.key] = finalDateTime;
+                      // al cambiar, limpiamos el error de este campo
+                      if (_triedToSave && _validationErrors[field.key] != null) {
+                        _validationErrors.remove(field.key);
+                      }
                     });
                   }
                 }
@@ -790,7 +847,11 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
+                  border: Border.all(
+                    color: _triedToSave && _validationErrors[field.key] != null
+                        ? Colors.red
+                        : Colors.grey,
+                  ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Row(
@@ -810,6 +871,17 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                 ),
               ),
             ),
+            // Mensaje de error debajo
+            if (_triedToSave && _validationErrors[field.key] != null) ...[
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text(
+                  _validationErrors[field.key]!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            ],
           ],
         );
     }
@@ -834,6 +906,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
 
   /// Guarda los cambios en Firestore mediante tu acción definida en el provider
   Future<void> _saveChanges() async {
+    if (!_validateRequiredFields()) return;
     try {
       await ref
           .read(evolutionActionsProvider(widget.patientId))
