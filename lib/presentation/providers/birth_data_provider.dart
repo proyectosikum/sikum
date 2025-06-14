@@ -11,17 +11,20 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
   @override
   BirthData? build() {
-    return _patient?.birthData ?? BirthData(
-    hasHepatitisBVaccine: _patient?.birthData?.hasHepatitisBVaccine ?? false,
-    hasVitaminK : _patient?.birthData?.hasVitaminK ?? false ,
-    hasOphthalmicDrops : _patient?.birthData?.hasOphthalmicDrops ?? false,
-  );
+    print(_patient?.birthData.toString());
+    return  state ?? _patient?.birthData;
   }
 
-  void setPatient(Patient p){
-    _patient=p;
-    print('paso id: $_patient');
+  void setPatient(Patient p){ 
+    if(_patient==null || p.id != _patient!.id){
+      reset();
+      _patient=p;
+      state = p.birthData ?? BirthData();
+    }
   }
+
+  Patient? get patient => _patient;
+
 
   void reset(){
     state=BirthData();
@@ -83,7 +86,7 @@ class BirthDataNotifier extends Notifier<BirthData?>{
     state = state?.copyWith(gestationalAge:value);
   }
 
-  void updateBirthDate(Timestamp birthDate) {
+  void updateBirthDate(DateTime birthDate) {
   state = state?.copyWith(birthDate: birthDate);
 }
 
@@ -119,14 +122,8 @@ void updateBirthPlaceDetails(String details) {
   state = state?.copyWith(birthPlaceDetails: details);
 }
 
-void updateDispotition(String details) {
-  state = state?.copyWith(disposition: details);
-}
-
 void updateBraceletNumber(int value) {
   state = state?.copyWith(braceletNumber: value);
 }
 
-
- 
 }
