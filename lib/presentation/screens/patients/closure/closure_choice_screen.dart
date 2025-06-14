@@ -100,10 +100,9 @@ class ClosureChoiceScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             foregroundColor: cream,
                           ),
-                          /*onPressed: status == DischargeStatus.ready
+                          onPressed: status == DischargeStatus.ready
                               ? () => context.push('/pacientes/$patientId/cerrar/alta')
-                              : null,*/
-                            onPressed: () => context.push('/pacientes/$patientId/cerrar/alta'), //PUESTO PARA PROBAR. MODIFICAR!!!!!
+                              : null,
                           label: const Text('Alta clínica'),
                         ),
                         const SizedBox(height: 32),

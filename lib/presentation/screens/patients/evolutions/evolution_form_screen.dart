@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,6 @@ class EvolutionFormScreen extends ConsumerStatefulWidget {
 class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   List<String> _allowedSpecs = [];
   String selectedSpec = '';
-  String? _prevSpecialty;
 
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
@@ -45,6 +45,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   @override
   void initState() {
     super.initState();
+
+    final userSpec = authChangeNotifier.specialty ?? '';
+
+    // 1.2) Carga _allowedSpecs con un fallback seguro
+    _allowedSpecs = _labelToKeys[userSpec]
+        ?? [evolutionFormConfig.keys.first];
+
+    // 1.3) Inicializa selectedSpec y el formulario
+    selectedSpec = _allowedSpecs.first;
+    _resetFormForSpec(selectedSpec);
   }
 
   @override
@@ -98,8 +108,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   bool _validateRequiredFields() {
     bool isValid = true;
     final fields = selectedSpec == 'neonatologia'
-        ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[selectedSpec]!;
+      ? [...neonatologyPage1, ...neonatologyPage2]
+      : (evolutionFormConfig[selectedSpec] ?? []);
 
     setState(() {
       _validationErrors.clear();
@@ -175,7 +185,11 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   @override
   Widget build(BuildContext context) {
     const green = Color(0xFF4F959D);
+
+    // 1) Stream de paciente
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
+    // 2) Stream de evoluciones
+    final evolutionsAsync = ref.watch(evolutionsStreamProvider(widget.patientId));
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
@@ -187,26 +201,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         data: (p) {
           if (p == null) return const Center(child: Text('Paciente no encontrado'));
 
-          // Reacciona al cambio de specialty del usuario
-          return AnimatedBuilder(
-            animation: authChangeNotifier,
-            builder: (context, _) {
-              final userSpec = authChangeNotifier.specialty ?? '';
-              if (userSpec != _prevSpecialty) {
-                _prevSpecialty = userSpec;
+          // Esperamos al stream de evoluciones
+          return evolutionsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator(color: green)),
+            error: (_, __) => const Center(child: Text('Error al cargar evoluciones')),
+            data: (evolutions) {
+              // 3) Detectamos si ya tiene una FEI
+              final hasFei = evolutions.any((e) => e.specialty == 'enfermeria_fei');
 
-                _allowedSpecs = _labelToKeys[userSpec] ?? [
-                  evolutionFormConfig.keys.firstWhere(
-                      (k) => _specLabel(k) == userSpec,
-                      orElse: () => evolutionFormConfig.keys.first)
-                ];
-
-                selectedSpec = _allowedSpecs.first;
-
-                _resetFormForSpec(selectedSpec);
-              }
-
-              return _buildForm(context, p, green);
+              // 4) Construimos la forma, pasándole el flag
+              return _buildForm(context, p, green, hasFei);
             },
           );
         },
@@ -214,9 +218,27 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     );
   }
 
-  Widget _buildForm(BuildContext context, Patient p, Color green) {
+  Widget _buildForm(BuildContext context, Patient p, Color green, bool hasFei) {
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
+
+    if (_allowedSpecs.isEmpty) {
+      // Programa la inicialización justo después de este frame
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          final userSpec = authChangeNotifier.specialty ?? '';
+          _allowedSpecs = _labelToKeys[userSpec] ??
+              [
+                evolutionFormConfig.keys
+                    .firstWhere((k) => _specLabel(k) == userSpec,
+                        orElse: () => evolutionFormConfig.keys.first)
+              ];
+          selectedSpec = _allowedSpecs.first;
+          _resetFormForSpec(selectedSpec);
+        });
+      });
+    }
+
     final isNeonato = selectedSpec == 'neonatologia';
 
     return SafeArea(
@@ -254,7 +276,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
                 child: Column(
                   children: [
-                    _buildSpecSelector(green, cream),
+                    _buildSpecSelector(green, cream, hasFei),
                     const SizedBox(height: 16),
                     Expanded(
                       child: SingleChildScrollView(
@@ -321,11 +343,40 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     );
   }
 
-  Widget _buildSpecSelector(Color green, Color cream) {
+  Widget _buildSpecSelector(Color green, Color cream, bool hasFei) {
+    // Filtramos la lista local de _allowedSpecs
+    final specs = _allowedSpecs
+        .where((s) => !(hasFei && s == 'enfermeria_fei'))
+        .toList();
+
+    if (specs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: cream,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: green),
+        ),
+        child: const Text(
+          'No hay especialidades disponibles',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    // Si el spec seleccionado ya no está en la lista, lo reasignamos
+    if (!specs.contains(selectedSpec)) {
+      selectedSpec = specs.first;
+      _resetFormForSpec(selectedSpec);
+    }
+
     return PopupMenuButton<String>(
-      enabled: _allowedSpecs.length > 1,
+      enabled: specs.length > 1,
       color: cream,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: green)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: green)),
       initialValue: selectedSpec,
       onSelected: (newSpec) {
         _resetFormForSpec(newSpec);
@@ -334,12 +385,20 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           _page = 0;
         });
       },
-      itemBuilder: (_) => _allowedSpecs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s)))).toList(),
+      itemBuilder: (_) =>
+          specs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s))))
+              .toList(),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(_specLabel(selectedSpec)), const Icon(Icons.arrow_drop_down)]),
+        decoration: BoxDecoration(
+            color: cream,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: green)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(_specLabel(selectedSpec)), const Icon(Icons.arrow_drop_down)],
+        ),
       ),
     );
   }
@@ -603,7 +662,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 );
                 if (picked != null) {
                   _formData[f.key] = picked;
-                  _controllers[f.key]!.text = DateFormat('dd/MM/yyyy').format(picked);
+                  final ctrl = _controllers[f.key];
+                  if (ctrl != null) {
+                    ctrl.text = DateFormat('dd/MM/yyyy').format(picked);
+                  }
                   // Limpiar error cuando se selecciona una fecha
                   if (hasError) {
                     setState(() {

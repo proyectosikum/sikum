@@ -1,14 +1,13 @@
-// lib/presentation/screens/patients/evolutions/evolution_details.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/evolution_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
-import 'package:sikum/presentation/providers/user_provider.dart';     // Ya lo tenías
+import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
@@ -28,17 +27,16 @@ class EvolutionDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen> {
+  final Map<String, TextEditingController> _controllers = {};
   bool isEditing = false;
   int _page = 0; // Para neonatología, controla página 0 o 1
   final Map<String, dynamic> _formData = {};
   String? _currentSpecialty;
-  final Map<String, String?> _validationErrors = {}; 
-  bool _triedToSave = false; 
+  final Map<String, String?> _validationErrors = {};
 
   /// Valida todos los campos con isRequired==true según la especialidad actual.
   /// Muestra un SnackBar y devuelve false si falta alguno.
   bool _validateRequiredFields() {
-    _triedToSave = true;
     _validationErrors.clear();
 
     final spec = _currentSpecialty!;
@@ -657,7 +655,21 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
         break;
       case FieldType.datetime:
         if (value != null) {
-          displayValue = _formatDate(value);
+          // Convertir a DateTime
+          DateTime date;
+          if (value is DateTime) {
+            date = value;
+          } else if (value is Timestamp) {
+            date = value.toDate();
+          } else {
+            try {
+              date = DateTime.parse(value.toString());
+            } catch (_) {
+              date = DateTime.now();
+            }
+          }
+          // Formatear solo fecha
+          displayValue = DateFormat('dd/MM/yyyy').format(date);
         } else {
           displayValue = 'No especificado';
         }
@@ -777,111 +789,79 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
         );
 
       case FieldType.datetime:
-        // Obtener el valor actual de fecha
+        // 1) Convertir value a DateTime sin hora
         DateTime? currentDate;
         if (value != null) {
+          DateTime raw;
           if (value is DateTime) {
-            currentDate = value;
+            raw = value;
           } else {
             try {
-              // Si es un Timestamp de Firestore
-              currentDate = value.toDate();
-            } catch (e) {
-              // Si es un String, intentar parsearlo
-              try {
-                currentDate = DateTime.parse(value.toString());
-              } catch (e) {
-                currentDate = null;
-              }
+              raw = (value as Timestamp).toDate();
+            } catch (_) {
+              raw = DateTime.parse(value.toString());
             }
           }
+          // Descartamos la hora, quedamos solo con la parte de fecha
+          currentDate = DateTime(raw.year, raw.month, raw.day);
+        }
+        // Si el usuario ya editó esa fecha, la preferimos (también sin hora)
+        if (_formData[field.key] != null) {
+          final edited = _formData[field.key] as DateTime;
+          currentDate = DateTime(edited.year, edited.month, edited.day);
         }
 
-        // Si hay un valor en _formData, lo usamos
-        if (_formData[field.key] != null) {
-          currentDate = _formData[field.key] as DateTime;
+        // 2) Calculamos hoy sin hora
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // 3) Elegimos initialDate = currentDate (si existe y no pasa de hoy) o hoy
+        DateTime initial = currentDate ?? today;
+        if (initial.isAfter(today)) {
+          initial = today;
         }
+
+        // 4) Preparamos el controlador con texto inicial
+        final ctrl = _controllers[field.key] ??= TextEditingController(
+          text: currentDate != null ? DateFormat('dd/MM/yyyy').format(currentDate) : '',
+        );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              field.label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(field.label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            InkWell(
+            TextField(
+              controller: ctrl,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: 'Seleccionar fecha',
+                errorText: _validationErrors[field.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: _validationErrors[field.key] != null ? Colors.red : Colors.grey,
+                  ),
+                ),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
               onTap: () async {
-                final DateTime? pickedDate = await showDatePicker(
+                final picked = await showDatePicker(
                   context: context,
-                  initialDate: currentDate ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
+                  initialDate: initial,
+                  firstDate: DateTime(2000),
+                  lastDate: today,
                 );
-                if (pickedDate != null) {
-                  final TimeOfDay? pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: currentDate != null
-                        ? TimeOfDay.fromDateTime(currentDate)
-                        : TimeOfDay.now(),
-                  );
-                  if (pickedTime != null) {
-                    final DateTime finalDateTime = DateTime(
-                      pickedDate.year,
-                      pickedDate.month,
-                      pickedDate.day,
-                      pickedTime.hour,
-                      pickedTime.minute,
-                    );
-                    setState(() {
-                      _formData[field.key] = finalDateTime;
-                      // al cambiar, limpiamos el error de este campo
-                      if (_triedToSave && _validationErrors[field.key] != null) {
-                        _validationErrors.remove(field.key);
-                      }
-                    });
-                  }
+                if (picked != null) {
+                  setState(() {
+                    // Guardamos solo la parte fecha
+                    final clean = DateTime(picked.year, picked.month, picked.day);
+                    _formData[field.key] = clean;
+                    ctrl.text = DateFormat('dd/MM/yyyy').format(clean);
+                    _validationErrors.remove(field.key);
+                  });
                 }
               },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: _triedToSave && _validationErrors[field.key] != null
-                        ? Colors.red
-                        : Colors.grey,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      currentDate != null
-                          ? _formatDate(currentDate)
-                          : 'Seleccionar fecha y hora',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: currentDate != null ? Colors.black87 : Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
-            // Mensaje de error debajo
-            if (_triedToSave && _validationErrors[field.key] != null) ...[
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  _validationErrors[field.key]!,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              ),
-            ],
           ],
         );
     }
