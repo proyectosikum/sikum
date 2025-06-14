@@ -94,12 +94,11 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Cierre de internación realizado'),
-        content: const Text('Motivo: Alta clínica'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.go('/pacientes/${patient.id}');
+              context.go('/pacientes');
             },
             child: const Text('Cerrar'),
           ),
@@ -107,6 +106,7 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
             onPressed: () {
               Navigator.of(context).pop();
               EpicrisisPdfService.downloadEpicrisisPdf(patient);
+              context.go('/pacientes');
             },
             child: const Text('Descargar Epicrisis'),
           ),

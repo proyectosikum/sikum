@@ -154,10 +154,8 @@ class EpicrisisPdfService {
 
     final dischargeWeight      = clinicalClosure['weight']?.toString()  ?? '';
     int diasVida = 0;
-    if (birthDateStr.isNotEmpty && dischargeDateFormatted.isNotEmpty) {
-      final bDate = DateTime.parse(birthDateStr);
-      final dDate = DateTime.parse(dischargeDateFormatted);
-      diasVida = dDate.difference(bDate).inDays;
+    if (birthDate != null && dischargeDate != null) {
+      diasVida = dischargeDate.difference(birthDate).inDays;
     }
     double descensoPeso = 0;
     if (birthWeight.isNotEmpty && dischargeWeight.isNotEmpty) {
@@ -427,23 +425,28 @@ class EpicrisisPdfService {
             pw.SizedBox(height: 12),
 
             // -- Información final --
+            pw.Text('¿CUÁNDO CONSULTAR EN LA GUARDIA?', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 4),
             pw.Text(
-              '¿CUÁNDO CONSULTAR EN LA GUARDIA?\n'
               'Fiebre (temperatura axilar > 37,8°C), dificultad para respirar, agitación, '
               'marca las costillas, aleteo nasal, coloración azulada o amarilla de piel o mucosas, '
               'falta de orina, mucosas secas, irritabilidad, somnolencia, movimientos anormales.',
               style: pw.TextStyle(fontSize: 10),
             ),
             pw.SizedBox(height: 8),
+
+            pw.Text('PAUTAS DE SUEÑO SEGURO', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 4),
             pw.Text(
-              'PAUTAS DE SUEÑO SEGURO\n'
               'Dormir boca arriba, en su propia cuna, sin almohada, colchón firme, tapado hasta tórax dejando brazo afuera, '
               'ambiente ventilado, NO FUMAR.',
               style: pw.TextStyle(fontSize: 10),
             ),
             pw.SizedBox(height: 8),
+
+            pw.Text('CUIDADOS DEL CORDÓN UMBILICAL', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 4),
             pw.Text(
-              'CUIDADOS DEL CORDÓN UMBILICAL\n'
               'El cordón umbilical se seca y se cae solo 1 o 2 semanas después del nacimiento.\n'
               'Hasta ese momento, debes cuidarlo una vez por día:',
               style: pw.TextStyle(fontSize: 10),

@@ -53,6 +53,11 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
 
     final evolutionsAsync = ref.watch(evolutionsStreamProvider(p.id));
 
+    final closure = p.closureOfHospitalization;
+    final bool allowEpicrisis = closure != null && closure['reason'] == 'clinical_discharge';
+
+    final bool showActions = p.available || allowEpicrisis;
+
     return SafeArea(
       child: Column(
         children: [
@@ -229,54 +234,67 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
           ),
 
           // Menú de acciones
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: PopupMenuButton<String>(
-              color: cream,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: green),
-              ),
-              onSelected: (value) {
-                switch (value) {
-                  case 'evolucionar':
-                    context.push('/paciente/evolucionar/${p.id}');
-                    break;
-                  case 'cerrar':
-                    context.push('/pacientes/${p.id}/cerrar');
-                    break;
-                  case 'descargar':
-                    _downloadPdf(p);
-                    break;
-                  case 'descargar_epicrisis':
-                    EpicrisisPdfService.downloadEpicrisisPdf(p);
-                    break;
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: cream,
+          if (showActions)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: PopupMenuButton<String>(
+                color: cream,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: green, width: 1),
+                  side: BorderSide(color: green),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text('Seleccione una acción...', style: TextStyle(fontSize: 16)),
-                    Icon(Icons.arrow_drop_down),
-                  ],
+                onSelected: (value) {
+                  switch (value) {
+                    case 'evolucionar':
+                      context.push('/paciente/evolucionar/${p.id}');
+                      break;
+                    case 'cerrar':
+                      context.push('/pacientes/${p.id}/cerrar');
+                      break;
+                    case 'descargar':
+                      _downloadPdf(p);
+                      break;
+                    case 'descargar_epicrisis':
+                      EpicrisisPdfService.downloadEpicrisisPdf(p);
+                      break;
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: cream,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: green, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text('Seleccione una acción...', style: TextStyle(fontSize: 16)),
+                      Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
                 ),
+                itemBuilder: (_) {
+                  if (!p.available) {
+                    // paciente cerrado con alta clínica
+                    return const [
+                      PopupMenuItem(
+                        value: 'descargar_epicrisis',
+                        child: Text('Descargar Epicrisis'),
+                      ),
+                    ];
+                  } else {
+                    // paciente activo
+                    return const [
+                      PopupMenuItem(value: 'evolucionar', child: Text('Evolucionar')),
+                      PopupMenuItem(value: 'cerrar',      child: Text('Cerrar HC')),
+                      PopupMenuItem(value: 'descargar',  child: Text('Descargar HC')),
+                    ];
+                  }
+                },
               ),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'evolucionar', child: Text('Evolucionar')),
-                PopupMenuItem(value: 'cerrar', child: Text('Cerrar HC')),
-                PopupMenuItem(value: 'descargar', child: Text('Descargar HC')),
-                PopupMenuItem(value: 'descargar_epicrisis', child: Text('Descargar Epicrisis')),
-              ],
             ),
-          ),
         ],
       ),
     );

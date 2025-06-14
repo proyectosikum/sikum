@@ -104,68 +104,74 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
   }
 
-    // Función para validar campos obligatorios
-  bool _validateRequiredFields() {
+  /// Valida todos los campos obligatorios y comprueba rangos en los FieldType.number
+  bool _validateForm() {
+    _validationErrors.clear();
     bool isValid = true;
+
+    // 1) Recoge los FieldConfig según la especialidad
     final fields = selectedSpec == 'neonatologia'
-      ? [...neonatologyPage1, ...neonatologyPage2]
-      : (evolutionFormConfig[selectedSpec] ?? []);
+        ? [...neonatologyPage1, ...neonatologyPage2]
+        : evolutionFormConfig[selectedSpec] ?? [];
 
-    setState(() {
-      _validationErrors.clear();
-    });
+    for (final f in fields) {
+      final val = _formData[f.key];
+      bool empty = false;
 
-    for (final field in fields) {
-      final value = _formData[field.key];
-      bool isEmpty = false;
-
-      switch (field.type) {
+      // 2) Chequeo de obligatoriedad
+      switch (f.type) {
         case FieldType.text:
         case FieldType.multiline:
-          isEmpty = value == null || (value as String).trim().isEmpty;
+          empty = (val as String?)?.trim().isEmpty ?? true;
           break;
         case FieldType.number:
-          final numVal = value is num ? value : num.tryParse(value.toString());
-          if (field.isRequired) {
-            isEmpty = numVal == null || numVal == 0;
-          }
-          if (numVal != null && ((field.min != null && numVal < field.min!) || (field.max != null && numVal > field.max!))) {
-            _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
-            isValid = false;
-          }
+          empty = val == null || val.toString().isEmpty;
           break;
         case FieldType.datetime:
-          isEmpty = value == null;
-          break;
         case FieldType.radio:
-          isEmpty = value == null;
+          empty = val == null;
           break;
         case FieldType.checkbox:
-          isEmpty = false;
+          empty = false;
           break;
       }
 
-      if (field.isRequired && isEmpty) {
-        _validationErrors[field.key] ??= 'Este campo es obligatorio';
+      if (f.isRequired && empty) {
+        _validationErrors[f.key] = 'Este campo es obligatorio';
         isValid = false;
+        continue; // no chequeamos rango si está vacío
+      }
+
+      // 3) Si es numérico, chequea min/max
+      if (f.type == FieldType.number && val != null && val.toString().isNotEmpty) {
+        final numVal = val is num ? val : num.tryParse(val.toString());
+        if (numVal != null) {
+          if ((f.min != null && numVal < f.min!) ||
+              (f.max != null && numVal > f.max!)) {
+            _validationErrors[f.key] =
+                'Debe estar entre ${f.min} y ${f.max}';
+            isValid = false;
+          }
+        }
       }
     }
 
-    setState(() {});
+    setState(() {}); // refresca los errores en pantalla
     return isValid;
   }
 
   Future<void> _save() async {
-    if (!_validateRequiredFields()) {
+    if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, chequee los errores en los campos indicados'),
+          content: Text('Por favor, corrige los errores en el formulario'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // 1) Reúne los datos…
     final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec]!;
@@ -176,10 +182,46 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           ? Timestamp.fromDate(v)
           : v;
     }
-    await ref
-        .read(evolutionActionsProvider(widget.patientId))
-        .addEvolution({'specialty': selectedSpec, 'details': details});
-    if (mounted) context.pop();
+
+    try {
+      // 2) Guarda en Firestore
+      await ref
+          .read(evolutionActionsProvider(widget.patientId))
+          .addEvolution({'specialty': selectedSpec, 'details': details});
+
+      if (!mounted) return;
+
+      // 3) Muestra el diálogo de éxito **sin hacer ningún pop previo**
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          backgroundColor: const Color(0xFFFFF8E1),
+          title: const Text("Evolución registrada ✅"),
+          content: const Text("La evolución se ha guardado correctamente."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // (a) Cierro el diálogo
+                Navigator.of(context).pop();
+                // (b) Ahora sí cierro la pantalla de formulario
+                context.pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar evolución: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -204,12 +246,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           // Esperamos al stream de evoluciones
           return evolutionsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator(color: green)),
-            error: (_, __) => const Center(child: Text('Error al cargar evoluciones')),
+            // Si hay error, en lugar de bloquear con un Center(...), simplemente construimos el form con hasFei=false
+            error: (_, __) => _buildForm(context, p, green, false),
             data: (evolutions) {
-              // 3) Detectamos si ya tiene una FEI
               final hasFei = evolutions.any((e) => e.specialty == 'enfermeria_fei');
-
-              // 4) Construimos la forma, pasándole el flag
               return _buildForm(context, p, green, hasFei);
             },
           );

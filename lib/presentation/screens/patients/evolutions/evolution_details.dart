@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,20 +35,20 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
   String? _currentSpecialty;
   final Map<String, String?> _validationErrors = {};
 
-  /// Valida todos los campos con isRequired==true según la especialidad actual.
-  /// Muestra un SnackBar y devuelve false si falta alguno.
-  bool _validateRequiredFields() {
+  /// Valida todos los campos con isRequired==true según la especialidad actual,
+  /// y además comprueba los rangos en los campos de tipo número.
+  bool _validateForm() {
     _validationErrors.clear();
-
     final spec = _currentSpecialty!;
-    final List<FieldConfig> fields = spec == 'neonatologia'
+    final fields = spec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[spec] ?? [];
-
+        : (evolutionFormConfig[spec] ?? []);
     bool isValid = true;
 
-    for (final f in fields.where((f) => f.isRequired)) {
+    for (final f in fields) {
       final val = _formData[f.key];
+
+      // 1) Chequeo de obligatoriedad
       bool empty = false;
       switch (f.type) {
         case FieldType.text:
@@ -55,7 +56,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           empty = val == null || (val as String).trim().isEmpty;
           break;
         case FieldType.number:
-          empty = val == null || val.toString().isEmpty;
+          empty = val == null;
           break;
         case FieldType.datetime:
         case FieldType.radio:
@@ -65,13 +66,33 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           empty = false;
           break;
       }
-      if (empty) {
-        isValid = false;
+      if (f.isRequired && empty) {
         _validationErrors[f.key] = 'Este campo es obligatorio';
+        isValid = false;
+        // no `continue` aquí, queremos también chequear rango si pasa la obligación
+      }
+
+      if (f.type == FieldType.number) {
+        num? numVal;
+        if (val is num) {
+          numVal = val;
+        } else if (val is String) {
+          numVal = num.tryParse(val);
+        }
+        if (numVal != null) {
+          if (f.min != null && numVal < f.min!) {
+            _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max ?? ''}';
+            isValid = false;
+          }
+          if (f.max != null && numVal > f.max!) {
+            _validationErrors[f.key] = 'Debe estar entre ${f.min ?? ''} y ${f.max}';
+            isValid = false;
+          }
+        }
       }
     }
 
-    setState((){}); // Para que se redibujen los campos con errores
+    setState(() {}); // para refrescar los errores en pantalla
     return isValid;
   }
 
@@ -722,15 +743,40 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
         );
 
       case FieldType.number:
-        return TextFormField(
-          initialValue: value?.toString() ?? '',
-          keyboardType: TextInputType.number,
-          onChanged: (v) => _formData[field.key] = v,
-          decoration: InputDecoration(
-            labelText: field.label,
-            errorText: _validationErrors[field.key],
-            border: const OutlineInputBorder(),
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controllers[field.key] ??= TextEditingController(text: value?.toString() ?? ''),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (v) {
+                final parsed = num.tryParse(v);
+                if (parsed != null) {
+                  if ((field.min != null && parsed < field.min!) ||
+                      (field.max != null && parsed > field.max!)) {
+                    _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
+                  } else {
+                    _validationErrors[field.key] = null;
+                  }
+                  _formData[field.key] = parsed;
+                } else {
+                  _formData[field.key] = 0;
+                }
+                setState(() {});
+              },
+              decoration: InputDecoration(
+                labelText: field.label,
+                errorText: _validationErrors[field.key],
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: _validationErrors[field.key] != null ? Colors.red : Colors.grey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: _validationErrors[field.key] != null ? Colors.red : Colors.grey),
+                ),
+              ),
+            ),
+          ],
         );
 
       case FieldType.multiline:
@@ -886,15 +932,40 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
 
   /// Guarda los cambios en Firestore mediante tu acción definida en el provider
   Future<void> _saveChanges() async {
-    if (!_validateRequiredFields()) return;
+    // 1) Validar todos los campos obligatorios y rangos
+    if (!_validateForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, corrige los errores en el formulario'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 2) Reúne los datos…
+    final spec = _currentSpecialty!;
+    final fields = spec == 'neonatologia'
+        ? [...neonatologyPage1, ...neonatologyPage2]
+        : evolutionFormConfig[spec] ?? [];
+    final details = <String, dynamic>{};
+    for (final f in fields) {
+      final v = _formData[f.key];
+      details[f.key] = (f.type == FieldType.datetime && v is DateTime)
+          ? Timestamp.fromDate(v)
+          : v;
+    }
+
     try {
+      // 3) Guarda en Firestore
       await ref
           .read(evolutionActionsProvider(widget.patientId))
-          .updateEvolution(widget.evolutionId, _formData);
+          .updateEvolution(widget.evolutionId, details);
 
+      // 4) Al éxito, salimos del modo edición
       setState(() {
         isEditing = false;
-        _page = 0; // Resetear página
+        _page = 0;
       });
 
       if (mounted) {
@@ -903,9 +974,13 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
         );
       }
     } catch (e) {
+      // 5) En caso de error al guardar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al actualizar: $e')),
+          SnackBar(
+            content: Text('Error al actualizar: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

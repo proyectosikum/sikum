@@ -57,7 +57,6 @@ class _SectorTransferFormState extends State<SectorTransferForm> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Cierre de internación realizado'),
-        content: const Text('Motivo: Derivación de sector'),
         actions: [
           TextButton(
             onPressed: () {
