@@ -29,10 +29,10 @@ class MaternalStep4 extends ConsumerStatefulWidget {
   ];
 
   @override
-  _MaternalStep4State createState() => _MaternalStep4State();
+  MaternalStep4State createState() => MaternalStep4State();
 }
 
-class _MaternalStep4State extends ConsumerState<MaternalStep4> {
+class MaternalStep4State extends ConsumerState<MaternalStep4> {
   @override
   Widget build(BuildContext context) {
     final form = ref.watch(maternalDataFormProvider(widget.patient.id)); // solo agregué el (widget.patient.id)
@@ -207,15 +207,8 @@ class _MaternalStep4State extends ConsumerState<MaternalStep4> {
                                         ),
                                       );
 
-                                      await Future.delayed(
-                                        const Duration(seconds: 1),
-                                      );
-
-                                      if (mounted) {
-                                        goRouter.go(
-                                          '/pacientes',
-                                        );
-                                      }
+                                      goRouter.pop();
+                                      
                                     } catch (e) {
                                       messenger.showSnackBar(
                                         SnackBar(
