@@ -23,7 +23,7 @@ final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
         if (birthType == 'cesárea' || birthType == 'cesarea') cesareanCount++;
         if (birthType == 'vaginal') vaginalCount++;
 
-        final date = birthData.birthDate!.toDate();
+        final date = birthData.birthDate!;
         final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
         birthsPerMonth[key] = (birthsPerMonth[key] ?? 0) + 1;
       }
