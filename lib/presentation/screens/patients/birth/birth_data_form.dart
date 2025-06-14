@@ -249,12 +249,12 @@ class BirthDataForm extends ConsumerWidget {
                   child: CustomDatePicker(
                     label: "Seleccionar fecha de nacimiento",
                     initialDate: data.birthDate != null 
-                        ? DateFormat('dd/MM/yyyy').format(data.birthDate!.toDate()) 
+                        ? DateFormat('dd/MM/yyyy').format(data.birthDate!) 
                         : null,
                     isDataSaved: false,
                     onDateChanged: (formattedDate) {
                       DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(formattedDate);
-                      ref.read(birthDataProvider.notifier).updateBirthDate(Timestamp.fromDate(parsedDate));
+                      ref.read(birthDataProvider.notifier).updateBirthDate(parsedDate);
                     },
                   ),
                 ),
@@ -661,7 +661,7 @@ class BirthDataForm extends ConsumerWidget {
         },
       );
     }
-
+/*
     Future<void> _selectDate(BuildContext context, WidgetRef ref) async {
       DateTime? pickedDate = await showDatePicker(
         context: context,
@@ -681,11 +681,8 @@ class BirthDataForm extends ConsumerWidget {
         },
       );
 
-      if (pickedDate != null) {
-        ref.read(birthDataProvider.notifier).state =
-            ref.read(birthDataProvider.notifier).state?.copyWith(
-                  birthDate: Timestamp.fromDate(pickedDate),
-                );
+     if (pickedDate != null) {
+        ref.read(birthDataProvider.notifier).updateBirthDate(pickedDate);
       }
     }
 
@@ -711,7 +708,7 @@ class BirthDataForm extends ConsumerWidget {
         ref.read(birthDataProvider.notifier).updateBirthTime(formattedTime);
       }
     }
-
+*/
   
 }
 

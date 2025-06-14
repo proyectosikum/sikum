@@ -83,7 +83,7 @@ class BirthDataNotifier extends Notifier<BirthData?>{
     state = state?.copyWith(gestationalAge:value);
   }
 
-  void updateBirthDate(Timestamp birthDate) {
+  void updateBirthDate(DateTime birthDate) {
   state = state?.copyWith(birthDate: birthDate);
 }
 

@@ -16,7 +16,7 @@ class BirthData{
   bool hasOphthalmicDrops;
   String? disposition;
   int? gestationalAge;
-  Timestamp? birthDate;
+  DateTime? birthDate;
   String? birthTime;
   int? weight;
   int? length; 
@@ -69,7 +69,7 @@ BirthData({
     bool? hasOphthalmicDrops,
     String? disposition,
     int? gestationalAge,
-    Timestamp? birthDate,
+    DateTime? birthDate,
     String? birthTime,
     int? weight, 
     int? length,
@@ -124,7 +124,7 @@ BirthData({
       'hasOphthalmicDrops': hasOphthalmicDrops,
       'disposition': disposition, 
       'gestationalAge': gestationalAge,
-      'birthDate': birthDate,
+      'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
       'birthTime': birthTime,
       'weight': weight,
       'length': length,
@@ -153,7 +153,7 @@ BirthData({
       hasOphthalmicDrops: map['hasOphthalmicDrops']?? false,
       disposition: map['disposition'],
       gestationalAge: map['gestationalAge'],
-      birthDate: map['birthDate'],  
+      birthDate:  map['birthDate'] != null ? (map['birthDate'] as Timestamp).toDate() : null, 
       birthTime: map['birthTime'],
       weight: map['weight'],
       length: map['length'],
