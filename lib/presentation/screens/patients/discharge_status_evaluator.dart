@@ -10,14 +10,18 @@ enum DischargeStatus {
 
 DischargeStatus getDischargeStatus(Patient patient, List<Evolution> evolutions) {
   final now = DateTime.now();
+  //final admittedAt = patient.birthData?.birthDate; -> para cuando cambiemos a fecha de nacimiento
   final admittedAt = patient.createdAt; 
+
   if (admittedAt == null) {
-  return DischargeStatus.notReady; // hay que definir qué pasa si no hay fecha (no debería no tener)
+    return DischargeStatus.notReady; 
   }
 
-  final hoursSinceAdmission = now.difference(admittedAt).inHours;
+  //final admittedDateTime = admittedAt.toDate(); -> para cuando cambiemos a fecha de nacimiento
 
-  if (hoursSinceAdmission < 48) return DischargeStatus.notReady;
+  if (!hasTwoDaysPassed(admittedAt, now)) {
+    return DischargeStatus.notReady;
+  }
 
   final maternalData = patient.maternalData;
   if (maternalData == null || maternalData['testResults'] == null) {
@@ -61,4 +65,17 @@ if (!isRecordNumberValid || !isFeiDateValid) {
 
   return DischargeStatus.ready;
   
+}
+
+// No requiere exactamente 48 horas, sino que sea el segundo día después
+bool hasTwoDaysPassed(DateTime referenceDate, DateTime currentDate) {
+  // Normalizar las fechas para comparar solo días (sin horas)
+  final referenceDay = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+  final currentDay = DateTime(currentDate.year, currentDate.month, currentDate.day);
+  
+  // Calcular la diferencia en días
+  final daysDifference = currentDay.difference(referenceDay).inDays;
+  
+  // Debe haber pasado al menos 2 días completos
+  return daysDifference >= 2;
 }

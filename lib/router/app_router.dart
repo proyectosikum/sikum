@@ -1,6 +1,10 @@
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sikum/presentation/screens/patients/birth/birth_data_form.dart';
+import 'package:sikum/presentation/screens/patients/closure/clinical_discharge_form.dart';
+import 'package:sikum/presentation/screens/patients/closure/closure_choice_screen.dart';
+import 'package:sikum/presentation/screens/patients/closure/discharge_without_medical_high_form.dart';
+import 'package:sikum/presentation/screens/patients/closure/sector_transfer_form.dart';
 import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
 import 'package:sikum/presentation/screens/statistics/statistics.dart';
 import 'package:sikum/presentation/screens/users/create_users.dart';
@@ -95,10 +99,41 @@ final GoRouter appRouter = GoRouter(
         return BirthDataForm(patientId: id);
       },
     ),
+
     GoRoute(
       path: '/estadisticas',
       builder: (_, __) => const Statistics(),
     ),
+
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return ClosureChoiceScreen(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/egreso',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return DischargeWithoutMedicalHighForm(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/derivacion',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return SectorTransferForm(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/alta',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return ClinicalDischargeForm(patientId: patientId);
+      },
+    ),
+
   ],
   redirect: (context, state) {
     final user     = FirebaseAuth.instance.currentUser;
@@ -143,8 +178,14 @@ final GoRouter appRouter = GoRouter(
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
-        || loc.startsWith('/pacientes') && (loc.contains('/maternos') || loc.contains('/evolutions') || loc.contains('/editar'))
-        || loc.startsWith('/pacientes') && loc.contains('/nacimiento');
+        || loc.startsWith('/pacientes') && (
+            loc.contains('/maternos') ||
+            loc.contains('/evolutions') ||
+            loc.contains('/editar') ||
+            loc.contains('/nacimiento') ||
+            loc.contains('/cerrar') 
+        );
+
 
       if (!isAdmin && !okUser) {
         return '/pacientes';
