@@ -6,6 +6,7 @@ import 'package:sikum/presentation/screens/patients/closure/closure_choice_scree
 import 'package:sikum/presentation/screens/patients/closure/discharge_without_medical_high_form.dart';
 import 'package:sikum/presentation/screens/patients/closure/sector_transfer_form.dart';
 import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
+import 'package:sikum/presentation/screens/statistics/statistics.dart';
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_form_screen.dart';
@@ -98,34 +99,40 @@ final GoRouter appRouter = GoRouter(
         return BirthDataForm(patientId: id);
       },
     ),
-      GoRoute(
-        path: '/pacientes/:patientId/cerrar',
-        builder: (context, state) {
-          final patientId = state.pathParameters['patientId']!;
-          return ClosureChoiceScreen(patientId: patientId);
-        },
-      ),
-      GoRoute(
-        path: '/pacientes/:patientId/cerrar/egreso',
-        builder: (context, state) {
-          final patientId = state.pathParameters['patientId']!;
-          return DischargeWithoutMedicalHighForm(patientId: patientId);
-        },
-      ),
-      GoRoute(
-        path: '/pacientes/:patientId/cerrar/derivacion',
-        builder: (context, state) {
-          final patientId = state.pathParameters['patientId']!;
-          return SectorTransferForm(patientId: patientId);
-        },
-      ),
-      GoRoute(
-        path: '/pacientes/:patientId/cerrar/alta',
-        builder: (context, state) {
-          final patientId = state.pathParameters['patientId']!;
-          return ClinicalDischargeForm(patientId: patientId);
-        },
-      ),
+
+    GoRoute(
+      path: '/estadisticas',
+      builder: (_, __) => const Statistics(),
+    ),
+
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return ClosureChoiceScreen(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/egreso',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return DischargeWithoutMedicalHighForm(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/derivacion',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return SectorTransferForm(patientId: patientId);
+      },
+    ),
+    GoRoute(
+      path: '/pacientes/:patientId/cerrar/alta',
+      builder: (context, state) {
+        final patientId = state.pathParameters['patientId']!;
+        return ClinicalDischargeForm(patientId: patientId);
+      },
+    ),
 
   ],
   redirect: (context, state) {
@@ -154,7 +161,8 @@ final GoRouter appRouter = GoRouter(
         '/usuario/editar',
         '/perfil',
         '/change',
-        '/forgot'
+        '/forgot',
+        '/estadisticas'
       ].any((p) => p == loc) || loc.startsWith('/usuario/detalle');
 
       if (isAdmin && !okAdmin) {
@@ -166,6 +174,7 @@ final GoRouter appRouter = GoRouter(
         '/perfil',
         '/change',
         '/forgot',
+        '/estadisticas'
       ].any((p) => p == loc)
         || loc.startsWith('/paciente/detalle')
         || loc.startsWith('/paciente/evolucionar')
