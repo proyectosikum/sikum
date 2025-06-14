@@ -90,6 +90,7 @@ class BirthDataForm extends ConsumerWidget {
         physicalExaminationDetails: ref.watch(birthDataProvider)?.physicalExaminationDetails,
         birthPlace : ref.watch(birthDataProvider)?.birthPlace,
         birthPlaceDetails: ref.watch(birthDataProvider)?.birthPlaceDetails,
+        braceletNumber: ref.watch(birthDataProvider)?.braceletNumber,
       );
 
       return ListView(   
@@ -588,6 +589,7 @@ class BirthDataForm extends ConsumerWidget {
                       content: '¿Estás seguro de que quieres guardar estos cambios?',
                       onConfirm: () async {
                         try {
+
                           await ref.read(patientActionsProvider).submitBirthData(p.id, data);
                           ref.read(birthDataProvider.notifier).reset();
                           if (!context.mounted) return; // Asegura que el contexto sigue existiendo
