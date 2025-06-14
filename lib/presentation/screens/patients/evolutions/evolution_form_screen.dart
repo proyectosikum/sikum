@@ -46,13 +46,18 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   void initState() {
     super.initState();
 
-    final userSpec = authChangeNotifier.specialty ?? '';
+    final userSpecLabel = authChangeNotifier.specialty ?? '';
 
-    // 1.2) Carga _allowedSpecs con un fallback seguro
-    _allowedSpecs = _labelToKeys[userSpec]
-        ?? [evolutionFormConfig.keys.first];
+    if (_labelToKeys.containsKey(userSpecLabel)) {
+      _allowedSpecs = _labelToKeys[userSpecLabel]!;
+    } else {
+      final match = evolutionFormConfig.keys.firstWhere(
+        (key) => _specLabel(key) == userSpecLabel,
+        orElse: () => evolutionFormConfig.keys.first,
+      );
+      _allowedSpecs = [match];
+    }
 
-    // 1.3) Inicializa selectedSpec y el formulario
     selectedSpec = _allowedSpecs.first;
     _resetFormForSpec(selectedSpec);
   }
