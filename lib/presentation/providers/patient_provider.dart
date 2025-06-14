@@ -1,5 +1,3 @@
-// lib/presentation/providers/patient_providers.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -87,31 +85,41 @@ class PatientActions {
 
 
 
-Future<void> updatePatient(Patient patient) async {
-  try {
-    final docRef = _col.doc(patient.id);
-    await docRef.update(patient.toFirestore());
-  } catch (e) {
-    debugPrint('Error al actualizar paciente: $e');
-    rethrow;
+  Future<void> updatePatient(Patient patient) async {
+    try {
+      final docRef = _col.doc(patient.id);
+      await docRef.update(patient.toFirestore());
+    } catch (e) {
+      debugPrint('Error al actualizar paciente: $e');
+      rethrow;
+    }
   }
-}
 
-Future<void> submitBirthData(String patientId, BirthData data) async {
+  Future<void> submitBirthData(String patientId, BirthData data) async {
 
-   try {
-    // Guardamos los datos en Firestore
+    try {
+      // Guardamos los datos en Firestore
+      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
+      
+      await docRef.set({
+        'birthData': data.toMap(),
+      }, SetOptions(merge: true)); // merge para no borrar otros campos del paciente
+      print('Guardado en la DB');
+      
+    } catch (e) {
+      throw Exception('Error al guardar datos maternos: $e');
+    }
+  }
+  
+  Future<void> closeHospitalization(String patientId, Map<String, dynamic> closureData) async {
     final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
-    
     await docRef.set({
-      'birthData': data.toMap(),
-    }, SetOptions(merge: true)); // merge para no borrar otros campos del paciente
-    print('Guardado en la DB');
-    
-  } catch (e) {
-    throw Exception('Error al guardar datos maternos: $e');
+      'closureOfHospitalization': closureData,
+      'available': false,
+    }, SetOptions(merge: true));
   }
-}
+
+  
 
 }
 

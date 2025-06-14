@@ -37,7 +37,6 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
     setState(() => _isSubmitting = true);
 
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-
     final closureData = {
       'date': Timestamp.now(),
       'createdBy': uid,
@@ -56,12 +55,8 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
     };
 
     try {
-      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(widget.patientId);
-      await docRef.set({
-        'closureOfHospitalization': closureData,
-        'available': false,
-      }, SetOptions(merge: true));
-
+      final patientActions = ref.read(patientActionsProvider);
+      await patientActions.closeHospitalization(widget.patientId, closureData);
       _showSuccessDialog(patient);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +66,7 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
       setState(() => _isSubmitting = false);
     }
   }
+
 
   void _showSuccessDialog(Patient patient) {
     showDialog(
