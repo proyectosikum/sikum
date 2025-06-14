@@ -2,19 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DischargeWithoutMedicalHighForm extends StatefulWidget {
+class DischargeWithoutMedicalHighForm extends ConsumerStatefulWidget  {
   final String patientId;
 
   const DischargeWithoutMedicalHighForm({super.key, required this.patientId});
 
   @override
-  State<DischargeWithoutMedicalHighForm> createState() => _DischargeWithoutMedicalHighFormState();
+  ConsumerState<DischargeWithoutMedicalHighForm> createState() => _DischargeWithoutMedicalHighFormState();
 }
 
-class _DischargeWithoutMedicalHighFormState extends State<DischargeWithoutMedicalHighForm> {
+class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWithoutMedicalHighForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _commentsController = TextEditingController();
   bool _isSubmitting = false;
@@ -34,11 +36,8 @@ class _DischargeWithoutMedicalHighFormState extends State<DischargeWithoutMedica
     };
 
     try {
-      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(widget.patientId);
-      await docRef.set({
-        'closureOfHospitalization': closureData,
-        'available': false,
-      }, SetOptions(merge: true));
+      final patientActions = ref.read(patientActionsProvider);
+      await patientActions.closeHospitalization(widget.patientId, closureData);
 
       _showSuccessDialog();
     } catch (e) {
@@ -49,6 +48,7 @@ class _DischargeWithoutMedicalHighFormState extends State<DischargeWithoutMedica
       setState(() => _isSubmitting = false);
     }
   }
+
 
   void _showSuccessDialog() {
     showDialog(

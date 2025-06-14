@@ -2,19 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SectorTransferForm extends StatefulWidget {
+
+class SectorTransferForm extends ConsumerStatefulWidget {
   final String patientId;
 
   const SectorTransferForm({super.key, required this.patientId});
 
   @override
-  State<SectorTransferForm> createState() => _SectorTransferFormState();
+  ConsumerState<SectorTransferForm> createState() => _SectorTransferFormState();
 }
 
-class _SectorTransferFormState extends State<SectorTransferForm> {
+
+class _SectorTransferFormState extends ConsumerState<SectorTransferForm> {
   final _formKey = GlobalKey<FormState>();
   final _sectorController = TextEditingController();
   final _commentsController = TextEditingController();
@@ -36,11 +40,8 @@ class _SectorTransferFormState extends State<SectorTransferForm> {
     };
 
     try {
-      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(widget.patientId);
-      await docRef.set({
-        'closureOfHospitalization': closureData,
-        'available': false,
-      }, SetOptions(merge: true));
+      final patientActions = ref.read(patientActionsProvider);
+      await patientActions.closeHospitalization(widget.patientId, closureData);
 
       _showSuccessDialog();
     } catch (e) {
@@ -51,6 +52,7 @@ class _SectorTransferFormState extends State<SectorTransferForm> {
       setState(() => _isSubmitting = false);
     }
   }
+
 
   void _showSuccessDialog() {
     showDialog(

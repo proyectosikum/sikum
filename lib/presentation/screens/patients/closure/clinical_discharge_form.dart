@@ -23,43 +23,21 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
   bool _needsOphthalmology = false;
   bool _needsAudiology = false;
   bool _isSubmitting = false;
+  String? _physicalExamination;
+  final _physicalExaminationDetailsController = TextEditingController();
+  final _weightController = TextEditingController();
+
 
   String? _feedingOption;
   final _formulaMlController = TextEditingController();
   DateTime? _nextControlDate;
   final _nextControlLocationController = TextEditingController();
 
-  bool _validateCustomFields() {
-    if (_feedingOption == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe seleccionar una opción de alimentación')),
-      );
-      return false;
-    }
-
-    if (_feedingOption == 'leche_formula' &&
-        (_formulaMlController.text.isEmpty || int.tryParse(_formulaMlController.text) == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingrese un valor numérico válido para los ml')),
-      );
-      return false;
-    }
-
-    if (_nextControlDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe seleccionar la fecha del próximo control')),
-      );
-      return false;
-    }
-
-    return true;
-  }
 
   Future<void> _submitForm(Patient patient) async {
     setState(() => _isSubmitting = true);
 
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-
     final closureData = {
       'date': Timestamp.now(),
       'createdBy': uid,
@@ -70,15 +48,16 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
       'needsAudiology': _needsAudiology,
       'nextControlDate': _nextControlDate != null ? Timestamp.fromDate(_nextControlDate!) : null,
       'nextControlLocation': _nextControlLocationController.text.trim(),
+      'physicalExamination': _physicalExamination,
+      'physicalExaminationDetails': _physicalExamination == 'otros'
+          ? _physicalExaminationDetailsController.text.trim()
+          : null,
+      'weight': int.tryParse(_weightController.text),
     };
 
     try {
-      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(widget.patientId);
-      await docRef.set({
-        'closureOfHospitalization': closureData,
-        'available': false,
-      }, SetOptions(merge: true));
-
+      final patientActions = ref.read(patientActionsProvider);
+      await patientActions.closeHospitalization(widget.patientId, closureData);
       _showSuccessDialog(patient);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +67,7 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
       setState(() => _isSubmitting = false);
     }
   }
+
 
   void _showSuccessDialog(Patient patient) {
     showDialog(
@@ -190,23 +170,60 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text('Alimentación al alta', style: TextStyle(fontWeight: FontWeight.bold)),
-                                    RadioListTile<String>(
-                                      title: const Text('Pecho a libre demanda'),
-                                      value: 'pecho',
-                                      groupValue: _feedingOption,
-                                      onChanged: (val) => setState(() => _feedingOption = val),
-                                    ),
-                                    RadioListTile<String>(
-                                      title: const Text('Leche de fórmula a libre demanda'),
-                                      value: 'leche_formula',
-                                      groupValue: _feedingOption,
-                                      onChanged: (val) => setState(() => _feedingOption = val),
-                                    ),
-                                    RadioListTile<String>(
-                                      title: const Text('Combinación de ambas'),
-                                      value: 'combinado',
-                                      groupValue: _feedingOption,
-                                      onChanged: (val) => setState(() => _feedingOption = val),
+                                    FormField<String>(
+                                      validator: (value) {
+                                        if (_feedingOption == null) {
+                                          return 'Este campo es obligatorio';
+                                        }
+                                        return null;
+                                      },
+                                      builder: (field) {
+                                        return InputDecorator(
+                                          decoration: InputDecoration(
+                                            errorText: field.errorText,
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.zero,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              RadioListTile<String>(
+                                                title: const Text('Pecho a libre demanda'),
+                                                value: 'pecho',
+                                                groupValue: _feedingOption,
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    _feedingOption = val;
+                                                    field.didChange(val);
+                                                  });
+                                                },
+                                              ),
+                                              RadioListTile<String>(
+                                                title: const Text('Leche de fórmula a libre demanda'),
+                                                value: 'leche_formula',
+                                                groupValue: _feedingOption,
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    _feedingOption = val;
+                                                    field.didChange(val);
+                                                  });
+                                                },
+                                              ),
+                                              RadioListTile<String>(
+                                                title: const Text('Combinación de ambas'),
+                                                value: 'combinado',
+                                                groupValue: _feedingOption,
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    _feedingOption = val;
+                                                    field.didChange(val);
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
                                     ),
                                     if (_feedingOption == 'leche_formula')
                                       Padding(
@@ -234,18 +251,23 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                   ],
                                 ),
                               ),
+
+  
                               const SizedBox(height: 16),
 
-                              // Checkboxes
+                              // Solicitar turnos
                               Container(
                                 width: double.infinity,
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: cream,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(color: green, width: 1),
                                 ),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    const Text('Solicitar turnos', style: TextStyle(fontWeight: FontWeight.bold)),
                                     CheckboxListTile(
                                       title: const Text('¿Pedir turno oftalmológico?'),
                                       value: _needsOphthalmology,
@@ -253,6 +275,8 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                         setState(() => _needsOphthalmology = value ?? false);
                                       },
                                       activeColor: green,
+                                      controlAffinity: ListTileControlAffinity.trailing,
+                                      contentPadding: EdgeInsets.zero,
                                     ),
                                     CheckboxListTile(
                                       title: const Text('¿Pedir turno audiológico?'),
@@ -261,10 +285,13 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                         setState(() => _needsAudiology = value ?? false);
                                       },
                                       activeColor: green,
+                                      controlAffinity: ListTileControlAffinity.trailing,
+                                      contentPadding: EdgeInsets.zero,
                                     ),
                                   ],
                                 ),
                               ),
+
                               const SizedBox(height: 16),
 
                               // Fecha del próximo control
@@ -281,33 +308,53 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                   children: [
                                     const Text('¿Cuándo es el próximo control?', style: TextStyle(fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 8),
-                                    InkWell(
-                                      onTap: () async {
-                                        final selectedDate = await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                                        );
-                                        if (selectedDate != null) {
-                                          setState(() => _nextControlDate = selectedDate);
+                                    FormField<DateTime>(
+                                      validator: (value) {
+                                        if (_nextControlDate == null) {
+                                          return 'Este campo es obligatorio';
                                         }
+                                        return null;
                                       },
-                                      child: InputDecorator(
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          hintText: 'Seleccionar fecha',
+                                      builder: (field) => InputDecorator(
+                                        decoration: InputDecoration(
+                                          errorText: field.errorText,
+                                          border: InputBorder.none,
+                                          contentPadding: EdgeInsets.zero,
                                         ),
-                                        child: Text(
-                                          _nextControlDate != null
-                                              ? '${_nextControlDate!.day}/${_nextControlDate!.month}/${_nextControlDate!.year}'
-                                              : 'dd/mm/aaaa',
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final selectedDate = await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: DateTime.now().subtract(const Duration(days: 1)),
+                                              lastDate: DateTime.now().add(const Duration(days: 365)),
+                                            );
+                                            if (selectedDate != null) {
+                                              setState(() {
+                                                _nextControlDate = selectedDate;
+                                                field.didChange(selectedDate);
+                                              });
+                                            }
+                                          },
+                                          child: InputDecorator(
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              hintText: 'Seleccionar fecha',
+                                            ),
+                                            child: Text(
+                                              _nextControlDate != null
+                                                  ? '${_nextControlDate!.day}/${_nextControlDate!.month}/${_nextControlDate!.year}'
+                                                  : 'dd/mm/aaaa',
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
+
+
                               const SizedBox(height: 16),
 
                               // Lugar del próximo control
@@ -319,21 +366,145 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(color: green, width: 1),
                                 ),
-                                child: TextFormField(
-                                  controller: _nextControlLocationController,
-                                  decoration: const InputDecoration(
-                                    labelText: '¿Dónde es el próximo control?',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return 'Este campo es obligatorio';
-                                    }
-                                    return null;
-                                  },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('¿Dónde es el próximo control?', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: _nextControlLocationController,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Este campo es obligatorio';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 32),
+  
+                              const SizedBox(height: 24),
+
+                              // Examen físico al alta
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: cream,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: green, width: 1),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Examen físico al alta', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    FormField<String>(
+                                      validator: (value) {
+                                        if (_physicalExamination == null) {
+                                          return 'Este campo es obligatorio';
+                                        }
+                                        return null;
+                                      },
+                                      builder: (field) => InputDecorator(
+                                        decoration: InputDecoration(
+                                          errorText: field.errorText,
+                                          border: InputBorder.none,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            RadioListTile<String>(
+                                              title: const Text('Normal'),
+                                              value: 'normal',
+                                              groupValue: _physicalExamination,
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  _physicalExamination = val;
+                                                  field.didChange(val);
+                                                });
+                                              },
+                                            ),
+                                            RadioListTile<String>(
+                                              title: const Text('Otros'),
+                                              value: 'otros',
+                                              groupValue: _physicalExamination,
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  _physicalExamination = val;
+                                                  field.didChange(val);
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    if (_physicalExamination == 'otros')
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 12),
+                                        child: TextFormField(
+                                          controller: _physicalExaminationDetailsController,
+                                          decoration: const InputDecoration(
+                                            hintText: 'Detalles del examen físico',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          validator: (value) {
+                                            if (_physicalExamination == 'otros' &&
+                                                (value == null || value.trim().isEmpty)) {
+                                              return 'Debe completar este campo';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+
+                              const SizedBox(height: 16),
+
+                              // Peso al alta
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: cream,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: green, width: 1),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Peso al alta (g)', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: _weightController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Este campo es obligatorio';
+                                        }
+                                        final intValue = int.tryParse(value);
+                                        if (intValue == null || intValue < 1900 || intValue > 6000) {
+                                          return 'Debe ser un número entre 1900 y 6000';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
 
                               // Botón de guardar
                               SizedBox(
@@ -343,9 +514,8 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                       ? null
                                       : () {
                                           final isFormValid = _formKey.currentState!.validate();
-                                          final areCustomFieldsValid = _validateCustomFields();
 
-                                          if (!isFormValid || !areCustomFieldsValid) {
+                                          if (!isFormValid) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(
                                                 content: Text('Por favor, chequee los errores en los campos indicados'),
@@ -376,6 +546,7 @@ class _ClinicalDischargeFormState extends ConsumerState<ClinicalDischargeForm> {
                                         ),
                                 ),
                               ),
+
                             ],
                           ),
                         ),
