@@ -17,6 +17,7 @@ class MaternalForm extends ConsumerStatefulWidget {
 
 class _MaternalFormState extends ConsumerState<MaternalForm> {
   final PageController _controller = PageController();
+  bool _isInitialized = false; // Flag para controlar la inicialización
 
   void _nextPage() => _controller.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -31,8 +32,7 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
   @override
   Widget build(BuildContext context) {
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
-    final form = ref.read(maternalDataFormProvider(widget.patientId));//-> solo agregué el (widget.patientId)
-
+    
     return Scaffold(
       body: patientAsync.when(
         loading: () => const Center(
@@ -40,58 +40,77 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
         ),
         error: (e, st) => Center(child: Text('Error: $e')),
         data: (patient) {
-          Future.microtask(() {
-
-            final notifier = ref.read(maternalDataFormProvider(widget.patientId).notifier);//-> solo agregué el (widget.patientId)
-            final form = ref.read(maternalDataFormProvider(widget.patientId));//->vane solo agregué el (widget.patientId)
-            // Si ya estamos editando, no sobreescribas el estado actual ->vane
-            if (form.isLoadedForCurrentPatient) return;
-
-            final maternalData = patient?.maternalData;
-            
-            if (maternalData != null) {
-              notifier.loadMaternalData(maternalData, widget.patientId);
-              //notifier.markDataAsSaved(); ->vane
-            } else {
-              notifier.reset();
-            }
-          });
-
           if (patient == null) {
             return const Center(child: Text('Paciente no encontrado'));
           }
 
-          return PageView(
-            key: ValueKey(form.isDataSaved),
-            controller: _controller,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              MaternalStep1(
-                key: ValueKey('step1-${form.isDataSaved}'),
-                onNext: _nextPage,
-                patient: patient,
-              ),
-              MaternalStep2(
-                key: ValueKey('step2-${form.isDataSaved}'),
-                onNext: _nextPage,
-                onBack: _previousPage,
-                patient: patient,
-              ),
-              MaternalStep3(
-                key: ValueKey('step3-${form.isDataSaved}'),
-                onNext: _nextPage,
-                onBack: _previousPage,
-                patient: patient,
-              ),
-              MaternalStep4(
-                key: ValueKey('step4-${form.isDataSaved}'),
-                onBack: _previousPage,
-                patient: patient,
-              ),
-            ],
+          // Inicializar datos solo una vez
+          if (!_isInitialized) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _initializeMaternalData(patient);
+            });
+            _isInitialized = true;
+          }
+
+          // Usar Consumer para escuchar cambios en el form
+          return Consumer(
+            builder: (context, ref, child) {
+              final form = ref.watch(maternalDataFormProvider(widget.patientId));
+              
+              return PageView(
+                controller: _controller,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  MaternalStep1(
+                    key: ValueKey('step1-${form.isDataSaved}-$_isInitialized'),
+                    onNext: _nextPage,
+                    patient: patient,
+                  ),
+                  MaternalStep2(
+                    key: ValueKey('step2-${form.isDataSaved}-$_isInitialized'),
+                    onNext: _nextPage,
+                    onBack: _previousPage,
+                    patient: patient,
+                  ),
+                  MaternalStep3(
+                    key: ValueKey('step3-${form.isDataSaved}-$_isInitialized'),
+                    onNext: _nextPage,
+                    onBack: _previousPage,
+                    patient: patient,
+                  ),
+                  MaternalStep4(
+                    key: ValueKey('step4-${form.isDataSaved}-$_isInitialized'),
+                    onBack: _previousPage,
+                    patient: patient,
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  void _initializeMaternalData(patient) {
+    final notifier = ref.read(maternalDataFormProvider(widget.patientId).notifier);
+    final form = ref.read(maternalDataFormProvider(widget.patientId));
+    
+    // Si ya estamos editando, no sobreescribas el estado actual
+    if (form.isLoadedForCurrentPatient) return;
+
+    final maternalData = patient?.maternalData;
+    
+    if (maternalData != null) {
+      notifier.loadMaternalData(maternalData, widget.patientId);
+    } else {
+      notifier.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
