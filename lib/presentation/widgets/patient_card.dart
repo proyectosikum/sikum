@@ -4,9 +4,7 @@ import 'package:sikum/presentation/screens/patients/discharge_status_evaluator.d
 
 class PatientCard extends StatelessWidget {
   final Patient patient;
-
   final VoidCallback onTap;
-
   final DischargeStatus status; // VANE
 
   const PatientCard({
@@ -41,7 +39,7 @@ class PatientCard extends StatelessWidget {
         title: Text('${patient.firstName} ${patient.lastName}'),
         subtitle: Text('DNI: ${patient.dni}'),
         trailing: SizedBox(
-          width: 100, // Aumentá este valor si querés más espacio hacia la derecha
+          width: patient.available ? 100 : 50, // Ajusta el ancho según si muestra o no el estado // Aumentar este valor para más espacio hacia la derecha
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -49,6 +47,7 @@ class PatientCard extends StatelessWidget {
                 icon: const Icon(Icons.remove_red_eye),
                 onPressed: onTap,
               ),
+              if (patient.available) // Vane
               IconButton(
                 icon: Icon(Icons.circle, color: getStatusColor()),//VANE
                 onPressed: () =>
@@ -58,8 +57,6 @@ class PatientCard extends StatelessWidget {
             ],
           ),
         ),
-
-
       ),
     );
   }

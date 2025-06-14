@@ -16,9 +16,7 @@ final List<String> allTests = [
   'PCI',
 ];
 
-
 class MaternalDataFormNotifier extends ChangeNotifier {
-
   // step1
   String firstName = '';
   String lastName = '';
@@ -31,43 +29,41 @@ class MaternalDataFormNotifier extends ChangeNotifier {
   String phoneNumber = '';
 
   // step2
-  String gravidity = ''; // Gestas
-  String parity = ''; // Partos
-  String cesareans = ''; 
-  String abortions = ''; 
-  // Mapa de complicaciones (checkbox)
+  String gravidity = '';
+  String parity = '';
+  String cesareans = '';
+  String abortions = '';
   Map<String, bool> complications = {};
 
   // step3
-  Map<String, String?> testResults = {}; 
-  Map<String, String?> testDates = {}; 
+  Map<String, String?> testResults = {};
+  Map<String, String?> testDates = {};
 
-    MaternalDataFormNotifier() {
+  // step4
+  String serologies = '';
+  String bloodType = '';
+
+  // Estados de control
+  bool isDataSaved = false;
+  MaternalData? _originalData;
+  String? _loadedPatientId;
+  
+  // Mapa de errores para cada campo
+  final Map<String, String?> errors = {};
+  
+  // Errores específicos para las pruebas
+  final Map<String, String?> testErrors = {};
+
+  MaternalDataFormNotifier() {
     for (final name in allTests) {
       testResults[name] = '';
       testDates[name] = '';
     }
   }
 
-  //step4
-  String serologies = '';
-  String bloodType = '';
-
-  // para verificar si ya hay datos guardados
-  bool isDataSaved = false;
-
-  //para guardar copia de maternal data
-  MaternalData? _originalData;
-  String? _loadedPatientId;
-
-  //solución para cargar data guardada de cada paciente
   bool get isLoadedForCurrentPatient => _loadedPatientId != null;
 
-  // Mapa de errores para cada campo
-  final Map<String, String?> errors = {};
-
   // Setters con validación y notifyListeners
-
   void updateFirstName(String value) {
     firstName = value;
     errors['firstName'] = validateNotEmpty(value, fieldName: 'Nombre');
@@ -153,18 +149,22 @@ class MaternalDataFormNotifier extends ChangeNotifier {
 
   void updateTestResult(String key, String value) {
     testResults[key] = value;
+    // Limpiar error específico cuando se actualiza
+    testErrors.remove('${key}_result');
     notifyListeners();
   }
 
   void updateTestDate(String key, String date) {
     testDates[key] = date;
+    // Limpiar error específico cuando se actualiza
+    testErrors.remove('${key}_date');
     notifyListeners();
   }
 
   void updateSerologies(String value) {
     serologies = value;
     notifyListeners();
-}
+  }
 
   void updateBloodType(String value) {
     bloodType = value;
@@ -182,58 +182,106 @@ class MaternalDataFormNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void loadMaternalData(Map<String, dynamic> data, String patientId) {
+    final maternalData = MaternalData.fromMap(data);
 
+    firstName = maternalData.firstName;
+    lastName = maternalData.lastName;
+    idType = maternalData.idType;
+    idNumber = maternalData.idNumber;
+    age = maternalData.age;
+    locality = maternalData.locality;
+    address = maternalData.address;
+    email = maternalData.email;
+    phoneNumber = maternalData.phoneNumber;
+    gravidity = maternalData.gravidity;
+    parity = maternalData.parity;
+    cesareans = maternalData.cesareans;
+    abortions = maternalData.abortions;
+    complications = Map<String, bool>.from(maternalData.complications);
+    testResults = Map<String, String?>.from(maternalData.testResults);
+    testDates = Map<String, String?>.from(maternalData.testDates);
+    serologies = maternalData.serologies;
+    bloodType = maternalData.bloodType;
+    isDataSaved = true;
 
-void loadMaternalData(Map<String, dynamic> data, String patientId) {
-  final maternalData = MaternalData.fromMap(data);
+    _originalData = maternalData;
+    _loadedPatientId = patientId;
 
-  firstName = maternalData.firstName;
-  lastName = maternalData.lastName;
-  idType = maternalData.idType;
-  idNumber = maternalData.idNumber;
-  age = maternalData.age;
-  locality = maternalData.locality;
-  address = maternalData.address;
-  email = maternalData.email;
-  phoneNumber = maternalData.phoneNumber;
-  gravidity = maternalData.gravidity;
-  parity = maternalData.parity;
-  cesareans = maternalData.cesareans;
-  abortions = maternalData.abortions;
-  complications = maternalData.complications;  // Map<String, bool>
-  testResults = maternalData.testResults;      // Map<String, String?>
-  testDates = maternalData.testDates;          // Map<String, String?>
-  serologies = maternalData.serologies;
-  bloodType = maternalData.bloodType;
-  isDataSaved = true;
+    // Limpiar errores al cargar datos
+    errors.clear();
+    testErrors.clear();
 
-  _originalData = maternalData;
-  _loadedPatientId = patientId;
-
-  notifyListeners();
-}
-
-void discardChangesAndRestore(String patientId) {
-  if (_originalData != null && _loadedPatientId == patientId) {
-    loadMaternalData(_originalData!.toMap(), patientId);
-  } else {
-    reset();
+    notifyListeners();
   }
-}
 
-  // Validación para las pruebas de la primera mitad
+  void discardChangesAndRestore(String patientId) {
+    if (_originalData != null && _loadedPatientId == patientId) {
+      loadMaternalData(_originalData!.toMap(), patientId);
+    } else {
+      reset();
+    }
+  }
+
+  // VALIDACIONES MEJORADAS PARA STEP 3
+
   bool validateFirstHalfTests() {
-    return testResults.values.take(5).every((result) => result != null && result.isNotEmpty) &&
-           testDates.values.take(5).every((date) => date != null && date.isNotEmpty);
+    testErrors.clear(); // Limpiar errores anteriores
+    bool isValid = true;
+    
+    final firstHalfTests = allTests.take(5).toList();
+    
+    for (final testName in firstHalfTests) {
+      // Validar resultado
+      if (testResults[testName] == null || testResults[testName]!.isEmpty) {
+        testErrors['${testName}_result'] = 'Seleccione un resultado para $testName';
+        isValid = false;
+      }
+      
+      // Validar fecha
+      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+        testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
+        isValid = false;
+      }
+    }
+    
+    notifyListeners();
+    return isValid;
   }
 
-  // Validación para las pruebas de la segunda mitad
   bool validateSecondHalfTests() {
-    return testResults.values.skip(5).take(4).every((result) => result != null && result.isNotEmpty) &&
-           testDates.values.skip(5).take(4).every((date) => date != null && date.isNotEmpty);
+    // Solo limpiar errores de la segunda mitad
+    final secondHalfTests = allTests.skip(5).toList();
+    for (final testName in secondHalfTests) {
+      testErrors.remove('${testName}_result');
+      testErrors.remove('${testName}_date');
+    }
+    
+    bool isValid = true;
+    
+    for (final testName in secondHalfTests) {
+      // Validar resultado
+      if (testResults[testName] == null || testResults[testName]!.isEmpty) {
+        testErrors['${testName}_result'] = 'Seleccione un resultado para $testName';
+        isValid = false;
+      }
+      
+      // Validar fecha
+      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+        testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
+        isValid = false;
+      }
+    }
+    
+    notifyListeners();
+    return isValid;
   }
 
-  // Validación de los diferentes steps antes de avanzar a la siguiente pantalla
+  // Método para obtener errores específicos de pruebas
+  String? getTestError(String testName, String type) {
+    return testErrors['${testName}_$type'];
+  }
+
   bool validateStep1() {
     errors['firstName'] = validateNotEmpty(firstName, fieldName: 'Nombre');
     errors['lastName'] = validateNotEmpty(lastName, fieldName: 'Apellido');
@@ -246,8 +294,6 @@ void discardChangesAndRestore(String patientId) {
     errors['phoneNumber'] = validateNumeric(phoneNumber, fieldName: 'Teléfono');
 
     notifyListeners();
-
-    // Retornamos true si no hay errores (todos los valores nulos)
     return errors.values.every((error) => error == null);
   }
 
@@ -258,38 +304,34 @@ void discardChangesAndRestore(String patientId) {
     errors['abortions'] = validateNumeric(abortions, fieldName: 'Cantidad de abortos');
 
     notifyListeners();
-
     return errors.values.every((error) => error == null);
   }
 
-  // Validación completa para las pruebas
   bool validateTests() {
+    testErrors.clear();
     bool isValid = true;
 
-    // Validar que todos los resultados estén seleccionados
-    for (var key in testResults.keys) {
-      if (testResults[key] == null || testResults[key]!.isEmpty) {
+    for (var testName in allTests) {
+      if (testResults[testName] == null || testResults[testName]!.isEmpty) {
+        testErrors['${testName}_result'] = 'Seleccione un resultado';
+        isValid = false;
+      }
+      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+        testErrors['${testName}_date'] = 'Seleccione una fecha';
         isValid = false;
       }
     }
 
-    // Validar que todas las fechas estén seleccionadas
-    for (var key in testDates.keys) {
-      if (testDates[key] == null || testDates[key]!.isEmpty) {
-        isValid = false;
-      }
-    }
-
+    notifyListeners();
     return isValid;
   }
 
   bool validateStep4() {
-  errors['bloodType'] = validateNotEmpty(bloodType, fieldName: 'Grupo sanguíneo');
-  notifyListeners();
-  return errors['bloodType'] == null;
-}
+    errors['bloodType'] = validateNotEmpty(bloodType, fieldName: 'Grupo sanguíneo');
+    notifyListeners();
+    return errors['bloodType'] == null;
+  }
 
-  // Método para validar todo antes de guardar
   bool validateAll() {
     bool isValidStep1 = validateStep1();
     bool isValidStep2 = validateStep2();
@@ -298,7 +340,6 @@ void discardChangesAndRestore(String patientId) {
     return isValidStep1 && isValidStep2 && isValidTests && isValidStep4;
   }
 
-  // Método para resetear formulario
   void reset() {
     firstName = '';
     lastName = '';
@@ -314,58 +355,63 @@ void discardChangesAndRestore(String patientId) {
     cesareans = '';
     abortions = '';
     complications.clear();
-    testResults.clear(); 
-    testDates.clear();  
+    testResults.clear();
+    testDates.clear();
     serologies = '';
     bloodType = '';
     isDataSaved = false;
     errors.clear();
+    testErrors.clear();
+    _originalData = null;
+    _loadedPatientId = null;
+    
+    // Reinicializar mapas de pruebas
+    for (final name in allTests) {
+      testResults[name] = '';
+      testDates[name] = '';
+    }
+    
     notifyListeners();
   }
 
-// Envía los datos completos a Firebase bajo el paciente indicado
   Future<void> submitMaternalData(String patientId) async {
-    // Primero validar todo
     if (!validateAll()) {
       throw Exception('Hay errores en el formulario, por favor revisa los campos');
     }
 
-  // Crear un objeto MaternalData con los datos del formulario
-  final maternalData = MaternalData(
-    firstName: firstName,
-    lastName: lastName,
-    idType: idType,
-    idNumber: idNumber,
-    age: age,
-    locality: locality,
-    address: address,
-    email: email,
-    phoneNumber: phoneNumber,
-    gravidity: gravidity,
-    parity: parity,
-    cesareans: cesareans,
-    abortions: abortions,
-    complications: complications,  // Map<String, bool>
-    testResults: testResults,      // Map<String, String?>
-    testDates: testDates,          // Map<String, String?>
-    serologies: serologies,
-    bloodType: bloodType,
-  );
+    final maternalData = MaternalData(
+      firstName: firstName,
+      lastName: lastName,
+      idType: idType,
+      idNumber: idNumber,
+      age: age,
+      locality: locality,
+      address: address,
+      email: email,
+      phoneNumber: phoneNumber,
+      gravidity: gravidity,
+      parity: parity,
+      cesareans: cesareans,
+      abortions: abortions,
+      complications: complications,
+      testResults: testResults,
+      testDates: testDates,
+      serologies: serologies,
+      bloodType: bloodType,
+    );
 
-  try {
-    // Guardamos los datos en Firestore
-    final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
-    
-    await docRef.set({
-      'maternalData': maternalData.toMap(),
-    }, SetOptions(merge: true)); // merge para no borrar otros campos del paciente
-    
-    markDataAsSaved(); // Marcamos los datos como guardados
-  } catch (e) {
-    throw Exception('Error al guardar datos maternos: $e');
+    try {
+      final docRef = FirebaseFirestore.instance.collection('dischargeDataPatient').doc(patientId);
+      
+      await docRef.set({
+        'maternalData': maternalData.toMap(),
+      }, SetOptions(merge: true));
+      
+      markDataAsSaved();
+    } catch (e) {
+      throw Exception('Error al guardar datos maternos: $e');
+    }
   }
-}
-  
 }
 
 final maternalDataFormProvider = ChangeNotifierProvider.family<MaternalDataFormNotifier, String>((ref, patientId) {
