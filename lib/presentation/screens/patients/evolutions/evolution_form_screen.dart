@@ -6,18 +6,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:sikum/entities/patient.dart';
+import 'package:sikum/presentation/providers/birth_data_provider.dart';
 import 'package:sikum/presentation/providers/evolution_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 import 'package:sikum/router/app_router.dart';
+import 'package:sikum/utils/string_utils.dart';
 
 const Map<String, List<String>> _labelToKeys = {
   'Enfermería': [
     'enfermeria',
     'enfermeria_fei',
     'enfermeria_test_saturacion',
+    'enfermeria_cambio_pulsera',
   ],
   'Neonatología': [
     'neonatologia',
@@ -52,7 +55,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       _allowedSpecs = _labelToKeys[userSpecLabel]!;
     } else {
       final match = evolutionFormConfig.keys.firstWhere(
-        (key) => _specLabel(key) == userSpecLabel,
+        (key) => getSpecialtyDisplayName(key) == userSpecLabel,
         orElse: () => evolutionFormConfig.keys.first,
       );
       _allowedSpecs = [match];
@@ -231,7 +234,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       return;
     }
 
-    // 1) Reúne los datos…
+    // 1) Reúne los datos
     final fields = selectedSpec == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec]!;
@@ -243,15 +246,33 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           : v;
     }
 
+    // 2) Lógica personalizada para cambio de pulsera
+    if (selectedSpec == 'enfermeria_cambio_pulsera') {
+      final birthDataNotifier = ref.read(birthDataProvider.notifier);
+      final birthData = ref.read(birthDataProvider);
+      final nuevoNumero = _formData['braceletNumberNew'] as int?;
+
+      if (birthData != null && nuevoNumero != null) {
+        final viejoNumero = birthData.braceletNumber;
+
+        // Agregar datos al mapa de detalles
+        details['braceletNumberOld'] = viejoNumero;
+        details['braceletNumberNew'] = nuevoNumero;
+
+        // Actualizar el número de pulsera en birthData
+        birthDataNotifier.updateBraceletNumber(nuevoNumero);
+      }
+    }
+
     try {
-      // 2) Guarda en Firestore
+      // 3) Guarda en Firestore
       await ref
           .read(evolutionActionsProvider(widget.patientId))
           .addEvolution({'specialty': selectedSpec, 'details': details});
 
       if (!mounted) return;
 
-      // 3) Muestra el diálogo de éxito **sin hacer ningún pop previo**
+      // 4) Muestra el diálogo de éxito
       await showDialog(
         context: context,
         barrierDismissible: false,
@@ -262,10 +283,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                // (a) Cierro el diálogo
-                Navigator.of(context).pop();
-                // (b) Ahora sí cierro la pantalla de formulario
-                context.pop();
+                Navigator.of(context).pop(); // cerrar diálogo
+                context.pop(); // volver atrás
               },
               child: const Text('Aceptar'),
             ),
@@ -283,6 +302,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +350,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           _allowedSpecs = _labelToKeys[userSpec] ??
               [
                 evolutionFormConfig.keys
-                    .firstWhere((k) => _specLabel(k) == userSpec,
+                    .firstWhere((k) => getSpecialtyDisplayName(k) == userSpec,
                         orElse: () => evolutionFormConfig.keys.first)
               ];
           selectedSpec = _allowedSpecs.first;
@@ -488,7 +508,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         });
       },
       itemBuilder: (_) =>
-          specs.map((s) => PopupMenuItem(value: s, child: Text(_specLabel(s))))
+          specs.map((s) => PopupMenuItem(value: s, child: Text(getSpecialtyDisplayName(s))))
               .toList(),
       child: Container(
         width: double.infinity,
@@ -499,27 +519,12 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
             border: Border.all(color: green)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(_specLabel(selectedSpec)), const Icon(Icons.arrow_drop_down)],
+          children: [Text(getSpecialtyDisplayName(selectedSpec)), const Icon(Icons.arrow_drop_down)],
         ),
       ),
     );
   }
 
-  String _specLabel(String key) {
-    switch (key) {
-      case 'enfermeria': return 'Enfermería';
-      case 'enfermeria_fei': return 'Enfermería FEI';
-      case 'enfermeria_test_saturacion': return 'Enfermería Test Saturación';
-      case 'vacunatorio': return 'Vacunatorio';
-      case 'fonoaudiologia': return 'Fonoaudiología';
-      case 'puericultura': return 'Puericultura';
-      case 'servicio_social': return 'Servicio Social';
-      case 'interconsultor': return 'Interconsultor';
-      case 'neonatologia': return 'Neonatología';
-      case 'neonatologia_adicional': return 'Neonatología Adicional';
-      default: return key[0].toUpperCase() + key.substring(1);
-    }
-  }
 
   Widget _buildNeonatoPage1() {
     final examValue = _formData['physicalExam'] as String?;
