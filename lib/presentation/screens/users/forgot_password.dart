@@ -65,6 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           content: Text('Revisa tu correo para restablecer tu contraseña'),
         ),
       );
+      // ignore: use_build_context_synchronously
       context.go('/login');
     } else {
       messenger.showSnackBar(

@@ -1,16 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/evolution_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/evolution_card.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/router/app_router.dart';
 import 'package:sikum/services/epicrisis_pdf_service.dart';
 
 class PatientDetailsScreen extends ConsumerStatefulWidget {
@@ -50,6 +47,7 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
     const green = Color(0xFF4F959D);
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
+    final userSpecLabel = authChangeNotifier.specialty ?? '';
 
     final evolutionsAsync = ref.watch(evolutionsStreamProvider(p.id));
 
@@ -251,9 +249,6 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                     case 'cerrar':
                       context.push('/pacientes/${p.id}/cerrar');
                       break;
-                    case 'descargar':
-                      _downloadPdf(p);
-                      break;
                     case 'descargar_epicrisis':
                       EpicrisisPdfService.downloadEpicrisisPdf(p);
                       break;
@@ -277,21 +272,22 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                 ),
                 itemBuilder: (_) {
                   if (!p.available) {
-                    // paciente cerrado con alta clínica
                     return const [
                       PopupMenuItem(
                         value: 'descargar_epicrisis',
                         child: Text('Descargar Epicrisis'),
                       ),
                     ];
-                  } else {
-                    // paciente activo
-                    return const [
-                      PopupMenuItem(value: 'evolucionar', child: Text('Evolucionar')),
-                      PopupMenuItem(value: 'cerrar',      child: Text('Cerrar HC')),
-                      PopupMenuItem(value: 'descargar',  child: Text('Descargar HC')),
-                    ];
                   }
+                  // Paciente activo: siempre mostramos "Evolucionar"
+                  final items = <PopupMenuEntry<String>>[
+                    const PopupMenuItem(value: 'evolucionar', child: Text('Evolucionar')),
+                  ];
+                  // Y sólo si el usuario es neonatólogo mostramos "Cerrar HC"
+                  if (userSpecLabel == 'Neonatología') {
+                    items.add(const PopupMenuItem(value: 'cerrar', child: Text('Cerrar HC')));
+                  }
+                  return items;
                 },
               ),
             ),
@@ -311,90 +307,5 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _downloadPdf(Patient p) async {
-    // 0) Pre-carga de datos fuera del build()
-    final maternosSnap    = await _loadSubdoc(p.id, 'maternos');
-    final nacimientoSnap  = await _loadSubdoc(p.id, 'nacimiento');
-    final evolRows        = await _evolutionsRows(p.id);
-
-    // 1) Creo el documento
-    final doc = pw.Document();
-
-    // 2) Añade la página SIN await en el build()
-    doc.addPage(pw.MultiPage(build: (ctx) {
-      return [
-        // Cabecera paciente
-        pw.Header(level: 0, text: 'Historia Clínica - ${p.firstName} ${p.lastName}'),
-        pw.Paragraph(text: 'DNI: ${p.dni}'),
-        pw.SizedBox(height: 12),
-
-        // Datos Maternos
-        pw.Header(level: 1, text: 'Datos Maternos'),
-        ..._rowList(maternosSnap),
-
-        // Datos Nacimiento
-        pw.Header(level: 1, text: 'Datos de Nacimiento'),
-        ..._rowList(nacimientoSnap),
-
-        // Evoluciones
-        pw.Header(level: 1, text: 'Evoluciones'),
-        ...evolRows,
-      ];
-    }));
-
-    // 3) Comparte/descarga
-    await Printing.sharePdf(
-      bytes: await doc.save(),
-      filename: 'HC_${p.dni}.pdf',
-    );
-  }
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> _loadSubdoc(String pid, String key) {
-    return FirebaseFirestore.instance
-      .collection('pacientes')
-      .doc(pid)
-      .collection(key)
-      .doc('data')
-      .get();
-  }
-
-  List<pw.Widget> _rowList(DocumentSnapshot<Map<String, dynamic>> snap) {
-    if (!snap.exists) return [pw.Text('No disponible')];
-    return snap.data()!
-        .entries
-        .map((e) => pw.Bullet(text: '${e.key}: ${e.value}'))
-        .toList();
-  }
-
-  Future<List<pw.Widget>> _evolutionsRows(String pid) async {
-    final snap = await FirebaseFirestore.instance
-      .collection('evolutions')
-      .where('patientId', isEqualTo: pid)
-      .orderBy('createdAt')
-      .get();
-
-    if (snap.docs.isEmpty) {
-      return [pw.Text('Sin evoluciones')];
-    }
-
-    return snap.docs.map((d) {
-      final m = d.data();
-      final details = m['details'] as Map<String, dynamic>;
-
-      return pw.Column(children: [
-        pw.Text(
-          'Especialidad: ${m['specialty']}',
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-        ),
-        for (final kv in details.entries)
-          pw.Bullet(
-            text: '${kv.key}: '
-                  '${kv.value is Timestamp ? DateFormat("dd/MM/yyyy").format((kv.value as Timestamp).toDate()) : kv.value}',
-          ),
-        pw.Divider(),
-      ]);
-    }).toList();
   }
 }

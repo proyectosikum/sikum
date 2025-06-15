@@ -68,6 +68,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         const SnackBar(content: Text('Contraseña actualizada')),
       );
       await AuthService.instance.logout();
+      // ignore: use_build_context_synchronously
       context.go('/login');
     } else {
       messenger.showSnackBar(
@@ -91,6 +92,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           icon: const Icon(Icons.arrow_back, color: cream),
           onPressed: () async {
             await AuthService.instance.logout();
+            // ignore: use_build_context_synchronously
             context.go('/login');
           },
         ),
@@ -176,6 +178,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                     ? null
                                     : () async {
                                         await AuthService.instance.logout();
+                                        // ignore: use_build_context_synchronously
                                         context.go('/login');
                                       },
                                 style: OutlinedButton.styleFrom(

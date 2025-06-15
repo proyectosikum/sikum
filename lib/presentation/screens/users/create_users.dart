@@ -137,6 +137,7 @@ class _CreateUsersState extends ConsumerState<CreateUsers> {
                 decoration: const InputDecoration(labelText: 'Matrícula Provincial:'),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (v) => v == null || v.isEmpty ? 'Ingrese la matrícula provincial' : null,
               ),
               const SizedBox(height: 12),
 

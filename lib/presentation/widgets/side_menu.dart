@@ -64,12 +64,6 @@ class SideMenu extends StatelessWidget {
             ),
             _buildMenuItem(
               context,
-              icon: Icons.show_chart_outlined,
-              label: 'Evolucionar',
-              onTap: () => context.go('/evolucionar'),
-            ),
-            _buildMenuItem(
-              context,
               icon: Icons.bar_chart_outlined,
               label: 'Estadísticas',
               onTap: () => context.go('/estadisticas'),
@@ -85,6 +79,7 @@ class SideMenu extends StatelessWidget {
                   onTap: () async {
                     Navigator.of(context).pop();
                     await AuthService.instance.logout();
+                    // ignore: use_build_context_synchronously
                     context.go('/login');
                   },
                   borderRadius: BorderRadius.circular(8),
