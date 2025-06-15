@@ -2,12 +2,12 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/birth_data_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/screens/patients/birth/birth_data_enums.dart';
-import 'package:sikum/presentation/screens/patients/data/patient_details.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/custom_date_picker.dart';
 import 'package:sikum/presentation/widgets/custom_time_picker.dart';
@@ -18,7 +18,7 @@ import 'package:sikum/presentation/widgets/side_menu.dart';
 class BirthDataForm extends ConsumerStatefulWidget {
 
   final String patientId;
-  
+
   const BirthDataForm({super.key, required this.patientId});
 
   @override
@@ -28,7 +28,7 @@ class BirthDataForm extends ConsumerStatefulWidget {
 class _BirthDataFormState extends ConsumerState<BirthDataForm> {
   bool _isInitialized = false;
 
-  @override  
+  @override
   Widget build(BuildContext context) {
       final detailAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
       const green = Color(0xFF4F959D);
@@ -37,49 +37,44 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
         backgroundColor: const Color(0xFFFFF8E1),
         appBar: const CustomAppBar(),
         endDrawer: const SideMenu(),
-        body: 
+        body:
           detailAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: green)),
           error: (_, __) => const Center(child: Text('Error al cargar paciente')),
           data: (p) {
             if (p == null) {
               return const Center(child: Text('Paciente no encontrado'));
-            } 
-             if (!_isInitialized) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+            }
+            if (!_isInitialized) {
               _initializeBirthData(p);
-            });
-            _isInitialized = true;
-          }
+              _isInitialized = true;
+            }
             return _completeFormView(context, p, ref);
-       
+
           },
         ),
       );
     }
 
     Widget _completeFormView(BuildContext context, Patient p, ref) {
-      return Scaffold(
-          backgroundColor: const Color(0xFFFFF8E1),
-          body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    PatientSummary(patient: p),
-                    SizedBox(height: 20),
-                    _form(context, p, ref)
-                  ],
-                )
-              ),
-            ),
-        );
+      return SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              PatientSummary(patient: p),
+              const SizedBox(height: 20),
+              _form(context, p, ref),
+            ],
+          ),
+        ),
+      );
     }
 
       void _initializeBirthData(Patient p) {
         final notifier = ref.read(birthDataProvider.notifier);
-        
+
         // Evita recargar si es el mismo paciente
         if (notifier.patient?.id == p.id) return;
 
@@ -98,7 +93,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
       final hasPhysicalError = notifier.errorTextFor('physicalExamination') != null;
       final hasDetailsError = notifier.errorTextFor('physicalExaminationDetails') != null;
 
-      return ListView(   
+      return ListView(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           children: [
@@ -187,7 +182,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ),
             ),
 
-            
+
             SizedBox(height: 16),
             DropdownButtonFormField<BirthTypeEnum>(
                   value: BirthTypeEnum.values.firstWhereOrNull(
@@ -197,10 +192,10 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     labelText: "Tipo de Nacimiento",
                     border: OutlineInputBorder(),
                     suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
-                    errorText: notifier.errorTextFor('birthType'), 
+                    errorText: notifier.errorTextFor('birthType'),
                   ),
                   dropdownColor: const Color(0xFFB3CFD1),
-                  icon: const Icon(Icons.arrow_drop_down), 
+                  icon: const Icon(Icons.arrow_drop_down),
                   items: BirthTypeEnum.values.map((option) {
                     return DropdownMenuItem<BirthTypeEnum>(
                       value: option,
@@ -338,8 +333,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   width: double.infinity, // Hace que ocupe todo el ancho disponible de la columna
                   child: CustomDatePicker(
                     label: "Seleccionar fecha de nacimiento",
-                    initialDate: data.birthDate != null 
-                        ? DateFormat('dd/MM/yyyy').format(data.birthDate!) 
+                    initialDate: data.birthDate != null
+                        ? DateFormat('dd/MM/yyyy').format(data.birthDate!)
                         : null,
                     isDataSaved: isUpdateView,
                     onDateChanged: (formattedDate) {
@@ -347,7 +342,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                       ref.read(birthDataProvider.notifier).updateBirthDate(parsedDate);
                     },
                 ),
-                  
+
                 ),
                 if (hasBirthDateError)
                   Padding(
@@ -375,7 +370,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ],
             ),
             SizedBox(height: 16),
-            Text("Edad gestacional", 
+            Text("Edad gestacional",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
             ),
             SizedBox(height: 8),
@@ -678,7 +673,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   ],
                 ),
               ),
-              
+
               SizedBox(height: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -691,28 +686,28 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: 8), 
+                  SizedBox(height: 8),
                   CheckboxListTile(
                     title: Text('Vacuna de Hepatitis B'),
-                    value: (data.hasHepatitisBVaccine), 
+                    value: (data.hasHepatitisBVaccine),
                     onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasHepatitisBVaccine(value),
                   ),
 
                   CheckboxListTile(
                     title: Text('Vitamina K'),
-                    value: (data.hasVitaminK), 
+                    value: (data.hasVitaminK),
                     onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasVitaminK(value ?? false),
                   ),
 
                   CheckboxListTile(
                     title: Text('Colirio oftalmológico'),
-                    value: (data.hasOphthalmicDrops), 
+                    value: (data.hasOphthalmicDrops),
                     onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value ?? false),
                   ),
                 ],
               ),
               SizedBox(height: 16),
-              Text("Número de pulsera", 
+              Text("Número de pulsera",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                   ),
                   SizedBox(height: 8),
@@ -763,7 +758,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         }
                       },
               ),
-              
+
               SizedBox(height: 16),
             //BOTONES DE ACCION
             Row(
@@ -772,7 +767,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 ? [ //MODO EDICION
                     TextButton.icon(
                       onPressed: () {
-                        Navigator.pop(context);
+                        context.pop();
                       },
                       icon: Icon(Icons.arrow_back, color: Color(0xFF4F959D)),
                       label: Text("Volver", style: TextStyle(color: Color(0xFF4F959D))),
@@ -793,21 +788,16 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                       title: 'Confirmar cancelación',
                       content: 'Si continúas, perderás los cambios realizados. ¿Deseas continuar?',
                       onConfirm: () {
-                        Navigator.pop(context); // Vuelve a la pantalla anterior
                         notifier.reset();
-                       // ref.read(birthDataProvider.notifier).setPatient(p); // Restaura los datos originales
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => PatientDetailsScreen(patientId: p.id)), // Reemplazar con la pantalla destino
-                        );
+                        context.pop();
                       },
                     );
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Color(0xFF4F959D),
-                    side: BorderSide(color: Color(0xFF4F959D)), 
+                    side: BorderSide(color: Color(0xFF4F959D)),
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                   child: Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
@@ -843,10 +833,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                             ),
                           );
                           //Redirigir a la pantalla después de guardar
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => PatientDetailsScreen(patientId: p.id)),
-                          );
+                          context.pop();
 
                         } catch (e) {
                           if (!context.mounted) return; //Asegura que el contexto sigue existiendo
@@ -862,9 +849,9 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF4F959D),
-                    foregroundColor: Color(0xFFFFF8E1), 
+                    foregroundColor: Color(0xFFFFF8E1),
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), 
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                   child: Text("Guardar", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
@@ -905,7 +892,6 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
       );
     }
 
-  
+
 }
 
-   

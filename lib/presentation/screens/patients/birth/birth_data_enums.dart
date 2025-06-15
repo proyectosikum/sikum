@@ -2,15 +2,15 @@ abstract class EnumWithValue {
   String getValue(); // Método obligatorio para todos los Enum
 }
 
-enum BirthTypeEnum implements EnumWithValue{ 
+enum BirthTypeEnum implements EnumWithValue{
   vaginal("Vaginal") ,
   cesarean ("Cesarea"),
-  forceps("Forcipal"), 
+  forceps("Forcipal"),
   unknown("Sin dato");
 
   final String value;
   const BirthTypeEnum(this.value);
-  
+
   @override
   String getValue() {
     return value;
@@ -24,17 +24,17 @@ enum PresentationEnum implements EnumWithValue{
 
   final String value;
   const PresentationEnum(this.value);
-  
+
   @override
   String getValue() {
     return value;
   }
-  
+
 }
 
 enum RuptureOfMembraneEnum implements EnumWithValue{
   atificial("Artificial"),
-  spontaneous("Espontanea"), 
+  spontaneous("Espontanea"),
   unknown("Sin dato");
 
   final String value;
@@ -44,7 +44,7 @@ enum RuptureOfMembraneEnum implements EnumWithValue{
   String getValue() {
     return value;
   }
-  
+
 }
 
 enum AmnioticFluidEnum implements EnumWithValue{
@@ -118,7 +118,7 @@ vigorous('VIGOROSO');
 }
 
 enum DispositionEnum implements EnumWithValue{
- 
+
   roomingInHospitalization('Internacion Conjunta'),
   ucin('UCIN'),
   intermediateCare('Cuidados Intermedios'),
@@ -130,7 +130,7 @@ enum DispositionEnum implements EnumWithValue{
 
   final String value;
   const DispositionEnum(this.value);
-  
+
   @override
   String getValue() {
     return value;
@@ -139,13 +139,13 @@ enum DispositionEnum implements EnumWithValue{
 }
 
 enum PlacesEnum implements EnumWithValue{
- 
-  thisHospital('Hospital F.Escardo (tigre)'),
+
+  thisHospital('Hospital F.Escardo (Tigre)'),
   outpatient('Extra hospitalario');
 
   final String value;
   const PlacesEnum(this.value);
-  
+
   @override
   String getValue() {
     return value;
@@ -167,7 +167,7 @@ enum BloodTypeEnum implements EnumWithValue{
 
       final String value;
       const BloodTypeEnum(this.value);
-      
+
       @override
       String getValue() {
         return value;

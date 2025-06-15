@@ -12,10 +12,10 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
   @override
   BirthData? build() {
-    return  state ?? _patient?.birthData;
+    return _patient?.birthData ?? BirthData();
   }
 
-  void setPatient(Patient p){ 
+  void setPatient(Patient p){
     if(_patient==null || p.id != _patient!.id){
       reset();
       _patient=p;
@@ -34,7 +34,7 @@ class BirthDataNotifier extends Notifier<BirthData?>{
    void updateBirthType(String type) {
     state = state?.copyWith(birthType:type);
   }
-  
+
     void updatePresentation(String presentation) {
     state = state?.copyWith(presentation:presentation);
   }
@@ -139,7 +139,7 @@ void updateBloodType(String value) {
 String? errorTextFor(String field) => errors.containsKey(field) ? errors[field] : null;
 
 
-// VALIDACIONES 
+// VALIDACIONES
 bool validateAll() {
   errors.clear();
   final d = state;
