@@ -8,6 +8,7 @@ class MaternalTest extends StatelessWidget {
   final String result;
   final String date;
   final bool isDataSaved;
+  final bool hasError;
   final ValueChanged<String> onResultChanged;
   final ValueChanged<String> onDateChanged;
 
@@ -18,6 +19,7 @@ class MaternalTest extends StatelessWidget {
     required this.result,
     required this.date,
     required this.isDataSaved,
+    required this.hasError,
     required this.onResultChanged,
     required this.onDateChanged,
   });
@@ -28,7 +30,8 @@ class MaternalTest extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Color.fromARGB(121, 216, 216, 216),
+        color:Color.fromARGB(121, 216, 216, 216),
+        border: hasError ? Border.all(color: Colors.red, width: 2) : null,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
