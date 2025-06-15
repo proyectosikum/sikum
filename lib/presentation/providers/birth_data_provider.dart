@@ -8,6 +8,7 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
   Patient? _patient;
   bool isUpdateView = false;
+  Map<String, String?> errors = {};
 
   @override
   BirthData? build() {
@@ -26,7 +27,8 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
 
   void reset(){
-    state=BirthData();
+    state= _patient?.birthData ?? BirthData();
+    errors = {};
   }
 
    void updateBirthType(String type) {
@@ -130,8 +132,104 @@ void updateBloodType(String value) {
 }
 
   void updateIsDataSaved(bool value) {
+    print(value);
     state = state?.copyWith(isDataSaved: value);
 }
 
+String? errorTextFor(String field) => errors.containsKey(field) ? errors[field] : null;
+
+
+// VALIDACIONES 
+bool validateAll() {
+  errors.clear();
+  final d = state;
+  if (d == null) return false;
+
+  final now = DateTime.now();
+
+  // Obligatorios
+  if (d.ruptureOfMembrane == null) errors['ruptureOfMembrane'] = 'Campo obligatorio';
+  if (d.amnioticFluid == null) errors['amnioticFluid'] = 'Campo obligatorio';
+  if (d.birthType == null) errors['birthType'] = 'Campo obligatorio';
+  if (d.presentation == null) errors['presentation'] = 'Campo obligatorio';
+  if (d.sex == null) errors['sex'] = 'Campo obligatorio';
+  if (d.twin == null) errors['twin'] = 'Campo obligatorio';
+  if (d.firstApgarScore == null) errors['firstApgarScore'] = 'Campo obligatorio';
+  if (d.secondApgarScore == null) errors['secondApgarScore'] = 'Campo obligatorio';
+  if (d.thirdApgarScore == null) errors['thirdApgarScore'] = 'Campo obligatorio';
+  if (d.disposition == null) errors['disposition'] = 'Campo obligatorio';
+  if (d.bloodType == null) errors['bloodType'] = 'Campo obligatorio';
+
+  // Lugar de nacimiento y detalle
+  if (d.birthPlace == null) {
+    errors['birthPlace'] = 'Campo obligatorio';
+  } else if (d.birthPlace == "Otro" &&
+      (d.birthPlaceDetails == null || d.birthPlaceDetails!.trim().isEmpty)) {
+    errors['birthPlaceDetails'] = 'Debe detallar el lugar';
+  }
+
+  // Examen físico
+  if (state?.physicalExamination == "Anormal") {
+  if (state?.physicalExaminationDetails?.trim().isEmpty ?? true) {
+    errors['physicalExaminationDetails'] =
+      "Debe completar los detalles si el examen es anormal.";
+  }
+}
+
+
+  // Fecha y hora de nacimiento
+  if (d.birthDate == null) {
+    errors['birthDate'] = 'Campo obligatorio';
+  } else if (d.birthDate!.isAfter(now)) {
+    errors['birthDate'] = 'No puede ser posterior a hoy';
+  }
+
+  if (d.birthTime == null || d.birthTime!.isEmpty) {
+    errors['birthTime'] = 'Campo obligatorio';
+  } else {
+    // Verificación cruzada de fecha y hora combinadas
+    try {
+      final timeParts = d.birthTime!.split(':');
+      final combined = DateTime(
+        d.birthDate?.year ?? now.year,
+        d.birthDate?.month ?? now.month,
+        d.birthDate?.day ?? now.day,
+        int.parse(timeParts[0]),
+        int.parse(timeParts[1]),
+      );
+      if (combined.isAfter(now)) {
+        errors['birthTime'] = 'La fecha y hora no pueden ser futuras';
+      }
+    } catch (_) {
+      errors['birthTime'] = 'Hora inválida';
+    }
+  }
+
+  // Validaciones numéricas
+  final age = d.gestationalAge;
+  if (age != null && (age < 23 || age > 42)) {
+    errors['gestationalAge'] = 'Edad gestacional fuera de rango (23–42)';
+  }
+
+  if (d.weight == null) {
+    errors['weight'] = 'Campo obligatorio';
+  } else if (d.weight! > 10000) {
+    errors['weight'] = 'Peso fuera de rango (hasta 10.000 g)';
+  }
+
+  if (d.length != null && d.length! > 100) {
+    errors['length'] = 'Longitud demasiado alta';
+  }
+
+  if (d.headCircumference != null && d.headCircumference! > 100) {
+    errors['headCircumference'] = 'Perímetro cefálico fuera de rango: hasta 100';
+  }
+
+  if (d.braceletNumber != null && d.braceletNumber! < 0) {
+    errors['braceletNumber'] = 'Número inválido';
+  }
+
+  return errors.isEmpty;
+}
 
 }
