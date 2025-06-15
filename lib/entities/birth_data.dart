@@ -27,6 +27,7 @@ class BirthData{
   String? birthPlaceDetails;
   int? braceletNumber;
   String? bloodType;
+  bool isDataSaved;
 
 BirthData({
   this.birthType,
@@ -54,6 +55,7 @@ BirthData({
   this.birthPlaceDetails,
   this.braceletNumber,
   this.bloodType,
+  this.isDataSaved = false,
 });
 
   BirthData copyWith({
@@ -82,6 +84,7 @@ BirthData({
     String? birthPlaceDetails,
     int? braceletNumber,
     String? bloodType,
+    bool? isDataSaved,
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -109,6 +112,7 @@ BirthData({
     birthPlaceDetails: birthPlaceDetails ?? this.birthPlaceDetails,
     braceletNumber: braceletNumber?? this.braceletNumber,
     bloodType: bloodType ?? this.bloodType,
+    isDataSaved: isDataSaved ?? this.isDataSaved
     );
   }
 
@@ -139,6 +143,7 @@ BirthData({
       'birthPlaceDetails':birthPlaceDetails,
       'braceletNumber': braceletNumber,
       'bloodType': bloodType,
+      'isDataSaved': isDataSaved
     };
   }
 
@@ -170,7 +175,8 @@ BirthData({
       birthPlace: map['birthPlace'] ,
       birthPlaceDetails: map['birthPlaceDetails'],
       braceletNumber: map['braceletNumber'],
-      bloodType: map['bloodType']
+      bloodType: map['bloodType'],
+      isDataSaved: map['isDataSaved'] ?? false,
     );
   }
 
@@ -196,7 +202,8 @@ String toString() {
     weight: $weight,
     length: $length,
     headCircumference: $headCircumference,
-    bloodType: $bloodType
+    bloodType: $bloodType,
+    isDataSaved: $isDataSaved,
   }
   ''';
 }

@@ -11,10 +11,6 @@ class BirthDataNotifier extends Notifier<BirthData?>{
 
   @override
   BirthData? build() {
-    if(_patient?.birthData !=null){
-      isUpdateView=true;
-    }
-    print('NOTIFIER MODO CONSULTA $isUpdateView');
     return  state ?? _patient?.birthData;
   }
 
@@ -132,5 +128,10 @@ void updateBraceletNumber(int value) {
 void updateBloodType(String value) {
   state = state?.copyWith(bloodType: value);
 }
+
+  void updateIsDataSaved(bool value) {
+    state = state?.copyWith(isDataSaved: value);
+}
+
 
 }

@@ -68,6 +68,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     PatientSummary(patient: p),
+                    SizedBox(height: 20),
                     _form(context, p, ref)
                   ],
                 )
@@ -89,6 +90,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
     Widget _form(BuildContext context, Patient p, ref) {
 
       final data = ref.watch(birthDataProvider);
+      final isUpdateView = data.isDataSaved;
+      print(isUpdateView);
 
       return ListView(   
           shrinkWrap: true,
@@ -100,7 +103,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                       ? "Otro: ${data.birthPlaceDetails}"
                       : data.birthPlace ?? "No asignado",
               ),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] :[
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209), 
                   child: Column(
@@ -126,6 +130,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: TextFormField(
+                      enabled: !isUpdateView,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Especificar otro lugar",
@@ -145,7 +150,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
                 title: Text('Tipo de Nacimiento'),
                 subtitle: Text(data.birthType ?? 'No asignado'),
-                children: [
+                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+                children: isUpdateView ? [] : [
                   Container(
                     color: const Color.fromARGB(255, 179, 207, 209),
                     child: Column(
@@ -165,7 +171,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Presentacion'),
               subtitle: Text(data.presentation ?? 'No asignado'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -185,7 +192,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Ruptura de membrana'),
               subtitle: Text(data.ruptureOfMembrane ?? 'No asignado'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -205,7 +213,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
              ExpansionTile(
               title: Text('Liquido amniotico'),
               subtitle: Text(data.amnioticFluid ?? 'No asignado'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -225,7 +234,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Sexo'),
               subtitle: Text(data.sex ?? 'No asignado'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -242,6 +252,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 )
               ]
             ),
+            SizedBox(height: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -252,7 +263,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     initialDate: data.birthDate != null 
                         ? DateFormat('dd/MM/yyyy').format(data.birthDate!) 
                         : null,
-                    isDataSaved: false,
+                    isDataSaved: isUpdateView,
                     onDateChanged: (formattedDate) {
                       DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(formattedDate);
                       ref.read(birthDataProvider.notifier).updateBirthDate(parsedDate);
@@ -268,8 +279,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 SizedBox(height: 8),
                 CustomTimePicker(
                   label: "Seleccionar hora de nacimiento",
-                  initialTime: data.birthTime, // Si hay una hora guardada, se muestra
-                  isDataSaved: false, // Puedes cambiar esto para bloquearlo
+                  initialTime: data.birthTime,
+                  isDataSaved: isUpdateView,
                   onTimeChanged: (formattedTime) {
                     ref.read(birthDataProvider.notifier).updateBirthTime(formattedTime);
                   },
@@ -284,6 +295,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 TextFormField(
                   initialValue: data?.gestationalAge?.toString(),
                   keyboardType: TextInputType.number,
+                  enabled: !isUpdateView,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
@@ -297,11 +309,11 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     }
                   },
                 ),
-
             ExpansionTile(
               title: Text('Gemelar'),
               subtitle: Text(data.twin?? 'Sin eleccion'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -321,7 +333,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Apgar 1`'),
               subtitle: Text(data.firstApgarScore?? 'Sin eleccion'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -341,7 +354,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Apgar 5`'),
               subtitle: Text(data.secondApgarScore?? 'Sin eleccion'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -361,7 +375,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ExpansionTile(
               title: Text('Apgar 10`'),
               subtitle: Text(data.thirdApgarScore?? 'Sin eleccion'),
-              children: [
+              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+              children: isUpdateView ? [] : [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209),
                   child: Column(
@@ -382,9 +397,13 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               SizedBox(height: 8),
               TextFormField(
                 initialValue: data?.weight?.toString(),
+                enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF4F959D)),
+                  ),
                 ),
                 onChanged: (value) {
                   int? parsedValue = int.tryParse(value);
@@ -398,9 +417,13 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               SizedBox(height: 8),
               TextFormField(
                 initialValue: data?.length?.toString(),
+                enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF4F959D)),
+                  ),
                 ),
                 onChanged: (value) {
                   int? parsedValue = int.tryParse(value);
@@ -414,9 +437,13 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               SizedBox(height: 8),
               TextFormField(
                 initialValue: data?.headCircumference?.toString(),
+                enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF4F959D)),
+                  ),
                 ),
                 onChanged: (value) {
                   int? parsedValue = int.tryParse(value);
@@ -431,16 +458,17 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 decoration: InputDecoration(
                   labelText: "Grupo y factor sanguineo",
                   border: const OutlineInputBorder(),
-                  //errorText: errorText,
+                  suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
                 ),
                 dropdownColor: Color(0xFFB3CFD1),
+                icon: const SizedBox.shrink(), // 🔹 Esto quita la flecha
                 items: BloodTypeEnum.values.map((option) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<BloodTypeEnum>(
                     value: option,
                     child: Text(option.getValue()),
                   );
                 }).toList(),
-                onChanged: (newValue) {
+                onChanged: isUpdateView ? null : (newValue) {
                     if (newValue != null) {
                       ref.read(birthDataProvider.notifier).updateBloodType(newValue.getValue());
                     }
@@ -464,7 +492,9 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                           title: Text("Normal"),
                           value: "Normal",
                           groupValue: data.physicalExamination,
-                          onChanged: (value) {
+                          onChanged: isUpdateView
+                            ? null
+                            :(value) {
                             ref.read(birthDataProvider.notifier).updatePhysicalExamination(value!);
                             ref.read(birthDataProvider.notifier).updatePhysicalExaminationDetails(""); // Borra texto si cambia a "Normal"
                           },
@@ -475,7 +505,9 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                           title: Text("Otros"),
                           value: "Otros",
                           groupValue: data.physicalExamination,
-                          onChanged: (value) {
+                          onChanged: isUpdateView
+                            ? null
+                            : (value) {
                             ref.read(birthDataProvider.notifier).updatePhysicalExamination(value!);
                           },
                         ),
@@ -487,6 +519,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     SizedBox(height: 8),
                     TextFormField(
                       initialValue: data?.physicalExaminationDetails,
+                      enabled: !isUpdateView,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Detalles del examen físico",
@@ -494,7 +527,9 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                           borderSide: BorderSide(color: Color(0xFF4F959D)),
                         ),
                       ),
-                      onChanged: (value) {
+                      onChanged: isUpdateView
+                        ? null
+                        : (value) {
                         ref.read(birthDataProvider.notifier).updatePhysicalExaminationDetails(value);
                       },
                     ),
@@ -517,19 +552,19 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   CheckboxListTile(
                     title: Text('Vacuna de Hepatitis B'),
                     value: (data.hasHepatitisBVaccine), 
-                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasHepatitisBVaccine(value),
+                    onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasHepatitisBVaccine(value),
                   ),
 
                   CheckboxListTile(
                     title: Text('Vitamina K'),
                     value: (data.hasVitaminK), 
-                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasVitaminK(value ?? false),
+                    onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasVitaminK(value ?? false),
                   ),
 
                   CheckboxListTile(
                     title: Text('Colirio oftalmológico'),
                     value: (data.hasOphthalmicDrops), 
-                    onChanged: (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value ?? false),
+                    onChanged: isUpdateView ? null : (value) => ref.read(birthDataProvider.notifier).updateHasOphthalmicDrops(value ?? false),
                   ),
                 ],
               ),
@@ -540,6 +575,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   SizedBox(height: 8),
                   TextFormField(
                     initialValue: data?.braceletNumber?.toString(),
+                    enabled: !isUpdateView,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -558,7 +594,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ExpansionTile(
                 title: Text('Destino'),
                 subtitle: Text(data.disposition?? 'Sin eleccion'),
-                children: [
+                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
+                children: isUpdateView ? [] : [
                   Container(
                     color: const Color.fromARGB(255, 179, 207, 209),
                     child: Column(
@@ -579,8 +616,24 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             //BOTONES DE ACCION
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribuye los botones equitativamente
-              children: [
-                // Botón "Cancelar" - Fondo claro con bordes y letras en verde
+              children:  isUpdateView
+                ? [ //MODO EDICION
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.arrow_back, color: Color(0xFF4F959D)),
+                      label: Text("Volver", style: TextStyle(color: Color(0xFF4F959D))),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.edit, color: Color(0xFF4F959D)),
+                      tooltip: "Editar",
+                      onPressed: () {
+                        ref.read(birthDataProvider.notifier).updateIsDataSaved(false);
+                      },
+                    ),
+                  ]
+                :[
                 OutlinedButton(
                   onPressed: () {
                     showConfirmationDialog(
@@ -615,6 +668,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         try {
 
                           await ref.read(patientActionsProvider).submitBirthData(p.id, data);
+                          ref.read(birthDataProvider.notifier).updateIsDataSaved(true);
                           if (!context.mounted) return; // Asegura que el contexto sigue existiendo
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
