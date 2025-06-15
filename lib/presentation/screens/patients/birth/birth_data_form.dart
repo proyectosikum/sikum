@@ -46,7 +46,10 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               return const Center(child: Text('Paciente no encontrado'));
             }
             if (!_isInitialized) {
-              _initializeBirthData(p);
+              // programamos la inicialización *después* del build
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _initializeBirthData(p);
+              });
               _isInitialized = true;
             }
             return _completeFormView(context, p, ref);
