@@ -47,6 +47,15 @@ const Map<String, List<FieldConfig>> evolutionFormConfig = {
     FieldConfig(key: 'postDuctalOxygenSaturation', label: 'Saturación post ductal', type: FieldType.number, isRequired: true, min: 0, max: 100),
   ],
 
+  'enfermeria_cambio_pulsera': [
+    FieldConfig(
+      key: 'braceletNumberNew',
+      label: 'Nuevo número de pulsera',
+      type: FieldType.number,
+      isRequired: true,
+    ),
+  ],
+
   // Vacunatorio
   'vacunatorio': [
     FieldConfig(key: 'bcg',          label: 'Se aplicó la BCG',                             type: FieldType.checkbox, isRequired: true),
