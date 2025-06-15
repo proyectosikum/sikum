@@ -99,13 +99,14 @@ class _PatientsState extends ConsumerState<Patients> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final p = filtered[index];
-                      final dischargeStatus = ref.watch(dischargeStatusProvider(p));
+                      final dischargeStatusAsync = ref.watch(dischargeStatusProvider(p));
 
-                      return dischargeStatus.when(
-                        data: (status) => PatientCard(
+                      return dischargeStatusAsync.when(
+                        data: (dischargeResult) => PatientCard(
                           patient: p,
                           onTap: () => context.push('/paciente/detalle/${p.id}'),
-                          status: status, 
+                          status: dischargeResult.status,
+                          missingItems: dischargeResult.missingItems, 
                         ),
                         loading: () => const Center(child: CircularProgressIndicator()),
                         error: (e, _) => ListTile(

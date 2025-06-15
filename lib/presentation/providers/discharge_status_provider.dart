@@ -4,11 +4,11 @@ import 'package:sikum/presentation/screens/patients/discharge_status_evaluator.d
 import 'package:sikum/entities/patient.dart';
 
 
-  final dischargeStatusProvider = Provider.family<AsyncValue<DischargeStatus>, Patient>((ref, patient) {
+  final dischargeStatusProvider = Provider.family<AsyncValue<DischargeResult>, Patient>((ref, patient) {
   final evolutionsAsync = ref.watch(evolutionsByPatientIdProvider(patient.id));
 
   return evolutionsAsync.whenData((evolutions) {
-    return getDischargeStatus(patient, evolutions);
+    return getDischargeStatusWithDetails(patient, evolutions);
   });
 }); 
 
