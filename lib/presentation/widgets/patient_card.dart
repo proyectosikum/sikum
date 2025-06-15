@@ -5,16 +5,18 @@ import 'package:sikum/presentation/screens/patients/discharge_status_evaluator.d
 class PatientCard extends StatelessWidget {
   final Patient patient;
   final VoidCallback onTap;
-  final DischargeStatus status; // VANE
+  final DischargeStatus status; 
+  final List<String> missingItems;
 
   const PatientCard({
     super.key,
     required this.patient,
     required this.onTap,
-    required this.status, // VANE
+    required this.status, 
+    this.missingItems = const [],
   });
 
-//VANE
+
   Color getStatusColor() {
   switch (status) {
     case DischargeStatus.ready:
@@ -47,12 +49,11 @@ class PatientCard extends StatelessWidget {
                 icon: const Icon(Icons.remove_red_eye),
                 onPressed: onTap,
               ),
-              if (patient.available) // Vane
+              if (patient.available) 
               IconButton(
-                icon: Icon(Icons.circle, color: getStatusColor()),//VANE
+                icon: Icon(Icons.circle, color: getStatusColor()),
                 onPressed: () =>
-                  _showDischargeDetails(context, status), //VANE
-                
+                  _showDischargeDetails(context, status, missingItems), 
               ),
             ],
           ),
@@ -61,31 +62,30 @@ class PatientCard extends StatelessWidget {
     );
   }
 }
-  //VANE
-  void _showDischargeDetails(BuildContext context, DischargeStatus status) {
-    final message = switch (status) {
-      DischargeStatus.notReady =>
-        'El paciente aún no cumplió las 48 horas desde su ingreso.',
-      DischargeStatus.blocked =>
-        'El paciente cumplió las 48 horas, pero falta información:\n'
-        '- Algún estudio de la madre está incompleto o sin dato\n'
-        '- Datos de nacimiento incompletos\n'
-        '- Evolución de FEI incompleta o ausente\n',
-      DischargeStatus.ready =>
-        'El paciente ya cumplió 48 horas y tiene toda la información necesaria para el alta.',
-    };
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Estado de Alta'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  }
+void _showDischargeDetails(BuildContext context, DischargeStatus status, List<String> missingItems) {
+  final message = switch (status) {
+    DischargeStatus.notReady =>
+      'El paciente aún no cumplió las 48 horas desde su ingreso.',
+    DischargeStatus.blocked =>
+        missingItems.isNotEmpty 
+        ? 'Para que el paciente pueda ser dado de alta, falta completar:\n\n${missingItems.map((item) => '• $item').join('\n')}'
+        : 'El paciente cumplió las 48 horas, pero falta información pendiente.',
+    DischargeStatus.ready =>
+      'El paciente ya cumplió 48 horas y tiene toda la información necesaria para el alta.',
+  };
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Estado de Alta'),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cerrar'),
+        ),
+      ],
+    ),
+  );
+}
