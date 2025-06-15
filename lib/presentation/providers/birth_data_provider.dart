@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/patient.dart';
@@ -128,6 +127,10 @@ void updateBirthPlaceDetails(String details) {
 
 void updateBraceletNumber(int value) {
   state = state?.copyWith(braceletNumber: value);
+}
+
+void updateBloodType(String value) {
+  state = state?.copyWith(bloodType: value);
 }
 
 }

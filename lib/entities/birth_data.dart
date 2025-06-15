@@ -26,6 +26,7 @@ class BirthData{
   String? birthPlace;
   String? birthPlaceDetails;
   int? braceletNumber;
+  String? bloodType;
 
 BirthData({
   this.birthType,
@@ -52,6 +53,7 @@ BirthData({
   this.birthPlace,
   this.birthPlaceDetails,
   this.braceletNumber,
+  this.bloodType,
 });
 
   BirthData copyWith({
@@ -78,7 +80,8 @@ BirthData({
     String? physicalExaminationDetails,
     String? birthPlace,
     String? birthPlaceDetails,
-    int? braceletNumber
+    int? braceletNumber,
+    String? bloodType,
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -105,6 +108,7 @@ BirthData({
     birthPlace: birthPlace ?? this.birthPlace,
     birthPlaceDetails: birthPlaceDetails ?? this.birthPlaceDetails,
     braceletNumber: braceletNumber?? this.braceletNumber,
+    bloodType: bloodType ?? this.bloodType,
     );
   }
 
@@ -134,6 +138,7 @@ BirthData({
       'birthPlace': birthPlace,
       'birthPlaceDetails':birthPlaceDetails,
       'braceletNumber': braceletNumber,
+      'bloodType': bloodType,
     };
   }
 
@@ -165,6 +170,7 @@ BirthData({
       birthPlace: map['birthPlace'] ,
       birthPlaceDetails: map['birthPlaceDetails'],
       braceletNumber: map['braceletNumber'],
+      bloodType: map['bloodType']
     );
   }
 
@@ -190,6 +196,7 @@ String toString() {
     weight: $weight,
     length: $length,
     headCircumference: $headCircumference,
+    bloodType: $bloodType
   }
   ''';
 }

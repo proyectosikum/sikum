@@ -1,9 +1,8 @@
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/patient.dart';
 import 'package:sikum/presentation/providers/birth_data_provider.dart';
 import 'package:sikum/presentation/providers/patient_provider.dart';
@@ -97,7 +96,10 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
           children: [
             ExpansionTile(
               title: Text('Lugar de nacimiento'),
-              subtitle: Text(data.birthPlace ?? 'No asignado'),
+              subtitle: Text(data.birthPlace == "Otro" && (data.birthPlaceDetails?.isNotEmpty ?? false)
+                      ? "Otro: ${data.birthPlaceDetails}"
+                      : data.birthPlace ?? "No asignado",
+              ),
               children: [
                 Container(
                   color: const Color.fromARGB(255, 179, 207, 209), 
@@ -107,9 +109,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         title: Text(option.getValue()),
                         value: option,
                         activeColor: Color(0xFF4F959D),
-                        groupValue: PlacesEnum.values.firstWhere(
-                          (e) => e.getValue() == data.birthPlace,
-                          orElse: () => PlacesEnum.hospTigre,
+                        groupValue: PlacesEnum.values.firstWhereOrNull(
+                          (e) => e.getValue() == data.birthPlace
                         ),
                         onChanged: (option) {
                           ref.read(birthDataProvider.notifier).updateBirthPlace(option!.getValue());
@@ -121,22 +122,24 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     }).toList(),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Especificar otro lugar",
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF4F959D)), 
+                if (data.birthPlace == "Otro") ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Especificar otro lugar",
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF4F959D)), 
+                        ),
                       ),
+                      initialValue: data.birthPlaceDetails, 
+                      onChanged: (value) {
+                        ref.read(birthDataProvider.notifier).updateBirthPlaceDetails(value);
+                      },
                     ),
-                    enabled: data.birthPlace == "Otro", 
-                    onChanged: (value) {
-                      ref.read(birthDataProvider.notifier).updateBirthPlaceDetails(value);
-                    },
                   ),
-                ),
+                ]
               ],
             ),
             ExpansionTile(
@@ -151,7 +154,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                           return RadioListTile<BirthTypeEnum>(
                             title: Text(option.getValue()),
                             value: option,
-                            groupValue: BirthTypeEnum.values.firstWhere((e) => e.getValue() == ref.watch(birthDataProvider)?.birthType ,orElse: () => BirthTypeEnum.unknown),
+                            groupValue: BirthTypeEnum.values.firstWhereOrNull((e) => e.getValue() == ref.watch(birthDataProvider)),
                             onChanged: (option) => ref.read(birthDataProvider.notifier).updateBirthType(option!.getValue()),
                           );
                         }).toList(),
@@ -171,7 +174,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<PresentationEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: PresentationEnum.values.firstWhere((e) => e.getValue() == data.presentation,orElse: () => PresentationEnum.unknown),
+                          groupValue: PresentationEnum.values.firstWhereOrNull((e) => e.getValue() == data.presentation),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updatePresentation(option!.getValue()),
                         );
                       }).toList(),
@@ -191,7 +194,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<RuptureOfMembraneEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: RuptureOfMembraneEnum.values.firstWhere((e) => e.getValue() == data.ruptureOfMembrane,orElse: () => RuptureOfMembraneEnum.unknown),
+                          groupValue: RuptureOfMembraneEnum.values.firstWhereOrNull((e) => e.getValue() == data.ruptureOfMembrane),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateRuptureOfMembrane(option!.getValue()),
                         );
                       }).toList(),
@@ -211,7 +214,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<AmnioticFluidEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: AmnioticFluidEnum.values.firstWhere((e) => e.getValue() == data.amnioticFluid,orElse: () => AmnioticFluidEnum.unknown),
+                          groupValue: AmnioticFluidEnum.values.firstWhereOrNull((e) => e.getValue() == data.amnioticFluid),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateAmnioticFluid(option!.getValue()),
                         );
                       }).toList(),
@@ -231,7 +234,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<SexEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: SexEnum.values.firstWhere((e) => e.getValue() == data.sex,orElse: () => SexEnum.unknown),
+                          groupValue: SexEnum.values.firstWhereOrNull((e) => e.getValue() == data.sex),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSex(option!.getValue()),
                         );
                       }).toList(),
@@ -279,7 +282,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                 ),
                 SizedBox(height: 8),
                 TextFormField(
-                  initialValue: data?.gestationalAge?.toString() ?? 'Sin dato',
+                  initialValue: data?.gestationalAge?.toString(),
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -307,8 +310,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<TwinEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: TwinEnum.values.firstWhere((e) => e.getValue() == data.twin,
-                                      orElse: () => TwinEnum.no),
+                          groupValue: TwinEnum.values.firstWhereOrNull((e) => e.getValue() == data.twin),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateTwin(option!.getValue()),
                         );
                       }).toList(),
@@ -328,8 +330,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<ApgarScoreEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == data.firstApgarScore,
-                                      orElse: () => ApgarScoreEnum.one),
+                          groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.firstApgarScore),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateFirstApgar(option!.getValue()),
                         );
                       }).toList(),
@@ -349,8 +350,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<ApgarScoreEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == data.secondApgarScore,
-                                      orElse: () => ApgarScoreEnum.one),
+                          groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.secondApgarScore),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSecondApgar(option!.getValue()),
                         );
                       }).toList(),
@@ -370,8 +370,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                         return RadioListTile<ApgarScoreEnum>(
                           title: Text(option.getValue()),
                           value: option,
-                          groupValue: ApgarScoreEnum.values.firstWhere((e) => e.getValue() == data.thirdApgarScore,
-                                      orElse: () => ApgarScoreEnum.one),
+                          groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.thirdApgarScore),
                           onChanged: (option) =>ref.read(birthDataProvider.notifier).updateThirdApgar(option!.getValue()),
                         );
                       }).toList(),
@@ -382,7 +381,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             Text("Peso (grs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                initialValue: data?.weight?.toString() ?? 'Sin dato',
+                initialValue: data?.weight?.toString(),
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -398,7 +397,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               Text("Talla (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                initialValue: data?.length?.toString() ?? 'Sin dato',
+                initialValue: data?.length?.toString(),
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -414,7 +413,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               Text("Perímetro Cefálico (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                initialValue: data?.headCircumference?.toString() ?? 'Sin dato',
+                initialValue: data?.headCircumference?.toString(),
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -425,6 +424,28 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     ref.read(birthDataProvider.notifier).updateHeadCircumference(parsedValue);
                   }
                 },
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<BloodTypeEnum>(
+                value: BloodTypeEnum.values.firstWhereOrNull(  (e) => e.getValue() == data.bloodType,),
+                decoration: InputDecoration(
+                  labelText: "Grupo y factor sanguineo",
+                  border: const OutlineInputBorder(),
+                  //errorText: errorText,
+                ),
+                dropdownColor: Color(0xFFB3CFD1),
+                items: BloodTypeEnum.values.map((option) {
+                  return DropdownMenuItem(
+                    value: option,
+                    child: Text(option.getValue()),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                    if (newValue != null) {
+                      ref.read(birthDataProvider.notifier).updateBloodType(newValue.getValue());
+                    }
+                  },
+
               ),
               SizedBox(height: 16),
               Column(
@@ -465,7 +486,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   if (data.physicalExamination == "Otros") ...[
                     SizedBox(height: 8),
                     TextFormField(
-                      initialValue: data?.physicalExaminationDetails ?? 'Sin dato',
+                      initialValue: data?.physicalExaminationDetails,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Detalles del examen físico",
@@ -518,7 +539,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   ),
                   SizedBox(height: 8),
                   TextFormField(
-                    initialValue: data?.braceletNumber?.toString() ?? 'Sin dato',
+                    initialValue: data?.braceletNumber?.toString(),
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -546,8 +567,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                           return RadioListTile<DispositionEnum>(
                             title: Text(option.getValue()),
                             value: option,
-                            groupValue: DispositionEnum.values.firstWhere((e) => e.getValue() == data.disposition,
-                                        orElse: () => DispositionEnum.roomingInHospitalization),
+                            groupValue: DispositionEnum.values.firstWhereOrNull((e) => e.getValue() == data.disposition),
                             onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDisposition(option!.getValue()),
                           );
                         }).toList(),

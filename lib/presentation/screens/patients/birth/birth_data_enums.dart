@@ -6,7 +6,7 @@ enum BirthTypeEnum implements EnumWithValue{
   vaginal("Vaginal") ,
   cesarean ("Cesarea"),
   forceps("Forcipal"), 
-  unknown("Desconocido");
+  unknown("Sin dato");
 
   final String value;
   const BirthTypeEnum(this.value);
@@ -20,7 +20,7 @@ enum BirthTypeEnum implements EnumWithValue{
 enum PresentationEnum implements EnumWithValue{
   cephalic("Cefalica"),
   breech("Podalica"),
-  unknown("Desconocido");
+  unknown("Sin dato");
 
   final String value;
   const PresentationEnum(this.value);
@@ -35,7 +35,7 @@ enum PresentationEnum implements EnumWithValue{
 enum RuptureOfMembraneEnum implements EnumWithValue{
   atificial("Artificial"),
   spontaneous("Espontanea"), 
-  unknown("Desconocido");
+  unknown("Sin dato");
 
   final String value;
   const RuptureOfMembraneEnum(this.value);
@@ -51,7 +51,7 @@ enum AmnioticFluidEnum implements EnumWithValue{
   clear("Claro"),
   meconiumStained("Meconial"),
   hemorrhagic("Hemorragico"),
-  unknown("Desconocido");
+  unknown("Sin dato");
 
   final String value;
   const AmnioticFluidEnum(this.value);
@@ -64,7 +64,7 @@ enum AmnioticFluidEnum implements EnumWithValue{
   enum SexEnum implements EnumWithValue{
   female("Femenino"),
   male("Masculino"),
-  unknown("En estudio");
+  inProcess("En estudio");
 
   final String value;
 
@@ -140,7 +140,7 @@ enum DispositionEnum implements EnumWithValue{
 
 enum PlacesEnum implements EnumWithValue{
  
-  hospTigre('HospitalFEscardo (tigre)'),
+  hospTigre('Hospital F.Escardo (tigre)'),
   outpatient('Extra hospitalario'),
   other('Otro');
 
@@ -151,6 +151,30 @@ enum PlacesEnum implements EnumWithValue{
   String getValue() {
     return value;
   }
+
+}
+
+enum BloodTypeEnum implements EnumWithValue{
+
+    positiveA('A+'),
+    negativeA('A-'),
+    positiveB('B+'),
+    negativeB('B-'),
+    positiveAB('AB+'),
+    negativeAB('AB-'),
+    positive('0+'),
+    negative('0-'),
+    pendingResult('Resultado pendiente');
+
+      final String value;
+      const BloodTypeEnum(this.value);
+      
+      @override
+      String getValue() {
+        return value;
+      }
+
+
 
 }
 
