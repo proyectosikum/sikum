@@ -716,7 +716,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   SizedBox(height: 8),
                   TextFormField(
                     initialValue: data?.braceletNumber?.toString(),
-                    enabled: !isUpdateView,
+                    enabled: false,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -733,12 +733,20 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     },
                   ),
               SizedBox(height: 16),
+              const Text(
+                'Destino',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
               DropdownButtonFormField<DispositionEnum>(
                 value: DispositionEnum.values.firstWhereOrNull(
                   (e) => e.getValue() == data.disposition,
                 ),
                 decoration: InputDecoration(
-                  labelText: "Destino",
                   border: OutlineInputBorder(),
                   suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
                   errorText: notifier.errorTextFor('disposition'),
@@ -751,15 +759,13 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     child: Text(option.getValue()),
                   );
                 }).toList(),
-                onChanged: isUpdateView
-                    ? null
-                    : (newValue) {
-                        if (newValue != null) {
-                          ref
-                            .read(birthDataProvider.notifier)
-                            .updateDisposition(newValue.getValue());
-                        }
-                      },
+                onChanged: isUpdateView ? null : (newValue) {
+                  if (newValue != null) {
+                    ref
+                      .read(birthDataProvider.notifier)
+                      .updateDisposition(newValue.getValue());
+                  }
+                },
               ),
 
               SizedBox(height: 16),
