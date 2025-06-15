@@ -1,7 +1,6 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sikum/entities/patient.dart';
@@ -93,16 +92,6 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
       var data = ref.watch(birthDataProvider);
       final notifier = ref.read(birthDataProvider.notifier);
       final isUpdateView = data.isDataSaved;
-      final hasBirthTypeError = notifier.errorTextFor('birthType') != null;
-      final hasPresentationError = notifier.errorTextFor('presentation') != null;
-      final hasRuptureOfMembraneError = notifier.errorTextFor('ruptureOfMembrane') != null;
-      final hasAmnioticFluidError = notifier.errorTextFor('amnioticFluid') != null;
-      final hasSexError = notifier.errorTextFor('sex') != null;
-      final hasTwinError = notifier.errorTextFor('twin') != null;
-      final hasFirstApgarScoreError = notifier.errorTextFor('firstApgarScore') != null;
-      final hasSecondApgarScoreError = notifier.errorTextFor('secondApgarScore') != null;
-      final hasThirdApgarScoreError = notifier.errorTextFor('thirdApgarScore') != null;
-      final hasDispositionError = notifier.errorTextFor('disposition') != null;
       final hasBirthDateError = notifier.errorTextFor('birthDate') != null;
       final hasBirthPlaceError = notifier.errorTextFor('birthPlace') != null;
       final hasBirthPlaceDetailsError = notifier.errorTextFor('birthPlaceDetails') != null;
@@ -115,263 +104,231 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
           children: [
             Container(
               decoration: hasBirthPlaceError || hasBirthPlaceDetailsError
-                ? BoxDecoration(
-                    border: Border.all(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  )
-                : null,
-              child: ExpansionTile(
-                title: Text('Lugar de nacimiento'),
-                subtitle: Text(data.birthPlace == "Otro" && (data.birthPlaceDetails?.isNotEmpty ?? false)
-                        ? "Otro: ${data.birthPlaceDetails}"
-                        : data.birthPlace ?? "No asignado",
-                ),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] :[
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209), 
-                    child: Column(
-                      children: PlacesEnum.values.map((option) {
-                        return RadioListTile<PlacesEnum>(
-                          title: Text(option.getValue()),
-                          value: option,
-                          activeColor: Color(0xFF4F959D),
-                          groupValue: PlacesEnum.values.firstWhereOrNull(
-                            (e) => e.getValue() == data.birthPlace
-                          ),
-                          onChanged: (option) {
-                            ref.read(birthDataProvider.notifier).updateBirthPlace(option!.getValue());
-                            if (option.getValue() != "Otro") {
-                              ref.read(birthDataProvider.notifier).updateBirthPlaceDetails("");
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
+                  ? BoxDecoration(
+                      border: Border.all(color: Colors.red),
+                      borderRadius: BorderRadius.circular(8),
+                    )
+                  : null,
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Lugar de nacimiento",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                   ),
-                  
-                  if (data.birthPlace == "Otro") ...[
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: TextFormField(
-                        enabled: !isUpdateView,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Especificar otro lugar",
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFF4F959D)), 
-                          ),
-                          errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.red),
-                          ),
-                          errorText: notifier.errorTextFor('birthPlaceDetails'),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: Text(PlacesEnum.thisHospital.getValue()),
+                          value: PlacesEnum.thisHospital.getValue(),
+                          groupValue: data.birthPlace,
+                          onChanged: isUpdateView
+                              ? null
+                              : (value) {
+                                  ref.read(birthDataProvider.notifier).updateBirthPlace(value!);
+                                  ref.read(birthDataProvider.notifier).updateBirthPlaceDetails("");
+                                },
                         ),
-                        initialValue: data.birthPlaceDetails, 
-                        onChanged: (value) {
-                          ref.read(birthDataProvider.notifier).updateBirthPlaceDetails(value);
-                        },
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: Text(PlacesEnum.outpatient.getValue()),
+                          value: PlacesEnum.outpatient.getValue(),
+                          groupValue: data.birthPlace,
+                          onChanged: isUpdateView
+                              ? null
+                              : (value) {
+                                  ref.read(birthDataProvider.notifier).updateBirthPlace(value!);
+                                },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  if (hasBirthPlaceError)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, bottom: 8),
+                      child: Text(
+                        notifier.errorTextFor('birthPlace')!,
+                        style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
-                  ]
+
+                  if (data.birthPlace ==  PlacesEnum.outpatient.getValue()) ...[
+                    SizedBox(height: 8),
+                    TextFormField(
+                      initialValue: data.birthPlaceDetails,
+                      enabled: !isUpdateView,
+                      maxLines: 5,
+                      minLines: 3,
+                      decoration: InputDecoration(
+                        labelText: "Especificar lugar de nacimiento",
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF4F959D)),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        errorText: notifier.errorTextFor('birthPlaceDetails'),
+                      ),
+                      onChanged: (value) {
+                        ref.read(birthDataProvider.notifier).updateBirthPlaceDetails(value);
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
-            if (hasBirthPlaceError)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, bottom: 8),
-                        child: Text(
-                          notifier.errorTextFor('birthPlace')!,
-                          style: TextStyle(color: Colors.red, fontSize: 12),
-                        ),
-                    ),
 
-      
-            Container(
-              decoration: hasBirthTypeError
-                ? BoxDecoration(
-                    border: Border.all(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  )
-                : null,
-              child: ExpansionTile(
-                title: Text('Tipo de Nacimiento'),
-                subtitle: Text(data.birthType ?? 'No asignado'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                         ...BirthTypeEnum.values.map((option) {
-                          return RadioListTile<BirthTypeEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: BirthTypeEnum.values.firstWhereOrNull((e) => e.getValue() == ref.watch(birthDataProvider)),
-                            onChanged: (option) => ref.read(birthDataProvider.notifier).updateBirthType(option!.getValue()),
-                          );
-                        }),
-                      ],
-                    )
-                  )
-                ]
-              ),
-            ),
-              if (hasBirthTypeError)
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 8),
-                  child: Text(
-                    notifier.errorTextFor('birthType')!,
-                    style: TextStyle(color: Colors.red, fontSize: 12),
+            
+            SizedBox(height: 16),
+            DropdownButtonFormField<BirthTypeEnum>(
+                  value: BirthTypeEnum.values.firstWhereOrNull(
+                    (e) => e.getValue() == data.birthType,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Tipo de Nacimiento",
+                    border: OutlineInputBorder(),
+                    suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                    errorText: notifier.errorTextFor('birthType'), 
+                  ),
+                  dropdownColor: const Color(0xFFB3CFD1),
+                  icon: const Icon(Icons.arrow_drop_down), 
+                  items: BirthTypeEnum.values.map((option) {
+                    return DropdownMenuItem<BirthTypeEnum>(
+                      value: option,
+                      child: Text(option.getValue()),
+                    );
+                  }).toList(),
+                  onChanged: isUpdateView
+                      ? null
+                      : (newValue) {
+                          if (newValue != null) {
+                            ref.read(birthDataProvider.notifier)
+                              .updateBirthType(newValue.getValue());
+                          }
+                        },
                 ),
-              ),
-              Container(
-                decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-                 child:ExpansionTile(
-                  title: Text('Presentacion'),
-                  subtitle: Text(data.presentation ?? 'No asignado'),
-                  trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                  children: isUpdateView ? [] : [
-                    Container(
-                      color: const Color.fromARGB(255, 179, 207, 209),
-                      child: Column(
-                        children: 
-                            PresentationEnum.values.map((option) {
-                            return RadioListTile<PresentationEnum>(
-                              title: Text(option.getValue()),
-                              value: option,
-                              groupValue: PresentationEnum.values.firstWhereOrNull((e) => e.getValue() == data.presentation),
-                              onChanged: (option) =>ref.read(birthDataProvider.notifier).updatePresentation(option!.getValue()),
-                            );
-                          }).toList(),
-                      )
-                    )
-                  ]
+              SizedBox(height: 16),
+              DropdownButtonFormField<PresentationEnum>(
+                value: PresentationEnum.values.firstWhereOrNull(
+                  (e) => e.getValue() == data.presentation,
                 ),
-              ),
-               if (hasPresentationError)
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 8),
-                  child: Text(
-                    notifier.errorTextFor('presentation')!,
-                    style: TextStyle(color: Colors.red, fontSize: 12),
+                decoration: InputDecoration(
+                  labelText: "Presentación",
+                  border: OutlineInputBorder(),
+                  suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                  errorText: notifier.errorTextFor('presentation'),
                 ),
+                dropdownColor: const Color(0xFFB3CFD1),
+                icon: const Icon(Icons.arrow_drop_down),
+                items: PresentationEnum.values.map((option) {
+                  return DropdownMenuItem<PresentationEnum>(
+                    value: option,
+                    child: Text(option.getValue()),
+                  );
+                }).toList(),
+                onChanged: isUpdateView
+                    ? null
+                    : (newValue) {
+                        if (newValue != null) {
+                          ref
+                            .read(birthDataProvider.notifier)
+                            .updatePresentation(newValue.getValue());
+                        }
+                      },
               ),
-              Container(
-                decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-                 child: ExpansionTile(
-              title: Text('Ruptura de membrana'),
-              subtitle: Text(data.ruptureOfMembrane ?? 'No asignado'),
-              trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-              children: isUpdateView ? [] : [
-                Container(
-                  color: const Color.fromARGB(255, 179, 207, 209),
-                  child: Column(
-                    children: 
-                        RuptureOfMembraneEnum.values.map((option) {
-                        return RadioListTile<RuptureOfMembraneEnum>(
-                          title: Text(option.getValue()),
-                          value: option,
-                          groupValue: RuptureOfMembraneEnum.values.firstWhereOrNull((e) => e.getValue() == data.ruptureOfMembrane),
-                          onChanged: (option) =>ref.read(birthDataProvider.notifier).updateRuptureOfMembrane(option!.getValue()),
-                        );
-                      }).toList(),
-                  )
-                )
-              ]
+              SizedBox(height: 16),
+              DropdownButtonFormField<RuptureOfMembraneEnum>(
+                value: RuptureOfMembraneEnum.values.firstWhereOrNull(
+                  (e) => e.getValue() == data.ruptureOfMembrane,
+                ),
+                decoration: InputDecoration(
+                  labelText: "Ruptura de membrana",
+                  border: OutlineInputBorder(),
+                  suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                  errorText: notifier.errorTextFor('ruptureOfMembrane'),
+                ),
+                dropdownColor: const Color(0xFFB3CFD1),
+                icon: const Icon(Icons.arrow_drop_down),
+                items: RuptureOfMembraneEnum.values.map((option) {
+                  return DropdownMenuItem<RuptureOfMembraneEnum>(
+                    value: option,
+                    child: Text(option.getValue()),
+                  );
+                }).toList(),
+                onChanged: isUpdateView
+                    ? null
+                    : (newValue) {
+                        if (newValue != null) {
+                          ref
+                            .read(birthDataProvider.notifier)
+                            .updateRuptureOfMembrane(newValue.getValue());
+                        }
+                      },
+              ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<AmnioticFluidEnum>(
+              value: AmnioticFluidEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.amnioticFluid,
+              ),
+              decoration: InputDecoration(
+                labelText: "Líquido amniótico",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('amnioticFluid'),
+              ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: AmnioticFluidEnum.values.map((option) {
+                return DropdownMenuItem<AmnioticFluidEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref
+                          .read(birthDataProvider.notifier)
+                          .updateAmnioticFluid(newValue.getValue());
+                      }
+                    },
             ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<SexEnum>(
+              value: SexEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.sex,
               ),
-            if (hasRuptureOfMembraneError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('ruptureOfMembrane')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+              decoration: InputDecoration(
+                labelText: "Sexo",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('sex'),
               ),
-            ),
-            Container(
-              decoration: hasBirthTypeError
-                ? BoxDecoration(
-                    border: Border.all(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  )
-                : null,
-                child: ExpansionTile(
-                title: Text('Liquido amniotico'),
-                subtitle: Text(data.amnioticFluid ?? 'No asignado'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      children: 
-                          AmnioticFluidEnum.values.map((option) {
-                          return RadioListTile<AmnioticFluidEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: AmnioticFluidEnum.values.firstWhereOrNull((e) => e.getValue() == data.amnioticFluid),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateAmnioticFluid(option!.getValue()),
-                          );
-                        }).toList(),
-                    )
-                  )
-                ]
-              ),
-            ),
-            if (hasAmnioticFluidError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('amnioticFluid')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
-            Container(
-              decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-              child: ExpansionTile(
-                title: Text('Sexo'),
-                subtitle: Text(data.sex ?? 'No asignado'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      children: 
-                          SexEnum.values.map((option) {
-                          return RadioListTile<SexEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: SexEnum.values.firstWhereOrNull((e) => e.getValue() == data.sex),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSex(option!.getValue()),
-                          );
-                        }).toList(),
-                    )
-                  )
-                ]
-              ),
-            ),
-            if (hasSexError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('sex')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-              ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: SexEnum.values.map((option) {
+                return DropdownMenuItem<SexEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref.read(birthDataProvider.notifier).updateSex(newValue.getValue());
+                      }
+                    },
             ),
             SizedBox(height: 16),
             Column(
@@ -441,157 +398,116 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               },
             ),
             SizedBox(height: 16),
-            Container(
-              decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-              child: ExpansionTile(
-                title: Text('Gemelar'),
-                subtitle: Text(data.twin?? 'Sin eleccion'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      children: 
-                          TwinEnum.values.map((option) {
-                          return RadioListTile<TwinEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: TwinEnum.values.firstWhereOrNull((e) => e.getValue() == data.twin),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateTwin(option!.getValue()),
-                          );
-                        }).toList(),
-                    )
-                  )
-                ]
+            DropdownButtonFormField<TwinEnum>(
+              value: TwinEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.twin,
               ),
-            ),
-            if (hasTwinError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('twin')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+              decoration: InputDecoration(
+                labelText: "Gestación gemelar",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('twin'),
               ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: TwinEnum.values.map((option) {
+                return DropdownMenuItem<TwinEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref.read(birthDataProvider.notifier).updateTwin(newValue.getValue());
+                      }
+                    },
             ),
-            Container(
-              decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-                 child: ExpansionTile(
-                  title: Text('Apgar 1`'),
-                  subtitle: Text(data.firstApgarScore?? 'Sin eleccion'),
-                  trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                  children: isUpdateView ? [] : [
-                    Container(
-                      color: const Color.fromARGB(255, 179, 207, 209),
-                      child: Column(
-                        children: 
-                            ApgarScoreEnum.values.map((option) {
-                            return RadioListTile<ApgarScoreEnum>(
-                              title: Text(option.getValue()),
-                              value: option,
-                              groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.firstApgarScore),
-                              onChanged: (option) =>ref.read(birthDataProvider.notifier).updateFirstApgar(option!.getValue()),
-                            );
-                          }).toList(),
-                      )
-                    )
-                  ]
-                ),
-            ), 
-            if (hasFirstApgarScoreError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('firstApgarScore')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+            SizedBox(height: 16),
+            DropdownButtonFormField<ApgarScoreEnum>(
+              value: ApgarScoreEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.firstApgarScore,
               ),
-            ),
-            Container(
-              decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-              child: ExpansionTile(
-                title: Text('Apgar 5`'),
-                subtitle: Text(data.secondApgarScore?? 'Sin eleccion'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      children: 
-                          ApgarScoreEnum.values.map((option) {
-                          return RadioListTile<ApgarScoreEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.secondApgarScore),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateSecondApgar(option!.getValue()),
-                          );
-                        }).toList(),
-                    )
-                  )
-                ]
+              decoration: InputDecoration(
+                labelText: "Apgar al minuto",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('firstApgarScore'),
               ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: ApgarScoreEnum.values.map((option) {
+                return DropdownMenuItem<ApgarScoreEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref.read(birthDataProvider.notifier).updateFirstApgar(newValue.getValue());
+                      }
+                    },
             ),
-            if (hasSecondApgarScoreError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('secondApgarScore')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+           SizedBox(height: 16),
+           DropdownButtonFormField<ApgarScoreEnum>(
+              value: ApgarScoreEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.secondApgarScore,
               ),
-            ),
-            Container(
-              decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-              child: ExpansionTile(
-                title: Text('Apgar 10`'),
-                subtitle: Text(data.thirdApgarScore?? 'Sin eleccion'),
-                trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                children: isUpdateView ? [] : [
-                  Container(
-                    color: const Color.fromARGB(255, 179, 207, 209),
-                    child: Column(
-                      children: 
-                          ApgarScoreEnum.values.map((option) {
-                          return RadioListTile<ApgarScoreEnum>(
-                            title: Text(option.getValue()),
-                            value: option,
-                            groupValue: ApgarScoreEnum.values.firstWhereOrNull((e) => e.getValue() == data.thirdApgarScore),
-                            onChanged: (option) =>ref.read(birthDataProvider.notifier).updateThirdApgar(option!.getValue()),
-                          );
-                        }).toList(),
-                    )
-                  )
-                ]
+              decoration: InputDecoration(
+                labelText: "Apgar a los 5 minutos",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('secondApgarScore'),
               ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: ApgarScoreEnum.values.map((option) {
+                return DropdownMenuItem<ApgarScoreEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref
+                          .read(birthDataProvider.notifier)
+                          .updateSecondApgar(newValue.getValue());
+                      }
+                    },
             ),
-            if (hasThirdApgarScoreError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('thirdApgarScore')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+            SizedBox(height: 16),
+            DropdownButtonFormField<ApgarScoreEnum>(
+              value: ApgarScoreEnum.values.firstWhereOrNull(
+                (e) => e.getValue() == data.thirdApgarScore,
               ),
+              decoration: InputDecoration(
+                labelText: "Apgar a los 10 minutos",
+                border: OutlineInputBorder(),
+                suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                errorText: notifier.errorTextFor('thirdApgarScore'),
+              ),
+              dropdownColor: const Color(0xFFB3CFD1),
+              icon: const Icon(Icons.arrow_drop_down),
+              items: ApgarScoreEnum.values.map((option) {
+                return DropdownMenuItem<ApgarScoreEnum>(
+                  value: option,
+                  child: Text(option.getValue()),
+                );
+              }).toList(),
+              onChanged: isUpdateView
+                  ? null
+                  : (newValue) {
+                      if (newValue != null) {
+                        ref.read(birthDataProvider.notifier).updateThirdApgar(newValue.getValue());
+                      }
+                    },
             ),
-          
-            
-            
+            SizedBox(height: 16),
             Text("Peso (grs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
@@ -795,7 +711,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   ),
                 ],
               ),
-              
+              SizedBox(height: 16),
               Text("Número de pulsera", 
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                   ),
@@ -819,43 +735,34 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     },
                   ),
               SizedBox(height: 16),
-              Container(
-                decoration: hasBirthTypeError
-                  ? BoxDecoration(
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    )
-                  : null,
-                child: ExpansionTile(
-                  title: Text('Destino'),
-                  subtitle: Text(data.disposition?? 'Sin eleccion'),
-                  trailing: isUpdateView ?  Icon(Icons.lock, color: Colors.grey) : const Icon(Icons.expand_more),
-                  children: isUpdateView ? [] : [
-                    Container(
-                      color: const Color.fromARGB(255, 179, 207, 209),
-                      child: Column(
-                        children: 
-                            DispositionEnum.values.map((option) {
-                            return RadioListTile<DispositionEnum>(
-                              title: Text(option.getValue()),
-                              value: option,
-                              groupValue: DispositionEnum.values.firstWhereOrNull((e) => e.getValue() == data.disposition),
-                              onChanged: (option) =>ref.read(birthDataProvider.notifier).updateDisposition(option!.getValue()),
-                            );
-                          }).toList(),
-                      )
-                    )
-                  ]
+              DropdownButtonFormField<DispositionEnum>(
+                value: DispositionEnum.values.firstWhereOrNull(
+                  (e) => e.getValue() == data.disposition,
                 ),
+                decoration: InputDecoration(
+                  labelText: "Destino",
+                  border: OutlineInputBorder(),
+                  suffixIcon: isUpdateView ? Icon(Icons.lock, color: Colors.grey) : null,
+                  errorText: notifier.errorTextFor('disposition'),
+                ),
+                dropdownColor: const Color(0xFFB3CFD1),
+                icon: const Icon(Icons.arrow_drop_down),
+                items: DispositionEnum.values.map((option) {
+                  return DropdownMenuItem<DispositionEnum>(
+                    value: option,
+                    child: Text(option.getValue()),
+                  );
+                }).toList(),
+                onChanged: isUpdateView
+                    ? null
+                    : (newValue) {
+                        if (newValue != null) {
+                          ref
+                            .read(birthDataProvider.notifier)
+                            .updateDisposition(newValue.getValue());
+                        }
+                      },
               ),
-              if (hasDispositionError)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 8),
-                child: Text(
-                  notifier.errorTextFor('disposition')!,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
               
               SizedBox(height: 16),
             //BOTONES DE ACCION
