@@ -122,83 +122,129 @@ class UserActions {
   }
 
   Future<void> createUser({
-    required String firstName,
-    required String lastName,
-    required String dni,
-    required String email,
-    required String phone,
-    required String provReg,
-    required String specialty,
-    required String role
-  }) async {
-    try {
-      // 1) Evita duplicados por DNI
-      final existingUser = await _col.where('dni', isEqualTo: dni).get();
-      if (existingUser.docs.isNotEmpty) {
-        throw Exception('Ya existe un usuario con ese DNI.');
-      }
-
-      // 2) Inicializa la app secundaria
-      final secondaryApp = await _initSecondaryApp();
-      // 3) Crea un auth ligado a esa app
-      final secondaryAuth = fb_auth.FirebaseAuth.instanceFor(app: secondaryApp);
-
-      // 4) Crea el usuario “en background”
-      final fbUser = await secondaryAuth.createUserWithEmailAndPassword(
-        email:    email,
-        password: dni,
-      );
-      final uid = fbUser.user!.uid;
-
-      // 5) Guarda el perfil en Firestore
-      final newUser = {
-        'firstName': firstName,
-        'lastName': lastName,
-        'dni': dni,
-        'email': email,
-        'phone': phone,
-        'provReg': provReg,
-        'specialty': specialty,
-        'role': role,
-        'needsPasswordChange': true,
-        'available': true,
-        'user': dni,
-        'userId': uid,
-      };
-      await _col.doc(uid).set(newUser);
-
-      await secondaryAuth.signOut();
-      await secondaryApp.delete();
-    } catch (e) {
-      print("Error al crear usuario: $e");
-      rethrow;
+  required String firstName,
+  required String lastName,
+  required String dni,
+  required String email,
+  required String phone,
+  required String provReg,
+  required String specialty,
+  required String role,
+}) async {
+  try {
+    if (!email.contains('@')) {
+      throw 'El correo electrónico ingresado no es válido.';
     }
+
+    final dniRegExp = RegExp(r'^\d{7,8}$');
+    if (!dniRegExp.hasMatch(dni)) {
+      throw 'El DNI debe tener 7 u 8 números y no contener letras ni símbolos.';
+    }
+
+    final existingUser = await _col.where('dni', isEqualTo: dni).get();
+    if (existingUser.docs.isNotEmpty) {
+      throw 'Ya existe un usuario con ese DNI.';
+    }
+
+    final existingEmail = await _col.where('email', isEqualTo: email).get();
+    if (existingEmail.docs.isNotEmpty) {
+      throw 'Ya existe un usuario con ese email.';
+    }
+
+    final secondaryApp = await _initSecondaryApp();
+    final secondaryAuth = fb_auth.FirebaseAuth.instanceFor(app: secondaryApp);
+
+    final fbUser = await secondaryAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: dni,
+    );
+    final uid = fbUser.user!.uid;
+
+    final newUser = {
+      'firstName': firstName,
+      'lastName': lastName,
+      'dni': dni,
+      'email': email,
+      'phone': phone,
+      'provReg': provReg,
+      'specialty': specialty,
+      'role': role,
+      'needsPasswordChange': true,
+      'available': true,
+      'user': dni,
+      'userId': uid,
+    };
+    await _col.doc(uid).set(newUser);
+
+    await secondaryAuth.signOut();
+    await secondaryApp.delete();
+  } catch (e) {
+    print("Error al crear usuario: $e");
+    rethrow;
   }
+}
 
   Future<void> updateUser({
-    required String id,
-    required String firstName,
-    required String lastName,
-    required String dni,
-    required String email,
-    required String phone,
-    required String provReg,
-    required String specialty,
-  }) async {
-    try {
-      await _firestore.collection('users').doc(id).update({
-        'firstName': firstName,
-        'lastName': lastName,
-        'dni': dni,
-        'email': email,
-        'phone': phone,
-        'provReg': provReg,
-        'specialty': specialty,
-      });
-    } catch (e) {
-      throw Exception('Error al actualizar usuario: $e');
+  required String id,
+  required String firstName,
+  required String lastName,
+  required String dni,
+  required String email,
+  required String phone,
+  required String provReg,
+  required String specialty,
+}) async {
+  try {
+    if (firstName.trim().isEmpty ||
+        lastName.trim().isEmpty ||
+        dni.trim().isEmpty ||
+        email.trim().isEmpty ||
+        provReg.trim().isEmpty ||
+        specialty.trim().isEmpty) {
+      throw 'Ningún campo obligatorio puede quedar vacío.';
     }
+
+    final dniRegExp = RegExp(r'^\d{7,8}$');
+    if (!dniRegExp.hasMatch(dni)) {
+      throw 'El DNI debe tener 7 u 8 números y no contener letras ni símbolos.';
+    }
+
+    if (!email.contains('@')) {
+      throw 'El email debe contener "@"';
+    }
+
+    final dniQuery = await _firestore
+        .collection('users')
+        .where('dni', isEqualTo: dni)
+        .get();
+    final dniDuplicado = dniQuery.docs.any((doc) => doc.id != id);
+    if (dniDuplicado) {
+      throw 'El DNI ya está registrado en otro usuario.';
+    }
+
+    final emailQuery = await _firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+    final emailDuplicado = emailQuery.docs.any((doc) => doc.id != id);
+    if (emailDuplicado) {
+      throw 'El email ya está registrado en otro usuario.';
+    }
+
+    await _firestore.collection('users').doc(id).update({
+      'firstName': firstName,
+      'lastName': lastName,
+      'dni': dni,
+      'email': email,
+      'phone': phone,
+      'provReg': provReg,
+      'specialty': specialty,
+    });
+  } catch (e) {
+    print("Error al actualizar usuario: $e");
+    rethrow;
   }
+}
 
   Future<List<User>> getAllUsers() async {
   try {
