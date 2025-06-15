@@ -716,7 +716,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   SizedBox(height: 8),
                   TextFormField(
                     initialValue: data?.braceletNumber?.toString(),
-                    enabled: false,
+                    enabled: !isUpdateView,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
