@@ -83,7 +83,7 @@ const Map<String, List<FieldConfig>> evolutionFormConfig = {
   // Neonatología Adicional
   'neonatologia_adicional': [
     FieldConfig(key: 'comment',       label: 'Comentario',                                  type: FieldType.text),
-    FieldConfig(key: 'indications',   label: 'Indicaciones',                                type: FieldType.text),
+    FieldConfig(key: 'indications',   label: 'Indicaciones',                                type: FieldType.text, isRequired: true),
   ],
 };
 

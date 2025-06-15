@@ -668,19 +668,31 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (v) {
-                final parsed = num.tryParse(v);
-                if (parsed != null) {
-                  if ((f.min != null && parsed < f.min!) || (f.max != null && parsed > f.max!)) {
-                    _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max}';
-                  } else {
-                    _validationErrors[f.key] = null;
+                if (v.trim().isEmpty) {
+                  // Vacío: marcar como nulo y dejar error si es requerido
+                  _formData[f.key] = null;
+                  if (f.isRequired) {
+                    _validationErrors[f.key] = 'Este campo es obligatorio';
                   }
-                  _formData[f.key] = parsed;
                 } else {
-                  _formData[f.key] = 0;
+                  final parsed = num.tryParse(v);
+                  if (parsed != null) {
+                    _formData[f.key] = parsed;
+
+                    // Validación de rango
+                    if ((f.min != null && parsed < f.min!) || (f.max != null && parsed > f.max!)) {
+                      _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max}';
+                    } else {
+                      _validationErrors[f.key] = null;
+                    }
+                  } else {
+                    _formData[f.key] = null;
+                    _validationErrors[f.key] = 'Ingrese un número válido';
+                  }
                 }
                 setState(() {});
               },
+
               decoration: InputDecoration(
                 labelText: f.label,
                 errorText: _validationErrors[f.key],
