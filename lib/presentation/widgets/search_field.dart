@@ -16,7 +16,7 @@ class SearchField extends StatelessWidget {
         onChanged: onChanged,
         decoration: InputDecoration(
           filled: true,
-          fillColor: const Color.fromARGB(255, 228, 226, 226),
+          fillColor: Colors.grey[300],
           prefixIcon: const Icon(Icons.search),
           hintText: 'DNI o Nombre',
           border: OutlineInputBorder(
