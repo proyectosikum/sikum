@@ -101,6 +101,7 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                       date: maternalDataProvider.testDates[testName] ?? '',
                       isDataSaved: maternalDataProvider.isDataSaved,
                       isTreponemalTest: testName == 'Prueba Treponemica',
+                      hasError: maternalDataProvider.hasTestError(testName),
                       onResultChanged: (val) => maternalNotifier.updateTestResult(testName, val),
                       onDateChanged: (val) => maternalNotifier.updateTestDate(testName, val),
                     );
@@ -117,6 +118,7 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                         date: maternalDataProvider.testDates[testName] ?? '',
                         isDataSaved: maternalDataProvider.isDataSaved,
                         isTreponemalTest: false,
+                        hasError: maternalDataProvider.hasTestError(testName),
                         onResultChanged: (val) => maternalNotifier.updateTestResult(testName, val),
                         onDateChanged: (val) => maternalNotifier.updateTestDate(testName, val),
                       );
@@ -163,12 +165,12 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                         ),
                         onPressed: () {
                           if (showSecondHalf) {
-                            if (maternalNotifier.validateSecondHalfTests()) {
+                            if (maternalNotifier.validateTests()) {
                               widget.onNext();
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Por favor, complete todos los campos de la segunda mitad.'),
+                                  content: Text('Por favor, complete todos los campos requeridos en ambas secciones de pruebas.'),
                                 ),
                               );
                             }
