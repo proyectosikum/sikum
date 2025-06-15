@@ -307,6 +307,11 @@ class MaternalDataFormNotifier extends ChangeNotifier {
   String? getTestError(String testName, String type) {
     return testErrors['${testName}_$type'];
   }
+  //Verificar si un test tiene errores (para resaltado)
+  bool hasTestError(String testName) {
+    return testErrors.containsKey('${testName}_result') || 
+           testErrors.containsKey('${testName}_date');
+  }
 
   bool validateStep1() {
     errors['firstName'] = validateNotEmpty(firstName, fieldName: 'Nombre');
