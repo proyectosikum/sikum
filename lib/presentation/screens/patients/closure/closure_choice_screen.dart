@@ -6,6 +6,7 @@ import 'package:sikum/presentation/providers/patient_provider.dart';
 import 'package:sikum/presentation/providers/discharge_status_provider.dart';
 import 'package:sikum/presentation/screens/patients/discharge_status_evaluator.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
+import 'package:sikum/presentation/widgets/discharge_dialog.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 
 class ClosureChoiceScreen extends ConsumerWidget {
@@ -96,22 +97,26 @@ class ClosureChoiceScreen extends ConsumerWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.check_circle_outline),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: status == DischargeStatus.ready ? green : Colors.grey,
+                            backgroundColor: status.status == DischargeStatus.ready ? green : Colors.grey,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             foregroundColor: cream,
                           ),
-                          onPressed: status == DischargeStatus.ready
+                          onPressed: status.status == DischargeStatus.ready
                               ? () => context.push('/pacientes/$patientId/cerrar/alta')
                               : null,
                           label: const Text('Alta clínica'),
                         ),
                         const SizedBox(height: 32),
-                        if (status != DischargeStatus.ready)
-                          const Text(
-                            'La opción de alta clínica está deshabilitada porque el paciente no cumple con los criterios establecidos.',
-                            style: TextStyle(color: Colors.redAccent),
-                            textAlign: TextAlign.center,
+                        if (status.status != DischargeStatus.ready)
+                          TextButton.icon(
+                            onPressed: () => showDischargeDetails(context, status.status, status.missingItems),
+                            icon: const Icon(Icons.info_outline, color: Colors.redAccent),
+                            label: const Text(
+                              'Ver requisitos pendientes para el alta',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
                           ),
+
                       ],
                     ),
                   ),
