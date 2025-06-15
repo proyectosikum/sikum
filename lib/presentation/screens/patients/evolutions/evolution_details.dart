@@ -12,6 +12,7 @@ import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/utils/string_utils.dart';
 
 class EvolutionDetailsScreen extends ConsumerStatefulWidget {
   final String patientId;
@@ -134,29 +135,20 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
     const cream = Color(0xFFFFF8E1);
     const black = Colors.black87;
 
-    // ----------------------------------------------------------------------------------------------------
-    // 1) Extraemos de la evolución: specialty, details, createdAt y createdByUserId
     final String specialty = evolution['specialty'] as String;
     _currentSpecialty ??= specialty;
     final Map<String, dynamic> details = evolution['details'] as Map<String, dynamic>;
-    final dynamic createdAt = evolution['createdAt'];                    // Suele ser un Timestamp de Firestore
+    final dynamic createdAt = evolution['createdAt'];
     final String createdByUserId = evolution['createdByUserId'] as String;
-    // ----------------------------------------------------------------------------------------------------
 
-    // ----------------------------------------------------------------------------------------------------
-    // 2) Obtenemos el usuario logueado actual
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    // ----------------------------------------------------------------------------------------------------
 
-    // ----------------------------------------------------------------------------------------------------
-    // 3) Calculamos si estamos DENTRO de la hora desde createdAt:
     DateTime? createdDateTime;
     if (createdAt is Timestamp) {
       createdDateTime = createdAt.toDate();
     } else if (createdAt is DateTime) {
       createdDateTime = createdAt;
     } else {
-      // Si no es Timestamp ni DateTime, intentamos parsear (por si guardaste String)
       try {
         createdDateTime = DateTime.parse(createdAt.toString());
       } catch (_) {
@@ -169,34 +161,17 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
       final DateTime limite = createdDateTime.add(const Duration(hours: 1));
       withinOneHour = DateTime.now().isBefore(limite);
     }
-    // ----------------------------------------------------------------------------------------------------
 
-    // ----------------------------------------------------------------------------------------------------
-    // 4) Determinamos si el usuario puede editar:
-    //    - Debe estar logueado (currentUserId != null)
-    //    - Debe coincidir currentUserId == createdByUserId
-    //    - Debe estar dentro de la hora
     final bool canEdit = (currentUserId != null)
         && (currentUserId == createdByUserId)
         && withinOneHour;
-    // ----------------------------------------------------------------------------------------------------
 
-    // ----------------------------------------------------------------------------------------------------
-    // 5) Inicializamos _formData con los datos de "details" la primera vez (si viene vacío)
     if (_formData.isEmpty) {
       details.forEach((key, value) {
-        if (value is Timestamp) {
-          // convierte a DateTime
-          _formData[key] = value.toDate();
-        } else {
-          _formData[key] = value;
-        }
-  });
-}
-    // ----------------------------------------------------------------------------------------------------
+        _formData[key] = value is Timestamp ? value.toDate() : value;
+      });
+    }
 
-    // ----------------------------------------------------------------------------------------------------
-    // 6) Definimos los campos a mostrar según la especialidad
     final List<FieldConfig> fields = specialty == 'neonatologia'
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[specialty] ?? [];
@@ -207,7 +182,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // TÍTULO
+          // Encabezado
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
             child: Row(
@@ -216,9 +191,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => context.pop(),
                 ),
-
                 const SizedBox(width: 8),
-
                 Expanded(
                   child: Text(
                     'Detalle de Evolución',
@@ -230,32 +203,19 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                     textAlign: TextAlign.center,
                   ),
                 ),
-
                 const SizedBox(width: 8),
-
-                // ──────────────────────────────────────────────────────────────────────────────────────────────
-                // Si canEdit == true O si ya estamos en modo edición (isEditing), mostramos el IconButton. Si no, dejamos un SizedBox (para mantener simetría).
                 if (canEdit || isEditing) ...[
                   IconButton(
                     icon: Icon(isEditing ? Icons.save : Icons.edit),
-                    onPressed: isEditing
-                        ? _saveChanges
-                        : (canEdit
-                            ? () {
-                                _toggleEdit();
-                              }
-                            : null),
+                    onPressed: isEditing ? _saveChanges : _toggleEdit,
                   ),
-                ] else ...[
-                  // Espacio vacío para mantener la alineación (aprox. 48px de ancho para el icono)
+                ] else
                   const SizedBox(width: 48),
-                ],
-                // ──────────────────────────────────────────────────────────────────────────────────────────────
               ],
             ),
           ),
 
-          // DATOS DEL PACIENTE (Solo nombre y DNI)
+          // Datos del paciente
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -270,18 +230,12 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                   Expanded(
                     child: Text(
                       '${patient.lastName}, ${patient.firstName}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Text(
                     'DNI: ${patient.dni}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -290,7 +244,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
 
           const SizedBox(height: 16),
 
-          // CONTENIDO DE LA EVOLUCIÓN CON INFO DEL PROFESIONAL
+          // Detalles de evolución
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -302,10 +256,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                 ),
                 child: Column(
                   children: [
-                    // INFORMACIÓN DEL PROFESIONAL (Fija arriba)
                     _buildProfessionalInfo(createdByUserId, specialty, createdAt),
-
-                    // FORMULARIO (Scrolleable)
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -329,13 +280,12 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
             ),
           ),
 
-          // BOTONES DE "Cancelar / Guardar" O "Atrás / Siguiente" (solo si estamos en modo edición)
+          // Botones de acción
           if (isEditing)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 children: [
-                  // Botón "Atrás" (para neonatología) o "Cancelar"
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
@@ -345,14 +295,21 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                           _cancelEdit();
                         }
                       },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: green,
+                        side: const BorderSide(color: green),
+                      ),
                       child: Text(isNeonato && _page == 1 ? 'Atrás' : 'Cancelar'),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Botón "Siguiente" (para neonatología) o "Guardar"
                   Expanded(
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F959D)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: green,
+                        foregroundColor: cream,
+                        side: const BorderSide(color: green),
+                      ),
                       onPressed: () {
                         if (isNeonato && _page == 0) {
                           setState(() => _page = 1);
@@ -370,6 +327,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
       ),
     );
   }
+
 
   ///
   /// Construye la sección fija con la información del profesional que creó la evolución.
@@ -397,7 +355,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
               ),
             ),
             Text(
-              'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+              'Especialidad: ${getSpecialtyDisplayName(specialty)}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -433,7 +391,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           children: [
             const Text('Cargando información del profesional...'),
             Text(
-              'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+              'Especialidad: ${getSpecialtyDisplayName(specialty)}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -470,7 +428,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+                'Especialidad: ${getSpecialtyDisplayName(specialty)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -521,7 +479,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     TextSpan(
-                      text: _getSpecialtyDisplayName(specialty),
+                      text: getSpecialtyDisplayName(specialty),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -751,20 +709,30 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (v) {
-                final parsed = num.tryParse(v);
-                if (parsed != null) {
-                  if ((field.min != null && parsed < field.min!) ||
-                      (field.max != null && parsed > field.max!)) {
-                    _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
-                  } else {
-                    _validationErrors[field.key] = null;
+                if (v.trim().isEmpty) {
+                  _formData[field.key] = null;
+                  if (field.isRequired) {
+                    _validationErrors[field.key] = 'Este campo es obligatorio';
                   }
-                  _formData[field.key] = parsed;
                 } else {
-                  _formData[field.key] = 0;
+                  final parsed = num.tryParse(v);
+                  if (parsed != null) {
+                    _formData[field.key] = parsed;
+
+                    if ((field.min != null && parsed < field.min!) ||
+                        (field.max != null && parsed > field.max!)) {
+                      _validationErrors[field.key] = 'Debe estar entre ${field.min} y ${field.max}';
+                    } else {
+                      _validationErrors[field.key] = null;
+                    }
+                  } else {
+                    _formData[field.key] = null;
+                    _validationErrors[field.key] = 'Ingrese un número válido';
+                  }
                 }
                 setState(() {});
               },
+
               decoration: InputDecoration(
                 labelText: field.label,
                 errorText: _validationErrors[field.key],
@@ -986,16 +954,6 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
     }
   }
 
-  /// Convierte nombres de especialidades con guiones bajos a título
-  String _getSpecialtyDisplayName(String specialty) {
-    return specialty.isNotEmpty
-        ? specialty
-            .replaceAll('_', ' ')
-            .toLowerCase()
-            .replaceFirst(specialty.replaceAll('_', ' ').toLowerCase()[0],
-              specialty.replaceAll('_', ' ').toLowerCase()[0].toUpperCase())
-        : specialty;
-  }
 
   /// Formatea un valor de tipo Timestamp / DateTime a "dd/MM/yyyy hh:mm"
   String _formatDate(dynamic dateValue) {

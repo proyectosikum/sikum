@@ -9,6 +9,7 @@ import 'package:sikum/presentation/widgets/evolution_card.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 import 'package:sikum/router/app_router.dart';
 import 'package:sikum/services/epicrisis_pdf_service.dart';
+import 'package:sikum/utils/string_utils.dart';
 
 class PatientDetailsScreen extends ConsumerStatefulWidget {
   final String patientId;
@@ -176,7 +177,7 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                             },
                             itemBuilder: (_) {
                               return options.map((s) {
-                                final label = s[0].toUpperCase() + s.substring(1).toLowerCase();
+                                final label = getSpecialtyDisplayName(s);
                                 return PopupMenuItem(
                                   value: s,
                                   child: Text(label),
@@ -195,7 +196,7 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                                   Text(
                                     selectedSpecialty == 'Todas'
                                       ? 'Todas'
-                                      : (selectedSpecialty[0].toUpperCase() + selectedSpecialty.substring(1).toLowerCase()),
+                                      : getSpecialtyDisplayName(selectedSpecialty),
                                   ),
                                   const Icon(Icons.arrow_drop_down),
                                 ],
