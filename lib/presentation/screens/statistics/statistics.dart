@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sikum/core/theme/app_colors.dart';
 import 'package:sikum/presentation/providers/birth_statistics_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
@@ -22,12 +23,14 @@ class Statistics extends ConsumerWidget {
           data: (stats) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Estadísticas Generales',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
-                    ),
+              Center(
+                child: Text(
+                  'Estadísticas Generales',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.black,
+                      ),
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -94,8 +97,6 @@ class Statistics extends ConsumerWidget {
 
               const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
-
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -128,6 +129,27 @@ class Statistics extends ConsumerWidget {
                         ),
                       )
                     ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.go('/pacientes');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text(
+                    'Volver',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),

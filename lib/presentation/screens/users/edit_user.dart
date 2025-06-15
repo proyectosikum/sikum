@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sikum/core/theme/app_colors.dart';
 import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
@@ -156,21 +157,39 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
 
               TextFormField(
                 controller: _firstNameController,
-                decoration: const InputDecoration(labelText: 'Nombre:'),
+                decoration: const InputDecoration(
+                  labelText: 'Nombre:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 validator: (v) => v == null || v.isEmpty ? 'Ingrese un nombre' : null,
               ),
               const SizedBox(height: 12),
 
               TextFormField(
                 controller: _lastNameController,
-                decoration: const InputDecoration(labelText: 'Apellido:'),
+                decoration: const InputDecoration(
+                  labelText: 'Apellido:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 validator: (v) => v == null || v.isEmpty ? 'Ingrese un apellido' : null,
               ),
               const SizedBox(height: 12),
 
               TextFormField(
                 controller: _dniController,
-                decoration: const InputDecoration(labelText: 'DNI:'),
+                decoration: const InputDecoration(
+                  labelText: 'DNI:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (v) => v == null || v.isEmpty ? 'Ingrese el DNI' : null,
@@ -179,14 +198,26 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
 
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email:'),
+                decoration: const InputDecoration(
+                  labelText: 'Email:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 validator: (v) => v == null || v.isEmpty ? 'Ingrese un email' : null,
               ),
               const SizedBox(height: 12),
 
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Teléfono:'),
+                decoration: const InputDecoration(
+                  labelText: 'Teléfono:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -194,14 +225,26 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
 
               TextFormField(
                 controller: _provRegController,
-                decoration: const InputDecoration(labelText: 'Matrícula Provincial:'),
+                decoration: const InputDecoration(
+                  labelText: 'Matrícula Provincial:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 12),
 
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Especialidad:'),
+                decoration: const InputDecoration(
+                  labelText: 'Especialidad:',
+                  labelStyle: TextStyle(color: AppColors.green),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.green),
+                    ),
+                  ),
                 value: _selectedSpecialty,
                 items: const [
                   DropdownMenuItem(value: 'Neonatología', child: Text('Neonatología')),
@@ -226,7 +269,10 @@ class _EditUserScreenState extends ConsumerState<EditUser> {
                 children: [
                   OutlinedButton(
                     onPressed: _isLoading ? null : () => context.pop(),
-                    child: const Text('Cancelar'),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppColors.green)
+                      ),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
