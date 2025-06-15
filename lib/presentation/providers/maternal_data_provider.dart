@@ -84,13 +84,13 @@ class MaternalDataFormNotifier extends ChangeNotifier {
 
   void updateIdNumber(String value) {
     idNumber = value;
-    errors['idNumber'] = validateNumeric(value, fieldName: 'Número de documento');
+    errors['idNumber'] = validateIdNumber(value);
     notifyListeners();
   }
 
   void updateAge(String value) {
     age = value;
-    errors['age'] = validateNumeric(value, fieldName: 'Edad');
+    errors['age'] = validateAge(value);
     notifyListeners();
   }
 
@@ -114,7 +114,7 @@ class MaternalDataFormNotifier extends ChangeNotifier {
 
   void updatePhoneNumber(String value) {
     phoneNumber = value;
-    errors['phoneNumber'] = validateNumeric(value, fieldName: 'Teléfono');
+    errors['phoneNumber'] = validatePhone(value);
     notifyListeners();
   }
 
@@ -151,6 +151,13 @@ class MaternalDataFormNotifier extends ChangeNotifier {
     testResults[key] = value;
     // Limpiar error específico cuando se actualiza
     testErrors.remove('${key}_result');
+
+    // Si el resultado no requiere fecha, limpiar la fecha y su error
+    if (!_requiresDate(value)) {
+      testDates[key] = null;
+      testErrors.remove('${key}_date');
+    }
+
     notifyListeners();
   }
 
@@ -237,12 +244,19 @@ class MaternalDataFormNotifier extends ChangeNotifier {
         testErrors['${testName}_result'] = 'Seleccione un resultado para $testName';
         isValid = false;
       }
-      
-      // Validar fecha
-      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
-        testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
-        isValid = false;
+
+      // Validar fecha solo si el resultado requiere fecha
+      final result = testResults[testName];
+      if (_requiresDate(result)) {
+        if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+          testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
+          isValid = false;
+        }
+      } else {
+        // Si no requiere fecha, limpiar la fecha guardada
+        testDates[testName] = null;
       }
+
     }
     
     notifyListeners();
@@ -265,16 +279,28 @@ class MaternalDataFormNotifier extends ChangeNotifier {
         testErrors['${testName}_result'] = 'Seleccione un resultado para $testName';
         isValid = false;
       }
-      
-      // Validar fecha
-      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
-        testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
-        isValid = false;
+
+      // Validar fecha solo si el resultado requiere fecha
+      final result = testResults[testName];
+      if (_requiresDate(result)) {
+        if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+          testErrors['${testName}_date'] = 'Seleccione una fecha para $testName';
+          isValid = false;
+        }
+      } else {
+        // Si no requiere fecha, limpiar la fecha guardada
+        testDates[testName] = null;
       }
     }
     
     notifyListeners();
     return isValid;
+  }
+
+  // Método auxiliar para determinar si un resultado requiere fecha
+  bool _requiresDate(String? result) {
+    if (result == null || result.isEmpty) return false;
+    return result.toLowerCase() == 'positiva' || result.toLowerCase() == 'negativa';
   }
 
   // Método para obtener errores específicos de pruebas
@@ -286,12 +312,12 @@ class MaternalDataFormNotifier extends ChangeNotifier {
     errors['firstName'] = validateNotEmpty(firstName, fieldName: 'Nombre');
     errors['lastName'] = validateNotEmpty(lastName, fieldName: 'Apellido');
     errors['idType'] = validateNotEmpty(idType, fieldName: 'Tipo de documento');
-    errors['idNumber'] = validateNumeric(idNumber, fieldName: 'Número de documento');
-    errors['age'] = validateNumeric(age, fieldName: 'Edad');
+    errors['idNumber'] = validateIdNumber(idNumber);
+    errors['age'] = validateAge(age);
     errors['locality'] = validateNotEmpty(locality, fieldName: 'Localidad');
     errors['address'] = validateNotEmpty(address, fieldName: 'Domicilio');
     errors['email'] = validateEmail(email);
-    errors['phoneNumber'] = validateNumeric(phoneNumber, fieldName: 'Teléfono');
+    errors['phoneNumber'] = validatePhone(phoneNumber);
 
     notifyListeners();
     return errors.values.every((error) => error == null);
@@ -315,10 +341,18 @@ class MaternalDataFormNotifier extends ChangeNotifier {
       if (testResults[testName] == null || testResults[testName]!.isEmpty) {
         testErrors['${testName}_result'] = 'Seleccione un resultado';
         isValid = false;
-      }
-      if (testDates[testName] == null || testDates[testName]!.isEmpty) {
-        testErrors['${testName}_date'] = 'Seleccione una fecha';
-        isValid = false;
+      } else {
+        // Solo validar fecha si el resultado la requiere
+        final result = testResults[testName];
+        if (_requiresDate(result)) {
+          if (testDates[testName] == null || testDates[testName]!.isEmpty) {
+            testErrors['${testName}_date'] = 'Seleccione una fecha';
+            isValid = false;
+          }
+        } else {
+          // Si no requiere fecha, asegurar que esté en null
+          testDates[testName] = null;
+        }
       }
     }
 
