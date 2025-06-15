@@ -4,7 +4,9 @@ import 'package:sikum/entities/birth_data.dart';
 import 'package:sikum/entities/birth_statistics.dart';
 
 final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
-  final snapshot = await FirebaseFirestore.instance.collection('dischargeDataPatient').get();
+  final snapshot = await FirebaseFirestore.instance
+      .collection('dischargeDataPatient')
+      .get();
 
   int total = 0;
   int cesareanCount = 0;
@@ -13,19 +15,25 @@ final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
 
   for (var doc in snapshot.docs) {
     final data = doc.data();
-    if (data.containsKey('birthData')) {
-      final birthData = BirthData.fromMap(data['birthData']);
 
-      if (birthData.birthDate != null) {
-        total++;
+    if (data.containsKey('birthData') && data['birthData'] != null) {
+      try {
+        final birthDataMap = Map<String, dynamic>.from(data['birthData']);
+        final birthData = BirthData.fromMap(birthDataMap);
 
-        final birthType = birthData.birthType?.toLowerCase().trim();
-        if (birthType == 'cesárea' || birthType == 'cesarea') cesareanCount++;
-        if (birthType == 'vaginal') vaginalCount++;
+        if (birthData.birthDate != null) {
+          total++;
 
-        final date = birthData.birthDate!;
-        final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
-        birthsPerMonth[key] = (birthsPerMonth[key] ?? 0) + 1;
+          final birthType = birthData.birthType?.toLowerCase().trim();
+          if (birthType == 'cesárea' || birthType == 'cesarea') cesareanCount++;
+          if (birthType == 'vaginal') vaginalCount++;
+
+          final date = birthData.birthDate!;
+          final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+          birthsPerMonth[key] = (birthsPerMonth[key] ?? 0) + 1;
+        }
+      } catch (e) {
+        print("Error al procesar birthData: $e");
       }
     }
   }
