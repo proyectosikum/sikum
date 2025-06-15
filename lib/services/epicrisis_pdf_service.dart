@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -15,19 +14,22 @@ class EpicrisisPdfService {
         .get();
     final dischargeMap = dischargeDoc.exists ? dischargeDoc.data()! : {};
 
-    // 1) Cargo datos de usuario (médico logueado) para firma
+    // cierres de internación
+    final clinicalClosure = (dischargeMap['closureOfHospitalization'] as Map<String, dynamic>?)
+      ?? <String, dynamic>{};
+
+    // 1) Cargo datos del médico que creó el cierre clínico
     String doctorName = '';
     String doctorProvReg = '';
     try {
-      final currentEmail = FirebaseAuth.instance.currentUser?.email ?? '';
-      if (currentEmail.isNotEmpty) {
-        final userQuery = await FirebaseFirestore.instance
+      final createdById = clinicalClosure['createdBy'] as String?;
+      if (createdById != null && createdById.isNotEmpty) {
+        final docSnap = await FirebaseFirestore.instance
             .collection('users')
-            .where('email', isEqualTo: currentEmail)
-            .limit(1)
+            .doc(createdById)
             .get();
-        if (userQuery.docs.isNotEmpty) {
-          final userData = userQuery.docs.first.data();
+        if (docSnap.exists) {
+          final userData = docSnap.data()!;
           doctorName = '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}';
           doctorProvReg = userData['provReg'] ?? '';
         }
@@ -40,10 +42,6 @@ class EpicrisisPdfService {
     // 2) Extraigo datos de “birthData”, “maternalData”, “closureOfHospitalization” y “evolutions”
     final birthData    = (dischargeMap['birthData']  as Map<String, dynamic>?) ?? {};
     final maternalData = (dischargeMap['maternalData'] as Map<String, dynamic>?) ?? {};
-
-    // cierres de internación
-    final clinicalClosure = (dischargeMap['closureOfHospitalization'] as Map<String, dynamic>?)
-      ?? <String, dynamic>{};
 
     // — Datos básicos del RN —
     final birthDateRaw = birthData['birthDate'];
@@ -168,7 +166,15 @@ class EpicrisisPdfService {
     final feedingAtDischarge2 = feedOption == 'leche_formula'
         ? 'Leche de fórmula ($formulaMl ml)'
         : feedOption;
+
     final physicalExamDischarge = clinicalClosure['physicalExamination'] ?? '';
+    final physicalExamDetails = clinicalClosure['physicalExaminationDetails'] ?? '';
+
+    final normalized = physicalExamDischarge.toLowerCase();
+    final physicalExamDischargeText = (normalized == 'otros' && physicalExamDetails.isNotEmpty)
+        ? '$physicalExamDischarge ($physicalExamDetails)'
+        : physicalExamDischarge;
+
     final nextControlRaw = clinicalClosure['nextControlDate'];
     // convierte a DateTime si es Timestamp o String
     DateTime? nextControlDate = nextControlRaw is Timestamp
@@ -350,7 +356,7 @@ class EpicrisisPdfService {
                       pw.Text('- Peso al alta: $dischargeWeight gramos', style: pw.TextStyle(fontSize: 10)),
                       pw.Text('- Descenso de peso: ${descensoPeso.toStringAsFixed(1)} %', style: pw.TextStyle(fontSize: 10)),
                       pw.Text('- Alimentación: $feedingAtDischarge2', style: pw.TextStyle(fontSize: 10)),
-                      pw.Text('- Ex. físico al alta: $physicalExamDischarge', style: pw.TextStyle(fontSize: 10)),
+                      pw.Text('- Ex. físico al alta: $physicalExamDischargeText', style: pw.TextStyle(fontSize: 10)),
                       pw.SizedBox(height: 8),
                     ],
                   ),

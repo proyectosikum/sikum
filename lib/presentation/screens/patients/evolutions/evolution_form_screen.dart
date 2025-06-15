@@ -119,7 +119,23 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         ? [...neonatologyPage1, ...neonatologyPage2]
         : evolutionFormConfig[selectedSpec] ?? [];
 
+    final examValue = _formData['physicalExam'] as String?;
+
     for (final f in fields) {
+      if (selectedSpec == 'neonatologia') {
+        if (f.key == 'abnormalObservation' && examValue != 'Anormal') {
+          continue;
+        }
+        if (f.key == 'lfMlQuantity' &&
+            (_formData['lf'] as bool? ?? false) == false) {
+          continue;
+        }
+        if (f.key == 'feedingMlQuantity' &&
+            (_formData['feedingPmldComplement'] as bool? ?? false) == false) {
+          continue;
+        }
+      }
+
       final val = _formData[f.key];
       bool empty = false;
 
@@ -162,6 +178,45 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
 
     setState(() {}); // refresca los errores en pantalla
+    return isValid;
+  }
+
+  /// Valida los campos obligatorios de neonatología (página 1)
+  bool _validateNeonatologyPage1() {
+    bool isValid = true;
+    _validationErrors.clear();
+
+    final examValue = _formData['physicalExam'] as String?;
+
+    for (final f in neonatologyPage1) {
+      if (!f.isRequired) continue;
+
+      // Si es abnormalObservation pero no estamos en “Anormal”, lo omitimos
+      if (f.key == 'abnormalObservation' && examValue != 'Anormal') continue;
+
+      final val = _formData[f.key];
+      bool empty;
+      switch (f.type) {
+        case FieldType.text:
+        case FieldType.multiline:
+          empty = (val as String?)?.trim().isEmpty ?? true;
+          break;
+        case FieldType.number:
+        case FieldType.datetime:
+        case FieldType.radio:
+          empty = val == null;
+          break;
+        case FieldType.checkbox:
+          empty = false;
+          break;
+      }
+      if (empty) {
+        _validationErrors[f.key] = 'Este campo es obligatorio';
+        isValid = false;
+      }
+    }
+
+    setState(() {}); // refrescará los errores visibles
     return isValid;
   }
 
@@ -372,7 +427,9 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                     ),
                     onPressed: () {
                       if (isNeonato && _page == 0) {
-                        setState(() => _page = 1);
+                        if (_validateNeonatologyPage1()) {
+                          setState(() => _page = 1);
+                        }
                       } else {
                         _save();
                       }
@@ -466,26 +523,71 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
   Widget _buildNeonatoPage1() {
     final examValue = _formData['physicalExam'] as String?;
+    final hasExamError = _validationErrors['physicalExam'] != null;
+    const errorColor = Colors.red;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Examen físico', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          'Examen físico',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: hasExamError ? errorColor : Colors.black,
+          ),
+        ),
         const SizedBox(height: 4),
-        Wrap(spacing: 16, children: ['Normal', 'Anormal'].map((opt) {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Radio<String>(value: opt, groupValue: examValue, onChanged: (v) => setState(() => _formData['physicalExam'] = v)),
-              Text(opt),
-            ],
-          );
-        }).toList()),
-        if (examValue == 'Anormal') ...[
-          const SizedBox(height: 12),
-          _buildFieldWidget(neonatologyPage1.firstWhere((f) => f.key == 'abnormalObservation')),
+
+        // Los radios
+        Wrap(
+          spacing: 16,
+          children: ['Normal', 'Anormal'].map((opt) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Radio<String>(
+                  value: opt,
+                  groupValue: examValue,
+                  onChanged: (v) => setState(() {
+                    _formData['physicalExam'] = v;
+                    _validationErrors.remove('physicalExam');
+                  }),
+                ),
+                Text(
+                  opt,
+                  style: TextStyle(
+                    color: hasExamError
+                        ? Colors.red
+                        : Colors.black,
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+
+        // Aquí mostramos el texto de error
+        if (hasExamError) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Este campo es obligatorio',
+            style: const TextStyle(color: errorColor, fontSize: 12),
+          ),
         ],
+
         const SizedBox(height: 16),
-        for (final f in neonatologyPage1.where((f) => f.key != 'physicalExam' && f.key != 'abnormalObservation')) ...[
+
+        // Si eligió "Anormal", mostramos el textarea
+        if (examValue == 'Anormal') ...[
+          _buildFieldWidget(
+            neonatologyPage1.firstWhere((f) => f.key == 'abnormalObservation')
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // El resto de campos de la página 1
+        for (final f in neonatologyPage1.where((f) =>
+            f.key != 'physicalExam' && f.key != 'abnormalObservation')) ...[
           _buildFieldWidget(f),
           const SizedBox(height: 16),
         ],
