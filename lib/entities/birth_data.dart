@@ -26,6 +26,8 @@ class BirthData{
   String? birthPlace;
   String? birthPlaceDetails;
   int? braceletNumber;
+  String? bloodType;
+  bool isDataSaved;
 
 BirthData({
   this.birthType,
@@ -52,6 +54,8 @@ BirthData({
   this.birthPlace,
   this.birthPlaceDetails,
   this.braceletNumber,
+  this.bloodType,
+  this.isDataSaved = false,
 });
 
   BirthData copyWith({
@@ -78,7 +82,9 @@ BirthData({
     String? physicalExaminationDetails,
     String? birthPlace,
     String? birthPlaceDetails,
-    int? braceletNumber
+    int? braceletNumber,
+    String? bloodType,
+    bool? isDataSaved,
     }) { 
     return BirthData(
     birthType: birthType ?? this.birthType,
@@ -105,6 +111,8 @@ BirthData({
     birthPlace: birthPlace ?? this.birthPlace,
     birthPlaceDetails: birthPlaceDetails ?? this.birthPlaceDetails,
     braceletNumber: braceletNumber?? this.braceletNumber,
+    bloodType: bloodType ?? this.bloodType,
+    isDataSaved: isDataSaved ?? this.isDataSaved
     );
   }
 
@@ -134,6 +142,8 @@ BirthData({
       'birthPlace': birthPlace,
       'birthPlaceDetails':birthPlaceDetails,
       'braceletNumber': braceletNumber,
+      'bloodType': bloodType,
+      'isDataSaved': isDataSaved
     };
   }
 
@@ -141,30 +151,32 @@ BirthData({
     print("Datos de la base: $map");
 
     return BirthData(
-      birthType: map['birthType'] ?? '',
-      presentation: map['presentation'] ?? '' ,
-      ruptureOfMembrane: map['ruptureOfMembrane'] ?? '',
-      amnioticFluid: map['amnioticFluid'] ?? '',
-      sex: map['sex'] ?? '',
-      twin: map['twin'] ?? '',
-      firstApgarScore: map['firstApgarScore'] ?? '',
-      secondApgarScore: map['secondApgarScore'] ?? '',
-      thirdApgarScore: map['thirdApgarScore'] ?? '',
+      birthType: map['birthType'],
+      presentation: map['presentation'],
+      ruptureOfMembrane: map['ruptureOfMembrane'],
+      amnioticFluid: map['amnioticFluid'],
+      sex: map['sex'],
+      twin: map['twin'],
+      firstApgarScore: map['firstApgarScore'],
+      secondApgarScore: map['secondApgarScore'],
+      thirdApgarScore: map['thirdApgarScore'] ,
       hasHepatitisBVaccine: map['hasHepatitisBVaccine'] ?? false,
       hasVitaminK: map['hasVitaminK'] ?? false,
       hasOphthalmicDrops: map['hasOphthalmicDrops']?? false,
-      disposition: map['disposition'] ?? '',
+      disposition: map['disposition'],
       gestationalAge: map['gestationalAge'],
-      birthDate:  map['birthDate'] != null ? (map['birthDate'] as Timestamp).toDate() : null, 
+      birthDate:  map['birthDate']?.toDate(), 
       birthTime: map['birthTime'],
       weight: map['weight'] ,
       length: map['length'],
       headCircumference: map['headCircumference'],
       physicalExamination: map['physicalExamination'],
       physicalExaminationDetails: map['physicalExaminationDetails'], 
-      birthPlace: map['birthPlace'] ?? '' ,
-      birthPlaceDetails: map['birthPlaceDetails'] ?? '',
+      birthPlace: map['birthPlace'] ,
+      birthPlaceDetails: map['birthPlaceDetails'],
       braceletNumber: map['braceletNumber'],
+      bloodType: map['bloodType'],
+      isDataSaved: map['isDataSaved'] ?? false,
     );
   }
 
@@ -190,6 +202,8 @@ String toString() {
     weight: $weight,
     length: $length,
     headCircumference: $headCircumference,
+    bloodType: $bloodType,
+    isDataSaved: $isDataSaved,
   }
   ''';
 }

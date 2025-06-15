@@ -1,5 +1,4 @@
 import 'package:sikum/entities/patient.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sikum/entities/evolution.dart';
 
 enum DischargeStatus {
@@ -8,63 +7,108 @@ enum DischargeStatus {
   blocked,  // rojo
 }
 
-DischargeStatus getDischargeStatus(Patient patient, List<Evolution> evolutions) {
+class DischargeResult {
+  final DischargeStatus status;
+  final List<String> missingItems;
+  
+  DischargeResult(this.status, this.missingItems);
+}
+
+DischargeResult getDischargeStatusWithDetails(Patient patient, List<Evolution> evolutions) {
   final now = DateTime.now();
   //final admittedAt = patient.birthData?.birthDate; -> para cuando cambiemos a fecha de nacimiento
   final admittedAt = patient.createdAt; 
+  final List<String> missing = [];
 
   if (admittedAt == null) {
-    return DischargeStatus.notReady; 
+    return DischargeResult(DischargeStatus.notReady, []);
   }
 
   //final admittedDateTime = admittedAt.toDate(); -> para cuando cambiemos a fecha de nacimiento
-
   if (!hasTwoDaysPassed(admittedAt, now)) {
-    return DischargeStatus.notReady;
+    return DischargeResult(DischargeStatus.notReady, []);
   }
 
+  // Validar datos maternos - solo que exista el form
   final maternalData = patient.maternalData;
-  if (maternalData == null || maternalData['testResults'] == null) {
-    return DischargeStatus.blocked;
+  if (maternalData == null) {
+    missing.add('Formulario de datos maternos');
   }
 
-  final Map<String, String> testResults = Map<String, String>.from(maternalData['testResults']);
+  // Validar datos de nacimiento - que exista y que ningún campo sea null
+  final birthData = patient.birthData;
+  if (birthData == null) {
+    missing.add('Datos de nacimiento');
+  } else {
+    // Verificar que los campos obligatorios no sean null o vacíos
+    final Map<String, dynamic> birthDataMap = birthData.toMap();
+    final emptyFields = <String>[];
+    
+    // Definir los campos que deben validarse (excluyendo los booleanos que tienen valores por defecto)
+    final fieldsToValidate = {
+      'birthType': 'Tipo de nacimiento',
+      'presentation': 'Presentación',
+      'ruptureOfMembrane': 'Ruptura de membrana',
+      'amnioticFluid': 'Líquido amniótico',
+      'sex': 'Sexo',
+      'twin': 'Gemelar',
+      'firstApgarScore': 'Apgar 1 minuto',
+      'secondApgarScore': 'Apgar 5 minutos',
+      'thirdApgarScore': 'Apgar 10 minutos',
+      'disposition': 'Destino',
+      'gestationalAge': 'Edad gestacional',
+      'birthDate': 'Fecha de nacimiento',
+      'birthTime': 'Hora de nacimiento',
+      'weight': 'Peso',
+      'length': 'Talla',
+      'headCircumference': 'Perímetro cefálico',
+      'physicalExamination': 'Examen físico',
+      'birthPlace': 'Lugar de nacimiento',
+      'braceletNumber': 'Número de pulsera',
+    };
+    
+    fieldsToValidate.forEach((key, displayName) {
+      final value = birthDataMap[key];
+      if (value == null || (value is String && value.isEmpty)) {
+        emptyFields.add(displayName);
+      }
+    });
+    
+    // Para physicalExaminationDetails, solo validar si physicalExamination es "Otros"
+    if (birthData.physicalExamination == "Otros") {
+      if (birthData.physicalExaminationDetails == null || birthData.physicalExaminationDetails!.isEmpty) {
+        emptyFields.add('Detalles del examen físico');
+      }
+    }
+    
+    // Para birthPlaceDetails, solo validar si birthPlace es "Otro"
+    if (birthData.birthPlace == "Otro") {
+      if (birthData.birthPlaceDetails == null || birthData.birthPlaceDetails!.isEmpty) {
+        emptyFields.add('Detalles del lugar de nacimiento');
+      }
+    }
+    
+    if (emptyFields.isNotEmpty) {
+      missing.add('Completar en datos de nacimiento: ${emptyFields.join(', ')}');
+    }
+  }
 
-  final hasPendingTest = testResults.values.any((r) => r == 'Sin dato');
-  if (hasPendingTest) return DischargeStatus.blocked;
+  // Validar evolución FEI - solo que exista
+  final fei = evolutions.where((e) => e.specialty == 'enfermeria_fei');
+  if (fei.isEmpty) {
+    missing.add('Evolución de enfermería FEI');
+  }
 
-  // falta tener completo el código de birthData!
+  if (missing.isNotEmpty) {
+    return DischargeResult(DischargeStatus.blocked, missing);
+  }
 
-/*   final birthData = patient.birthData;
-  if (birthData == null || birthData.values.any((v) => v == null || v == '')) {
-    return DischargeStatus.blocked;
-  } */ 
-
-final fei = evolutions.where((e) => e.specialty == 'enfermeria_fei');
-if (fei.isEmpty) return DischargeStatus.blocked;
-
-final feiEvolution = fei.first;
-
-final feiDateRaw = feiEvolution.details['feiDate'];
-final recordNumberRaw = feiEvolution.details['recordNumber'];
-
-DateTime? feiDate;
-
-if (feiDateRaw is Timestamp) {
-  feiDate = feiDateRaw.toDate();
-} else if (feiDateRaw is String) {
-  feiDate = DateTime.tryParse(feiDateRaw);
+  return DischargeResult(DischargeStatus.ready, []);
 }
 
-final isRecordNumberValid = recordNumberRaw != null && recordNumberRaw.toString().isNotEmpty;
-final isFeiDateValid = feiDate != null;
-
-if (!isRecordNumberValid || !isFeiDateValid) {
-  return DischargeStatus.blocked;
-}
-
-  return DischargeStatus.ready;
-  
+// Función de compatibilidad para mantener la API anterior
+DischargeStatus getDischargeStatus(Patient patient, List<Evolution> evolutions) {
+  return getDischargeStatusWithDetails(patient, evolutions).status;
 }
 
 // No requiere exactamente 48 horas, sino que sea el segundo día después
