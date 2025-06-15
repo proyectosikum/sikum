@@ -12,6 +12,7 @@ import 'package:sikum/presentation/providers/user_provider.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_fields_config.dart';
 import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
+import 'package:sikum/utils/string_utils.dart';
 
 class EvolutionDetailsScreen extends ConsumerStatefulWidget {
   final String patientId;
@@ -354,7 +355,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
               ),
             ),
             Text(
-              'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+              'Especialidad: ${getSpecialtyDisplayName(specialty)}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -390,7 +391,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
           children: [
             const Text('Cargando información del profesional...'),
             Text(
-              'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+              'Especialidad: ${getSpecialtyDisplayName(specialty)}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -427,7 +428,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                'Especialidad: ${_getSpecialtyDisplayName(specialty)}',
+                'Especialidad: ${getSpecialtyDisplayName(specialty)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -478,7 +479,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     TextSpan(
-                      text: _getSpecialtyDisplayName(specialty),
+                      text: getSpecialtyDisplayName(specialty),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -953,16 +954,6 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
     }
   }
 
-  /// Convierte nombres de especialidades con guiones bajos a título
-  String _getSpecialtyDisplayName(String specialty) {
-    return specialty.isNotEmpty
-        ? specialty
-            .replaceAll('_', ' ')
-            .toLowerCase()
-            .replaceFirst(specialty.replaceAll('_', ' ').toLowerCase()[0],
-              specialty.replaceAll('_', ' ').toLowerCase()[0].toUpperCase())
-        : specialty;
-  }
 
   /// Formatea un valor de tipo Timestamp / DateTime a "dd/MM/yyyy hh:mm"
   String _formatDate(dynamic dateValue) {
