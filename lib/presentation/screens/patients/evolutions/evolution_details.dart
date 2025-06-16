@@ -265,7 +265,36 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                           child: isEditing && isNeonato
                               ? (_page == 0 ? _buildNeonatoPage1() : _buildNeonatoPage2())
                               : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    if (specialty == 'enfermeria_cambio_pulsera') ...[
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.grey[300]!),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Número de pulsera anterior',
+                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              details['braceletNumberOld']?.toString() ?? 'No especificado',
+                                              style: const TextStyle(fontSize: 16, color: Colors.black87),
+                                            ),                                          
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+
+                                    // Resto de los campos (por si en el futuro se agregan más a esta especialidad)
                                     for (final field in fields) ...[
                                       _buildFieldWidget(field, details),
                                       const SizedBox(height: 16),
@@ -273,6 +302,7 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
                                   ],
                                 ),
                         ),
+
                       ),
                     ),
                   ],
