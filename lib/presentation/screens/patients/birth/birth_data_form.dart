@@ -1,4 +1,6 @@
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -169,7 +171,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   if (data.birthPlace ==  PlacesEnum.outpatient.getValue()) ...[
                     SizedBox(height: 8),
                     TextFormField(
-                      key: ValueKey(data.birthPlaceDetails),
+                      key: ValueKey('birthPlaceDetails_${p.id}'),
                       initialValue: data.birthPlaceDetails ?? '',
                       enabled: !isUpdateView,
                       maxLines: 5,
@@ -200,7 +202,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
 
             SizedBox(height: 16),
             DropdownButtonFormField<BirthTypeEnum>(
-              key: ValueKey(data.birthType),
+              key: ValueKey('birthType_${p.id}'),
               value: BirthTypeEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.birthType,
               ),
@@ -229,7 +231,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
               SizedBox(height: 16),
               DropdownButtonFormField<PresentationEnum>(
-                key: ValueKey(data.presentation),
+                key: ValueKey('presentation_${p.id}'),
                 value: PresentationEnum.values.firstWhereOrNull(
                   (e) => e.getValue() == data.presentation,
                 ),
@@ -259,7 +261,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ),
               SizedBox(height: 16),
               DropdownButtonFormField<RuptureOfMembraneEnum>(
-                key: ValueKey(data.ruptureOfMembrane),
+                key: ValueKey('ruptureOfMembrane_${p.id}'),
                 value: RuptureOfMembraneEnum.values.firstWhereOrNull(
                   (e) => e.getValue() == data.ruptureOfMembrane,
                 ),
@@ -289,7 +291,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ),
             SizedBox(height: 16),
             DropdownButtonFormField<AmnioticFluidEnum>(
-              key: ValueKey(data.amnioticFluid),
+              key: ValueKey('amnioticFluid_${p.id}'),
               value: AmnioticFluidEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.amnioticFluid,
               ),
@@ -319,7 +321,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<SexEnum>(
-              key: ValueKey(data.sex),
+              key: ValueKey('sex_${p.id}'),
               value: SexEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.sex,
               ),
@@ -395,7 +397,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
             SizedBox(height: 8),
             TextFormField(
-              key: ValueKey(data.gestationalAge),
+              key: ValueKey('gestationalAge_${p.id}'),
               initialValue: data.gestationalAge?.toString() ?? '',
               keyboardType: TextInputType.number,
               enabled: !isUpdateView,
@@ -415,7 +417,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<TwinEnum>(
-              key: ValueKey(data.twin),
+              key: ValueKey('twin_${p.id}'),
               value: TwinEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.twin,
               ),
@@ -443,7 +445,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<ApgarScoreEnum>(
-              key: ValueKey(data.firstApgarScore),
+              key: ValueKey('firstApgarScore_${p.id}'),
               value: ApgarScoreEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.firstApgarScore,
               ),
@@ -471,7 +473,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
            SizedBox(height: 16),
            DropdownButtonFormField<ApgarScoreEnum>(
-              key: ValueKey(data.secondApgarScore),
+              key: ValueKey('secondApgarScore_${p.id}'),
               value: ApgarScoreEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.secondApgarScore,
               ),
@@ -501,7 +503,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<ApgarScoreEnum>(
-              key: ValueKey(data.thirdApgarScore),
+              key: ValueKey('thirdApgarScore_${p.id}'),
               value: ApgarScoreEnum.values.firstWhereOrNull(
                 (e) => e.getValue() == data.thirdApgarScore,
               ),
@@ -531,7 +533,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
             Text("Peso (grs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                key: ValueKey(data.weight),
+                key: ValueKey('weight_${p.id}'),
                 initialValue: data.weight?.toString() ?? '',
                 enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
@@ -553,7 +555,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               Text("Talla (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                key: ValueKey(data.length),
+                key: ValueKey('length_${p.id}'),
                 initialValue: data.length?.toString() ?? '',
                 enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
@@ -575,7 +577,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               Text("Perímetro Cefálico (cm)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               SizedBox(height: 8),
               TextFormField(
-                key: ValueKey(data.headCircumference),
+                key: ValueKey('headCircumference_${p.id}'),
                 initialValue: data.headCircumference?.toString() ?? '',
                 enabled: !isUpdateView,
                 keyboardType: TextInputType.number,
@@ -595,7 +597,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ),
               SizedBox(height: 16),
               DropdownButtonFormField<BloodTypeEnum>(
-                key: ValueKey(data.bloodType),
+                key: ValueKey('bloodType_${p.id}'),
                 value: BloodTypeEnum.values.firstWhereOrNull(  (e) => e.getValue() == data.bloodType,),
                 decoration: InputDecoration(
                   labelText: "Grupo y factor sanguineo",
@@ -677,7 +679,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                     if (data.physicalExamination == "Anormal") ...[
                       SizedBox(height: 8),
                       TextFormField(
-                        key: ValueKey(data.physicalExaminationDetails),
+                        key: ValueKey('physicalExaminationDetails_${p.id}'),
                         initialValue: data.physicalExaminationDetails ?? '',
                         enabled: !isUpdateView,
                         maxLines: 5, // o la cantidad que quieras mostrar visiblemente
@@ -742,7 +744,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   ),
                   SizedBox(height: 8),
                   TextFormField(
-                    key: ValueKey(data.braceletNumber),
+                    key: ValueKey('braceletNumber_${p.id}'),
                     initialValue: data.braceletNumber?.toString() ?? '',
                     enabled: data.braceletNumber == null,
                     keyboardType: TextInputType.number,
@@ -771,7 +773,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<DispositionEnum>(
-                key: ValueKey(data.disposition),
+                key: ValueKey('disposition_${p.id}'),
                 value: DispositionEnum.values.firstWhereOrNull(
                   (e) => e.getValue() == data.disposition,
                 ),
@@ -820,25 +822,47 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   ]
                 :[
                 OutlinedButton(
-                  onPressed: () {
-                    showConfirmationDialog(
-                      context: context,
-                      title: 'Confirmar cancelación',
-                      content: 'Si continúas, perderás los cambios realizados. ¿Deseas continuar?',
-                      onConfirm: () {
-                        notifier.reset();
-                        context.pop();
-                      },
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Color(0xFF4F959D),
-                    side: BorderSide(color: Color(0xFF4F959D)),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        onPressed: () async {
+                          if (isUpdateView) {
+                            context.pop(); // salir directo en modo vista
+                            return;
+                          }
+
+                          final discard = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Confirmar cancelación'),
+                              content: const Text(
+                                'Si sales, perderás los cambios no guardados. ¿Continuar?'
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('Confirmar'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (discard == true) {
+                              if (discard == true) {
+                              ref.read(birthDataProvider.notifier).reset();
+                                Navigator.of(context).pop();
+                            }
+                          }
+                        },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Color(0xFF4F959D),
+                      side: BorderSide(color: Color(0xFF4F959D)),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: const Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  child: Text("Cancelar", style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
                 ElevatedButton(
                   onPressed: () {
                     final isValid = ref.read(birthDataProvider.notifier).validateAll();
