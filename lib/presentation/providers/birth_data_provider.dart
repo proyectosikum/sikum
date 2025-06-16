@@ -163,7 +163,7 @@ bool validateAll() {
   // Lugar de nacimiento y detalle
   if (d.birthPlace == null) {
     errors['birthPlace'] = 'Campo obligatorio';
-  } else if (d.birthPlace == "Otro" &&
+  } else if (d.birthPlace == "Extra hospitalario" &&
       (d.birthPlaceDetails == null || d.birthPlaceDetails!.trim().isEmpty)) {
     errors['birthPlaceDetails'] = 'Debe detallar el lugar';
   }
