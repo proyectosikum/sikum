@@ -52,7 +52,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     final userSpecLabel = authChangeNotifier.specialty ?? '';
 
     if (_labelToKeys.containsKey(userSpecLabel)) {
-      _allowedSpecs = _labelToKeys[userSpecLabel]!;
+      //Convertir a lista mutable para poder hacer el remove
+      _allowedSpecs = List<String>.from(_labelToKeys[userSpecLabel]!);
     } else {
       final match = evolutionFormConfig.keys.firstWhere(
         (key) => getSpecialtyDisplayName(key) == userSpecLabel,
@@ -61,9 +62,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       _allowedSpecs = [match];
     }
 
+    //Evitar mostrar enfermeria_cambio_pulsera si falta el número de pulsera
+    final birthData = ref.read(birthDataProvider);
+    if (birthData?.braceletNumber == null) {
+      _allowedSpecs.remove('enfermeria_cambio_pulsera');
+    }
+
     selectedSpec = _allowedSpecs.first;
     _resetFormForSpec(selectedSpec);
   }
+
 
   @override
   void dispose() {

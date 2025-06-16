@@ -164,7 +164,8 @@ class _EvolutionDetailsScreenState extends ConsumerState<EvolutionDetailsScreen>
 
     final bool canEdit = (currentUserId != null)
         && (currentUserId == createdByUserId)
-        && withinOneHour;
+        && withinOneHour
+        && specialty != 'enfermeria_cambio_pulsera';
 
     if (_formData.isEmpty) {
       details.forEach((key, value) {
