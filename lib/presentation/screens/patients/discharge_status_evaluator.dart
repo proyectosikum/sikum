@@ -65,6 +65,7 @@ DischargeResult getDischargeStatusWithDetails(Patient patient, List<Evolution> e
       'physicalExamination': 'Examen físico',
       'birthPlace': 'Lugar de nacimiento',
       'braceletNumber': 'Número de pulsera',
+      'bloodType': 'Grupo y factor sanguíneo',
     };
     
     fieldsToValidate.forEach((key, displayName) {
@@ -73,16 +74,26 @@ DischargeResult getDischargeStatusWithDetails(Patient patient, List<Evolution> e
         emptyFields.add(displayName);
       }
     });
+
+    // Validación específica para Hepatitis B - debe ser true
+    if (birthData.hasHepatitisBVaccine != true) {
+      emptyFields.add('Vacuna de Hepatitis B (debe estar aplicada)');
+    }
+    
+    // Validación específica para grupo y factor sanguíneo - no puede ser "Resultado pendiente"
+    if (birthData.bloodType == "Resultado pendiente") {
+      emptyFields.add('Grupo y factor sanguíneo (resultado pendiente)');
+    }
     
     // Para physicalExaminationDetails, solo validar si physicalExamination es "Otros"
-    if (birthData.physicalExamination == "Otros") {
+    if (birthData.physicalExamination == "Anormal") {
       if (birthData.physicalExaminationDetails == null || birthData.physicalExaminationDetails!.isEmpty) {
         emptyFields.add('Detalles del examen físico');
       }
     }
     
     // Para birthPlaceDetails, solo validar si birthPlace es "Otro"
-    if (birthData.birthPlace == "Otro") {
+    if (birthData.birthPlace == "Extra hospitalario") {
       if (birthData.birthPlaceDetails == null || birthData.birthPlaceDetails!.isEmpty) {
         emptyFields.add('Detalles del lugar de nacimiento');
       }
@@ -122,4 +133,4 @@ bool hasTwoDaysPassed(DateTime referenceDate, DateTime currentDate) {
   
   // Debe haber pasado al menos 2 días completos
   return daysDifference >= 2;
-}
+} 
