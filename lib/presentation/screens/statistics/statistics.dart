@@ -15,7 +15,7 @@ class Statistics extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const CustomAppBar(),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: statsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
