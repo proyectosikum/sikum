@@ -746,7 +746,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                   TextFormField(
                     key: ValueKey('braceletNumber_${p.id}'),
                     initialValue: data.braceletNumber?.toString() ?? '',
-                    enabled: data.braceletNumber == null,
+                    enabled: !isUpdateView && p.birthData?.braceletNumber == null,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -756,8 +756,8 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
                       errorText: notifier.errorTextFor('braceletNumber'),
                     ),
                     onChanged: (value) {
-                      int? parsedValue = int.tryParse(value);
-                      if (parsedValue != null) {
+                      if (!isUpdateView && p.birthData?.braceletNumber == null) {
+                        int? parsedValue = int.tryParse(value);
                         ref.read(birthDataProvider.notifier).updateBraceletNumber(parsedValue);
                       }
                     },
