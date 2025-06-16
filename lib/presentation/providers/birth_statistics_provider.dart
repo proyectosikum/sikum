@@ -11,7 +11,12 @@ final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
   int total = 0;
   int cesareanCount = 0;
   int vaginalCount = 0;
+  int forcipalCount = 0;
+
   Map<String, int> birthsPerMonth = {};
+  Map<String, int> birthsPerYear = {};
+
+  final now = DateTime.now();
 
   for (var doc in snapshot.docs) {
     final data = doc.data();
@@ -22,15 +27,28 @@ final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
         final birthData = BirthData.fromMap(birthDataMap);
 
         if (birthData.birthDate != null) {
-          total++;
-
-          final birthType = birthData.birthType?.toLowerCase().trim();
-          if (birthType == 'cesárea' || birthType == 'cesarea') cesareanCount++;
-          if (birthType == 'vaginal') vaginalCount++;
-
           final date = birthData.birthDate!;
-          final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
-          birthsPerMonth[key] = (birthsPerMonth[key] ?? 0) + 1;
+          final isCurrentMonth = date.month == now.month && date.year == now.year;
+
+          if (isCurrentMonth) {
+            total++;
+
+            final birthType = birthData.birthType?.toLowerCase().trim();
+
+            if (birthType == 'cesárea' || birthType == 'cesarea') {
+              cesareanCount++;
+            } else if (birthType == 'vaginal') {
+              vaginalCount++;
+            } else if (birthType == 'forcipal') {
+              forcipalCount++;
+            }
+          }
+
+          final keyMonth = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+          birthsPerMonth[keyMonth] = (birthsPerMonth[keyMonth] ?? 0) + 1;
+
+          final keyYear = date.year.toString();
+          birthsPerYear[keyYear] = (birthsPerYear[keyYear] ?? 0) + 1;
         }
       } catch (e) {
         print("Error al procesar birthData: $e");
@@ -38,10 +56,13 @@ final birthStatisticsProvider = FutureProvider<BirthStatistics>((ref) async {
     }
   }
 
+
   return BirthStatistics(
     total: total,
-    birthsPerMonth: birthsPerMonth,
     cesareanCount: cesareanCount,
     vaginalCount: vaginalCount,
+    forcipalCount: forcipalCount,
+    birthsPerMonth: birthsPerMonth,
+    birthsPerYear: birthsPerYear,
   );
 });
