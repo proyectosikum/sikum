@@ -15,7 +15,7 @@ class Statistics extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: const CustomAppBar(),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: statsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -42,7 +42,7 @@ class Statistics extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Total de nacimientos:"),
+                      const Text("Total de nacimientos (mes actual):"),
                       const SizedBox(height: 8),
                       Text(
                         stats.total.toString(),
@@ -63,7 +63,7 @@ class Statistics extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Nacimientos por cesárea:"),
+                      const Text("Nacimientos por cesárea (mes actual):"),
                       const SizedBox(height: 8),
                       Text(
                         stats.cesareanCount.toString(),
@@ -84,7 +84,7 @@ class Statistics extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Nacimientos por parto vaginal:"),
+                      const Text("Nacimientos por parto vaginal (mes actual):"),
                       const SizedBox(height: 8),
                       Text(
                         stats.vaginalCount.toString(),
@@ -105,35 +105,51 @@ class Statistics extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Nacimientos por mes:"),
+                      const Text("Nacimientos por forcipal (mes actual):"),
                       const SizedBox(height: 8),
-                      ...stats.birthsPerMonth.entries.map(
+                      Text(
+                        stats.forcipalCount.toString(),
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Total de nacimientos por año:"),
+                      const SizedBox(height: 8),
+                      ...stats.birthsPerYear.entries.map(
                         (entry) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                entry.key,
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                              Text(entry.key),
                               Text(
                                 entry.value.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
               ),
 
               const SizedBox(height: 32),
+
 
               Center(
                 child: ElevatedButton(
