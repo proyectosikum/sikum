@@ -41,11 +41,15 @@ class PatientSummary extends ConsumerWidget {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(false),
-                        child: const Text('Cancelar'),
+                        child: const Text('Cancelar',
+                         style: TextStyle(color: Color(0xFF4F959D)),
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text('Confirmar'),
+                        child: const Text('Confirmar',
+                         style: TextStyle(color: Color(0xFF4F959D)),
+                        ),
                       ),
                     ],
                   ),
