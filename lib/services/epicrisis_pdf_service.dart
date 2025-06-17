@@ -54,7 +54,7 @@ class EpicrisisPdfService {
         ? DateFormat('dd/MM/yyyy').format(birthDate)
         : '';
     final birthTime         = birthData['birthTime']?.toString() ?? '';
-    final placeOfBirth      = birthData['placeOfBirth']          ?? '';
+    final placeOfBirth      = birthData['birthPlace']          ?? '';
     final sex               = birthData['sex']                   ?? '';
     final twin              = birthData['twin']                  ?? '';
     final birthType         = birthData['birthType']             ?? '';
@@ -83,6 +83,7 @@ class EpicrisisPdfService {
     final abortions     = maternalData['abortions']?.toString() ?? '';
     final testResults   = maternalData['testResults'] as Map<String, dynamic>? ?? {};
     final testDates     = maternalData['testDates']   as Map<String, dynamic>? ?? {};
+    final bloodType     = maternalData['bloodType'] ?? '';
 
     // — Evolutions: FEI
     final feiSnap = await FirebaseFirestore.instance
@@ -214,7 +215,7 @@ class EpicrisisPdfService {
                       children: [
                         pw.Text('Resumen de Historia Clínica - Internación Conjunta',
                             style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                        pw.Text('Maternidad Nuestra Señora del Pilar',
+                        pw.Text('Hospital F. Escardo - Tigre',
                             style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
                         pw.Text('Provincia de Buenos Aires',
                             style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
@@ -276,7 +277,7 @@ class EpicrisisPdfService {
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
-                      child: pw.Text('Grupo y factor de la madre: ${birthData['grupoFactorMadre'] ?? ''}',
+                      child: pw.Text('Grupo y factor de la madre: $bloodType',
                           style: pw.TextStyle(fontSize: 10)),
                     ),
                   ],
