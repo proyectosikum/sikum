@@ -72,18 +72,18 @@ const Map<String, List<FieldConfig>> evolutionFormConfig = {
 
   // Puericultura
   'puericultura': [
-    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline, isRequired: true),
   ],
 
   // Servicio Social
   'servicio_social': [
-    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline, isRequired: true),
   ],
 
   // Interconsultor
   'interconsultor': [
     FieldConfig(key: 'interSpec',    label: 'Especialidad interconsultor',                  type: FieldType.text, isRequired: true),
-    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline),
+    FieldConfig(key: 'observations', label: 'Observaciones',                                type: FieldType.multiline, isRequired: true),
   ],
 
   // Neonatología

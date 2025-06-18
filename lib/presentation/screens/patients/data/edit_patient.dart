@@ -378,6 +378,10 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
                     children: [
                       OutlinedButton(
                         onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF4F959D), // Color del texto
+                          side: const BorderSide(color: Color(0xFF4F959D)), // Borde del botón
+                        ),
                         child: const Text('Cancelar'),
                       ),
                       ElevatedButton(

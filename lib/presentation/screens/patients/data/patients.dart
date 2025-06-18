@@ -9,13 +9,13 @@ import 'package:sikum/presentation/widgets/patient_card.dart';
 import 'package:sikum/presentation/widgets/screen_subtitle.dart';
 import 'package:sikum/presentation/widgets/search_field.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
-import 'package:sikum/presentation/providers/discharge_status_provider.dart'; // VANE
+import 'package:sikum/presentation/providers/discharge_status_provider.dart';
 
 class Patients extends ConsumerStatefulWidget {
   const Patients({super.key});
 
   @override
-  ConsumerState<Patients> createState() => _PatientsState();
+  ConsumerState<Patients> createState() => _PatientsState(); //devuelve instancia de la clase que va a manejar el estado
 }
 
 class _PatientsState extends ConsumerState<Patients> {
@@ -32,7 +32,6 @@ class _PatientsState extends ConsumerState<Patients> {
 
   @override
   Widget build(BuildContext context) {
-    // 1) Escuchamos el stream de pacientes
     final patientsAsync = ref.watch(patientsStreamProvider);
 
     return Scaffold(
@@ -46,11 +45,10 @@ class _PatientsState extends ConsumerState<Patients> {
           children: [
             const ScreenSubtitle(text: 'Pacientes'),
 
-            // Search
             SearchField(onChanged: _onSearchChanged),
             const SizedBox(height: 8),
 
-            // Filtros y botón de agregar
+            //Filtros y boton de agregar paciente
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -63,7 +61,9 @@ class _PatientsState extends ConsumerState<Patients> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const AddPatientsScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const AddPatientsScreen(),
+                      ),
                     );
                   },
                   backgroundColor: const Color(0xFF4F959D),
@@ -74,51 +74,70 @@ class _PatientsState extends ConsumerState<Patients> {
             ),
             const SizedBox(height: 10),
 
-            // 2) Build según el estado del AsyncValue
+            
             Expanded(
               child: patientsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error:   (e,_) => Center(child: Text('Error al cargar pacientes: $e')),
-                data:    (allPatients) {
-                  // 3) Filtrado
-                  final filtered = allPatients.where((u) {
-                    final matchesState = u.available == showAssets;
-                    final matchesSearch =
-                      u.firstName.toLowerCase().contains(searchText.toLowerCase()) ||
-                      u.lastName .toLowerCase().contains(searchText.toLowerCase()) ||
-                      u.dni.toString().contains(searchText);
-                    return matchesState && matchesSearch;
-                  }).toList();
+                error:
+                    (e, _) =>
+                        Center(child: Text('Error al cargar pacientes: $e')),
+                data: (allPatients) {
+                  final filtered =
+                      allPatients.where((u) {
+                        final matchesState = u.available == showAssets;
+                        final matchesSearch =
+                            u.firstName.toLowerCase().contains(
+                              searchText.toLowerCase(),
+                            ) ||
+                            u.lastName.toLowerCase().contains(
+                              searchText.toLowerCase(),
+                            ) ||
+                            u.dni.toString().contains(searchText);
+                        return matchesState && matchesSearch;
+                      }).toList();
 
                   if (filtered.isEmpty) {
-                    return const Center(child: Text('No se encontraron pacientes.'));
+                    return const Center(
+                      child: Text('No se encontraron pacientes.'),
+                    );
                   }
 
-                 //VANE
                   return ListView.builder(
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final p = filtered[index];
-                      final dischargeStatusAsync = ref.watch(dischargeStatusProvider(p));
+                      final dischargeStatusAsync = ref.watch(
+                        dischargeStatusProvider(p),
+                      );
 
                       return dischargeStatusAsync.when(
-                        data: (dischargeResult) => PatientCard(
-                          patient: p,
-                          onTap: () => context.push('/paciente/detalle/${p.id}'),
-                          status: dischargeResult.status,
-                          missingItems: dischargeResult.missingItems, 
-                        ),
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (e, _) => ListTile(
-                          title: Text('${p.firstName} ${p.lastName}'),
-                          subtitle: const Text('Error al evaluar estado de alta'),
-                          trailing: const Icon(Icons.error, color: Colors.red),
-                        ),
+                        data:
+                            (dischargeResult) => PatientCard(
+                              patient: p,
+                              onTap:
+                                  () =>
+                                      context.push('/paciente/detalle/${p.id}'),
+                              status: dischargeResult.status,
+                              missingItems: dischargeResult.missingItems,
+                            ),
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        error:
+                            (e, _) => ListTile(
+                              title: Text('${p.firstName} ${p.lastName}'),
+                              subtitle: const Text(
+                                'Error al evaluar estado de alta',
+                              ),
+                              trailing: const Icon(
+                                Icons.error,
+                                color: Colors.red,
+                              ),
+                            ),
                       );
                     },
-                  ); 
-
-
+                  );
                 },
               ),
             ),
