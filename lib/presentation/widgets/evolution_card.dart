@@ -7,22 +7,19 @@ import 'package:sikum/utils/string_utils.dart';
 class EvolutionCard extends StatelessWidget {
   final Evolution evolution;
   final String patientId;
-  const EvolutionCard({super.key, required this.evolution, required this.patientId});
+  const EvolutionCard({
+    super.key,
+    required this.evolution,
+    required this.patientId,
+  });
 
   @override
   Widget build(BuildContext context) {
     final formatter = DateFormat('dd/MM/yyyy HH:mm');
-    final specialty = evolution.specialty.isNotEmpty
-    ? getSpecialtyDisplayName(evolution.specialty)
-    : '';
-
-    /*final specialty = evolution.specialty.isNotEmpty
-    ? evolution.specialty
-        .replaceAll('_', ' ')
-        .toLowerCase()
-        .replaceFirst(evolution.specialty.replaceAll('_', ' ').toLowerCase()[0],
-            evolution.specialty.replaceAll('_', ' ').toLowerCase()[0].toUpperCase())
-    : '';*/
+    final specialty =
+        evolution.specialty.isNotEmpty
+            ? getSpecialtyDisplayName(evolution.specialty)
+            : '';
 
     return Container(
       width: double.infinity,

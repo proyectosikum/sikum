@@ -269,6 +269,12 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
         // Actualizar el número de pulsera en birthData
         birthDataNotifier.updateBraceletNumber(nuevoNumero);
+
+        final updatedBirthData = ref.read(birthDataProvider);
+        await ref
+        .read(patientActionsProvider)
+        .submitBirthData(widget.patientId, updatedBirthData!);
+        
       }
     }
 

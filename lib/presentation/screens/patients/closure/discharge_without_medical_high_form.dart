@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,17 +7,19 @@ import 'package:sikum/presentation/widgets/custom_app_bar.dart';
 import 'package:sikum/presentation/widgets/side_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DischargeWithoutMedicalHighForm extends ConsumerStatefulWidget  {
+class DischargeWithoutMedicalHighForm extends ConsumerStatefulWidget {
   final String patientId;
 
   const DischargeWithoutMedicalHighForm({super.key, required this.patientId});
 
   @override
-  ConsumerState<DischargeWithoutMedicalHighForm> createState() => _DischargeWithoutMedicalHighFormState();
+  ConsumerState<DischargeWithoutMedicalHighForm> createState() =>
+      _DischargeWithoutMedicalHighFormState();
 }
 
-class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWithoutMedicalHighForm> {
-  final _formKey = GlobalKey<FormState>();
+class _DischargeWithoutMedicalHighFormState
+    extends ConsumerState<DischargeWithoutMedicalHighForm> {
+  final _formKey = GlobalKey<FormState>(); //permite acceder a su estado interno (validar, resetear, guardar)
   final TextEditingController _commentsController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -43,30 +43,30 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
 
       _showSuccessDialog();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
     } finally {
       setState(() => _isSubmitting = false);
     }
   }
 
-
   void _showSuccessDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Cierre de internación realizado'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/pacientes/${widget.patientId}');
-            },
-            child: const Text('Cerrar'),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Cierre de internación realizado'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.go('/pacientes/${widget.patientId}');
+                },
+                child: const Text('Cerrar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -84,11 +84,13 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Título con flecha de atrás
                     Row(
                       children: [
                         IconButton(
@@ -110,8 +112,7 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
                       ],
                     ),
                     const SizedBox(height: 32),
-                    
-                    // Formulario
+
                     Form(
                       key: _formKey,
                       child: Column(
@@ -122,8 +123,7 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
-                          
-                          // Campo de comentarios
+
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
@@ -149,29 +149,34 @@ class _DischargeWithoutMedicalHighFormState extends ConsumerState<DischargeWitho
                             ),
                           ),
                           const SizedBox(height: 32),
-                          
-                          // Botón de guardar
+
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: _isSubmitting ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: green,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: _isSubmitting
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text(
-                                      'Guardar cierre',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                              child:
+                                  _isSubmitting
+                                      ? const CircularProgressIndicator(
                                         color: Colors.white,
+                                      )
+                                      : const Text(
+                                        'Guardar cierre',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
                             ),
                           ),
                         ],
