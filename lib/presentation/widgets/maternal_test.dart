@@ -30,7 +30,7 @@ class MaternalTest extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:Color.fromARGB(121, 216, 216, 216),
+        color: Color.fromARGB(121, 216, 216, 216),
         border: hasError ? Border.all(color: Colors.red, width: 2) : null,
         borderRadius: BorderRadius.circular(8),
       ),
@@ -45,8 +45,8 @@ class MaternalTest extends StatelessWidget {
                 child: CustomCheckBox(
                   label: 'Negativa',
                   value: result == 'Negativa',
-                  onChanged: (value) =>
-                      onResultChanged(value ? 'Negativa' : ''),
+                  onChanged:
+                      (value) => onResultChanged(value ? 'Negativa' : ''),
                   isDataSaved: isDataSaved,
                 ),
               ),
@@ -54,8 +54,8 @@ class MaternalTest extends StatelessWidget {
                 child: CustomCheckBox(
                   label: 'Positiva',
                   value: result == 'Positiva',
-                  onChanged: (value) =>
-                      onResultChanged(value ? 'Positiva' : ''),
+                  onChanged:
+                      (value) => onResultChanged(value ? 'Positiva' : ''),
                   isDataSaved: isDataSaved,
                 ),
               ),
@@ -63,8 +63,8 @@ class MaternalTest extends StatelessWidget {
                 child: CustomCheckBox(
                   label: 'Sin dato',
                   value: result == 'Sin dato',
-                  onChanged: (value) =>
-                      onResultChanged(value ? 'Sin dato' : ''),
+                  onChanged:
+                      (value) => onResultChanged(value ? 'Sin dato' : ''),
                   isDataSaved: isDataSaved,
                 ),
               ),
@@ -76,8 +76,8 @@ class MaternalTest extends StatelessWidget {
               child: CustomCheckBox(
                 label: 'No requerido',
                 value: result == 'No requerido',
-                onChanged: (value) =>
-                    onResultChanged(value ? 'No requerido' : ''),
+                onChanged:
+                    (value) => onResultChanged(value ? 'No requerido' : ''),
                 isDataSaved: isDataSaved,
               ),
             ),

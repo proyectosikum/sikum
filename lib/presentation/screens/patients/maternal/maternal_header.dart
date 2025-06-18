@@ -6,34 +6,30 @@ import 'package:sikum/utils/navigation_utils.dart';
 
 class MaternalHeader extends ConsumerWidget {
   final String patientId;
-  
-  const MaternalHeader({
-    super.key,
-    required this.patientId,
-  });
+
+  const MaternalHeader({super.key, required this.patientId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.watch(maternalDataFormProvider(patientId));
-    
+
     return Row(
       children: [
         IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => handleExit(
-            context: context,
-            isDataSaved: form.isDataSaved,
-            patientId: patientId,
-            ref: ref,
-          ),
+          onPressed:
+              () => handleExit(
+                context: context,
+                isDataSaved: form.isDataSaved,
+                patientId: patientId,
+                ref: ref,
+              ),
         ),
         const Expanded(
-          child: Center(
-            child: ScreenSubtitle(text: 'Datos maternos'),
-          ),
+          child: Center(child: ScreenSubtitle(text: 'Datos maternos')),
         ),
-        // Espaciador invisible para centrar el título
-        const SizedBox(width: 48), // Mismo ancho que el IconButton
+
+        const SizedBox(width: 48),
       ],
     );
   }

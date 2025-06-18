@@ -1,5 +1,3 @@
-// lib/presentation/widgets/user_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sikum/entities/user.dart';
@@ -14,7 +12,8 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fullName = '${_capitalize(user.firstName)} ${_capitalize(user.lastName)}';
+    final fullName =
+        '${_capitalize(user.firstName)} ${_capitalize(user.lastName)}';
 
     return Card(
       color: const Color(0xFFFFF8E1),

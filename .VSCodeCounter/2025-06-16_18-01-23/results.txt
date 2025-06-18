@@ -1,0 +1,115 @@
+Date : 2025-06-16 18:01:23
+Directory : c:\PROYECTO FINAL 2025\sikum\lib
+Total : 70 files,  11277 codes, 363 comments, 1132 blanks, all 12772 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Dart     |         70 |     11,277 |        363 |      1,132 |     12,772 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                            | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                               |         70 |     11,277 |        363 |      1,132 |     12,772 |
+| . (Files)                                                                                                       |          2 |         93 |         12 |         11 |        116 |
+| core                                                                                                            |          1 |          8 |          0 |          2 |         10 |
+| core\theme                                                                                                      |          1 |          8 |          0 |          2 |         10 |
+| entities                                                                                                        |          6 |        517 |          2 |         32 |        551 |
+| presentation                                                                                                    |         54 |      9,723 |        306 |      1,000 |     11,029 |
+| presentation\providers                                                                                          |          8 |        994 |         62 |        213 |      1,269 |
+| presentation\screens                                                                                            |         29 |      7,833 |        226 |        693 |      8,752 |
+| presentation\screens (Files)                                                                                    |          1 |         48 |          0 |          2 |         50 |
+| presentation\screens\patients                                                                                   |         20 |      6,135 |        191 |        530 |      6,856 |
+| presentation\screens\patients (Files)                                                                           |          1 |         98 |         16 |         23 |        137 |
+| presentation\screens\patients\birth                                                                             |          2 |      1,048 |         10 |         83 |      1,141 |
+| presentation\screens\patients\closure                                                                           |          4 |      1,030 |         18 |         83 |      1,131 |
+| presentation\screens\patients\data                                                                              |          4 |      1,051 |         33 |        101 |      1,185 |
+| presentation\screens\patients\evolutions                                                                        |          3 |      1,809 |         87 |        148 |      2,044 |
+| presentation\screens\patients\maternal                                                                          |          6 |      1,099 |         27 |         92 |      1,218 |
+| presentation\screens\statistics                                                                                 |          1 |        163 |          0 |         15 |        178 |
+| presentation\screens\users                                                                                      |          7 |      1,487 |         35 |        146 |      1,668 |
+| presentation\widgets                                                                                            |         17 |        896 |         18 |         94 |      1,008 |
+| router                                                                                                          |          1 |        181 |          2 |         14 |        197 |
+| services                                                                                                        |          3 |        629 |         34 |         58 |        721 |
+| utils                                                                                                           |          3 |        126 |          7 |         15 |        148 |
++-----------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                                        | language | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\PROYECTO FINAL 2025\sikum\lib\core\theme\app_colors.dart                                                     | Dart     |          8 |          0 |          2 |         10 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\birth_data.dart                                                       | Dart     |        201 |          0 |         10 |        211 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\birth_statistics.dart                                                 | Dart     |         16 |          0 |          1 |         17 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\evolution.dart                                                        | Dart     |         47 |          0 |          4 |         51 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\maternal_data.dart                                                    | Dart     |         84 |          2 |          4 |         90 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\patient.dart                                                          | Dart     |         72 |          0 |          7 |         79 |
+| c:\PROYECTO FINAL 2025\sikum\lib\entities\user.dart                                                             | Dart     |         97 |          0 |          6 |        103 |
+| c:\PROYECTO FINAL 2025\sikum\lib\firebase_options.dart                                                          | Dart     |         70 |         12 |          7 |         89 |
+| c:\PROYECTO FINAL 2025\sikum\lib\main.dart                                                                      | Dart     |         23 |          0 |          4 |         27 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\birth_data_provider.dart                                | Dart     |        177 |          7 |         52 |        236 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\birth_statistics_provider.dart                          | Dart     |         54 |          0 |         14 |         68 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\discharge_status_provider.dart                          | Dart     |         10 |          0 |          6 |         16 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\evolution_provider.dart                                 | Dart     |         69 |          7 |         10 |         86 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\evolutions_by_patient_provider.dart                     | Dart     |         12 |          0 |          3 |         15 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\maternal_data_provider.dart                             | Dart     |        362 |         26 |         70 |        458 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\patient_provider.dart                                   | Dart     |         90 |         15 |         23 |        128 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\providers\user_provider.dart                                      | Dart     |        220 |          7 |         35 |        262 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\confirmation_screen.dart                                  | Dart     |         48 |          0 |          2 |         50 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\birth\birth_data_enums.dart                      | Dart     |        134 |          0 |         47 |        181 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\birth\birth_data_form.dart                       | Dart     |        914 |         10 |         36 |        960 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\closure\clinical_discharge_form.dart             | Dart     |        520 |          9 |         36 |        565 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\closure\closure_choice_screen.dart               | Dart     |        158 |          0 |         10 |        168 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\closure\discharge_without_medical_high_form.dart | Dart     |        166 |          4 |         17 |        187 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\closure\sector_transfer_form.dart                | Dart     |        186 |          5 |         20 |        211 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\data\add_patients.dart                           | Dart     |        288 |         10 |         31 |        329 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\data\edit_patient.dart                           | Dart     |        362 |         11 |         39 |        412 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\data\patient_details.dart                        | Dart     |        292 |          6 |         15 |        313 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\data\patients.dart                               | Dart     |        109 |          6 |         16 |        131 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\discharge_status_evaluator.dart                  | Dart     |         98 |         16 |         23 |        137 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\evolutions\evolution_details.dart                | Dart     |        910 |         35 |         62 |      1,007 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\evolutions\evolution_fields_config.dart          | Dart     |        145 |         16 |         19 |        180 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\evolutions\evolution_form_screen.dart            | Dart     |        754 |         36 |         67 |        857 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_form.dart                      | Dart     |         98 |          3 |         16 |        117 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_header.dart                    | Dart     |         35 |          1 |          4 |         40 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_step1.dart                     | Dart     |        261 |          5 |         19 |        285 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_step2.dart                     | Dart     |        232 |          6 |         15 |        253 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_step3.dart                     | Dart     |        241 |          6 |         15 |        262 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\patients\maternal\maternal_step4.dart                     | Dart     |        232 |          6 |         23 |        261 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\statistics\statistics.dart                                | Dart     |        163 |          0 |         15 |        178 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\change_password.dart                                | Dart     |        264 |          9 |         22 |        295 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\create_users.dart                                   | Dart     |        226 |          1 |         22 |        249 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\edit_user.dart                                      | Dart     |        274 |          0 |         28 |        302 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\forgot_password.dart                                | Dart     |        200 |          4 |         20 |        224 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\login.dart                                          | Dart     |        212 |          5 |         25 |        242 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\user_details.dart                                   | Dart     |        224 |          9 |         19 |        252 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\screens\users\users.dart                                          | Dart     |         87 |          7 |         10 |        104 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_app_bar.dart                                       | Dart     |         61 |          1 |          5 |         67 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_checkbox.dart                                      | Dart     |         32 |          0 |          4 |         36 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_date_picker.dart                                   | Dart     |         52 |          0 |          8 |         60 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_dropdown_field.dart                                | Dart     |         37 |          1 |          5 |         43 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_text_field.dart                                    | Dart     |         50 |          1 |          6 |         57 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\custom_time_picker.dart                                   | Dart     |         50 |          0 |          8 |         58 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\discharge_dialog.dart                                     | Dart     |         27 |          0 |          3 |         30 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\evolution_card.dart                                       | Dart     |         52 |          7 |          5 |         64 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\filter_buttons.dart                                       | Dart     |         37 |          0 |          5 |         42 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\labeled_text_field.dart                                   | Dart     |         51 |          0 |          4 |         55 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\maternal_test.dart                                        | Dart     |         92 |          0 |          4 |         96 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\patient_card.dart                                         | Dart     |         60 |          0 |          8 |         68 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\patient_summary.dart                                      | Dart     |         99 |          3 |          4 |        106 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\screen_subtitle.dart                                      | Dart     |         20 |          0 |          4 |         24 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\search_field.dart                                         | Dart     |         26 |          0 |          4 |         30 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\side_menu.dart                                            | Dart     |        116 |          4 |         10 |        130 |
+| c:\PROYECTO FINAL 2025\sikum\lib\presentation\widgets\user_card.dart                                            | Dart     |         34 |          1 |          7 |         42 |
+| c:\PROYECTO FINAL 2025\sikum\lib\router\app_router.dart                                                         | Dart     |        181 |          2 |         14 |        197 |
+| c:\PROYECTO FINAL 2025\sikum\lib\services\auth_notifier.dart                                                    | Dart     |         49 |          0 |          6 |         55 |
+| c:\PROYECTO FINAL 2025\sikum\lib\services\auth_service.dart                                                     | Dart     |        101 |          4 |         19 |        124 |
+| c:\PROYECTO FINAL 2025\sikum\lib\services\epicrisis_pdf_service.dart                                            | Dart     |        479 |         30 |         33 |        542 |
+| c:\PROYECTO FINAL 2025\sikum\lib\utils\navigation_utils.dart                                                    | Dart     |         56 |          3 |          4 |         63 |
+| c:\PROYECTO FINAL 2025\sikum\lib\utils\string_utils.dart                                                        | Dart     |         16 |          0 |          0 |         16 |
+| c:\PROYECTO FINAL 2025\sikum\lib\utils\validators.dart                                                          | Dart     |         54 |          4 |         11 |         69 |
+| Total                                                                                                           |          |     11,277 |        363 |      1,132 |     12,772 |
++-----------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

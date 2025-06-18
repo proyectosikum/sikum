@@ -36,17 +36,15 @@ class MaternalStep4 extends ConsumerStatefulWidget {
 class MaternalStep4State extends ConsumerState<MaternalStep4> {
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(
-      maternalDataFormProvider(widget.patient.id),
-    ); // solo agregué el (widget.patient.id)
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id));
     final formNotifier = ref.read(
       maternalDataFormProvider(widget.patient.id).notifier,
-    ); // solo agregué el (widget.patient.id)
+    );
 
     final isDataSaved = form.isDataSaved;
 
     return PopScope(
-      canPop: false, // Interceptamos el botón de atrás del sistema
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           await handleExit(
@@ -72,7 +70,6 @@ class MaternalStep4State extends ConsumerState<MaternalStep4> {
                   MaternalHeader(patientId: widget.patient.id),
                   const SizedBox(height: 16),
 
-                  /// Tarjeta con datos del paciente
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -117,7 +114,6 @@ class MaternalStep4State extends ConsumerState<MaternalStep4> {
 
                   const SizedBox(height: 24),
 
-                  // Campo libre: Serologías maternas
                   const Text(
                     'Serologías maternas',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -133,7 +129,6 @@ class MaternalStep4State extends ConsumerState<MaternalStep4> {
 
                   const SizedBox(height: 24),
 
-                  // Grupo sanguíneo
                   CustomDropdownField(
                     label: 'Grupo y factor de la madre',
                     value: form.bloodType.isEmpty ? null : form.bloodType,
@@ -149,7 +144,6 @@ class MaternalStep4State extends ConsumerState<MaternalStep4> {
 
                   const SizedBox(height: 32),
 
-                  // Botones
                   Row(
                     children: [
                       // Volver

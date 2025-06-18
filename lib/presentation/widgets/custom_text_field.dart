@@ -11,7 +11,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final FloatingLabelBehavior floatingLabelBehavior;
   final int maxLines;
-   final bool readOnly; 
+  final bool readOnly;
 
   const CustomTextField({
     super.key,
@@ -25,7 +25,6 @@ class CustomTextField extends StatelessWidget {
     this.floatingLabelBehavior = FloatingLabelBehavior.auto,
     this.maxLines = 1,
     this.readOnly = false,
-
   });
 
   @override
@@ -42,15 +41,13 @@ class CustomTextField extends StatelessWidget {
           border: const OutlineInputBorder(),
           errorText: errorText,
           floatingLabelBehavior: floatingLabelBehavior,
-        // Estilo para indicar que está en solo lectura
-          enabled: !readOnly,  // Si es readOnly, el campo será deshabilitado
-          suffixIcon: readOnly ? Icon(Icons.lock, color: Colors.grey) : null, // Ícono de bloqueo
+          enabled: !readOnly,
+          suffixIcon: readOnly ? Icon(Icons.lock, color: Colors.grey) : null,
         ),
-        onChanged: readOnly ? null : onChanged,  // Deshabilitamos la interacción si es solo lectura
+        onChanged: readOnly ? null : onChanged,
         inputFormatters: inputFormatters,
-        readOnly: readOnly,  // Lo marcamos como solo lectura
+        readOnly: readOnly,
       ),
     );
   }
 }
-

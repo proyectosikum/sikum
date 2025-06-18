@@ -23,18 +23,13 @@ class MaternalStep1 extends ConsumerStatefulWidget {
 class MaternalStep1State extends ConsumerState<MaternalStep1> {
   @override
   Widget build(BuildContext context) {
-    //final patientId = widget.patient.patientId;
-    final form = ref.watch(
-      maternalDataFormProvider(widget.patient.id),
-    ); //-> solo agregué el (widget.patient.id)
-    final formNotifier = ref.read(
-      maternalDataFormProvider(widget.patient.id),
-    ); //-> solo agrugué el (widget.patient.id)
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id));
+    final formNotifier = ref.read(maternalDataFormProvider(widget.patient.id));
     final idTypeOptions = ['DNI', 'Pasaporte', 'LC', 'LE'];
     final isDataSaved = form.isDataSaved;
 
     return PopScope(
-      canPop: false, // Interceptamos el botón de atrás del sistema
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           await handleExit(
@@ -61,7 +56,6 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                   MaternalHeader(patientId: widget.patient.id),
                   const SizedBox(height: 16),
 
-                  /// Tarjetita con datos del paciente
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -128,7 +122,6 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                     items: idTypeOptions,
                     errorText: form.errors['idType'],
                     onChanged: (val) {
-                      // Solo actualiza si no está guardado
                       if (val != null && !isDataSaved) {
                         formNotifier.updateIdType(val);
                       }
@@ -198,7 +191,6 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                   ),
                   const SizedBox(height: 24),
 
-                  /// Botones: Cancelar o editar y siguiente
                   Row(
                     children: [
                       Expanded(
@@ -217,7 +209,7 @@ class MaternalStep1State extends ConsumerState<MaternalStep1> {
                                       maternalDataFormProvider(
                                         widget.patient.id,
                                       ).notifier,
-                                    ); //-> solo agregué el (widget.patient.id)
+                                    );
                                     notifier.enableEditing();
                                   },
                                   child: const Text('Editar'),

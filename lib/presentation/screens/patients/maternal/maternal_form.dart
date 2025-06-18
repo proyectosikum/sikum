@@ -17,27 +17,30 @@ class MaternalForm extends ConsumerStatefulWidget {
 
 class _MaternalFormState extends ConsumerState<MaternalForm> {
   final PageController _controller = PageController();
-  bool _isInitialized = false; // Flag para controlar la inicialización
+  bool _isInitialized = false;
 
   void _nextPage() => _controller.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+  );
 
   void _previousPage() => _controller.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
-    
+    final patientAsync = ref.watch(
+      patientDetailsStreamProvider(widget.patientId),
+    );
+
     return Scaffold(
       body: patientAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF4F959D)),
-        ),
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4F959D)),
+            ),
         error: (e, st) => Center(child: Text('Error: $e')),
         data: (patient) {
           if (patient == null) {
@@ -52,11 +55,12 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
             _isInitialized = true;
           }
 
-          // Usar Consumer para escuchar cambios en el form
           return Consumer(
             builder: (context, ref, child) {
-              final form = ref.watch(maternalDataFormProvider(widget.patientId));
-              
+              final form = ref.watch(
+                maternalDataFormProvider(widget.patientId),
+              );
+
               return PageView(
                 controller: _controller,
                 physics: const NeverScrollableScrollPhysics(),
@@ -93,14 +97,15 @@ class _MaternalFormState extends ConsumerState<MaternalForm> {
   }
 
   void _initializeMaternalData(patient) {
-    final notifier = ref.read(maternalDataFormProvider(widget.patientId).notifier);
+    final notifier = ref.read(
+      maternalDataFormProvider(widget.patientId).notifier,
+    );
     final form = ref.read(maternalDataFormProvider(widget.patientId));
-    
-    // Si ya estamos editando, no sobreescribas el estado actual
+
     if (form.isLoadedForCurrentPatient) return;
 
     final maternalData = patient?.maternalData;
-    
+
     if (maternalData != null) {
       notifier.loadMaternalData(maternalData, widget.patientId);
     } else {
