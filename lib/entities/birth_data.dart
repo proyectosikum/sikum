@@ -150,8 +150,6 @@ BirthData({
   }
 
   factory BirthData.fromMap(Map<String, dynamic> map) {
-    print("Datos de la base: $map");
-
     return BirthData(
       birthType: map['birthType'],
       presentation: map['presentation'],

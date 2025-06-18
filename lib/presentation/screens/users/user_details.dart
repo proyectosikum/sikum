@@ -17,11 +17,9 @@ class UserDetailsScreen extends StatelessWidget {
     final firestore = FirebaseFirestore.instance;
 
     if (userId != null) {
-      // Traer por id de documento
       return firestore.collection('users').doc(userId!).get();
     }
 
-    // Si no, por email del logged-in
     final email = FirebaseAuth.instance.currentUser?.email;
     return firestore
         .collection('users')
@@ -114,75 +112,71 @@ class UserDetailsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Volver
                         _circleButton(
                           icon: Icons.arrow_back_rounded,
                           color: green,
                           onTap: () {
-                            final destino = role == 'admin'
-                                ? '/usuarios'
-                                : '/pacientes';
+                            final destino =
+                                role == 'admin' ? '/usuarios' : '/pacientes';
                             context.go(destino);
                           },
                         ),
                         const SizedBox(width: 64),
 
-                        // Editar
                         _circleButton(
                           icon: Icons.edit,
                           color: green,
-                          onTap: () =>
-                              context.push('/usuario/editar', extra: id),
+                          onTap:
+                              () => context.push('/usuario/editar', extra: id),
                         ),
                         const SizedBox(width: 64),
 
-                        // Borrar o Reactivar
                         _circleButton(
                           icon: available ? Icons.delete : Icons.refresh,
                           color: available ? Colors.redAccent : green,
                           onTap: () async {
-                            // 1) Pregunto confirmación
                             final confirmed = await showDialog<bool>(
                               context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: Text(
-                                  available
-                                    ? 'Confirmar desactivación'
-                                    : 'Confirmar reactivación'
-                                ),
-                                content: Text(
-                                  available
-                                    ? '¿Estás seguro de que quieres desactivar este usuario?'
-                                    : '¿Estás seguro de que quieres reactivar este usuario?'
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(false),
-                                    child: const Text('Cancelar'),
+                              builder:
+                                  (ctx) => AlertDialog(
+                                    title: Text(
+                                      available
+                                          ? 'Confirmar desactivación'
+                                          : 'Confirmar reactivación',
+                                    ),
+                                    content: Text(
+                                      available
+                                          ? '¿Estás seguro de que quieres desactivar este usuario?'
+                                          : '¿Estás seguro de que quieres reactivar este usuario?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(ctx).pop(false),
+                                        child: const Text('Cancelar'),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(ctx).pop(true),
+                                        child: const Text('Confirmar'),
+                                      ),
+                                    ],
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(true),
-                                    child: const Text('Confirmar'),
-                                  ),
-                                ],
-                              ),
                             );
 
                             if (confirmed != true) return;
 
-                            // 2) Ejecuto la actualización
                             await FirebaseFirestore.instance
                                 .collection('users')
                                 .doc(id)
                                 .update({'available': !available});
 
-                            // 3) Muestro snackbar con resultado
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
                                   available
-                                    ? 'Usuario desactivado'
-                                    : 'Usuario reactivado',
+                                      ? 'Usuario desactivado'
+                                      : 'Usuario reactivado',
                                 ),
                               ),
                             );
@@ -193,14 +187,12 @@ class UserDetailsScreen extends StatelessWidget {
                       ],
                     ),
                   ] else ...[
-                    // Usuario normal: solo volver
                     _circleButton(
                       icon: Icons.arrow_back_rounded,
                       color: green,
                       onTap: () {
-                        final destino = role == 'admin'
-                            ? '/usuarios'
-                            : '/pacientes';
+                        final destino =
+                            role == 'admin' ? '/usuarios' : '/pacientes';
                         context.go(destino);
                       },
                     ),

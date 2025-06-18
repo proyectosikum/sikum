@@ -8,14 +8,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sikum/entities/user.dart';
 
-/// 1) Lista de todos los usuarios
+
 final usersStreamProvider = StreamProvider<List<User>>((ref) {
   final col = FirebaseFirestore.instance.collection('users');
   return col.snapshots().map((snap) =>
       snap.docs.map((doc) => User.fromDoc(doc)).toList());
 });
 
-/// 2) Detalle de usuario - MEJORADO CON DEBUG
+
 final userDetailsStreamProvider =
     StreamProvider.family<User?, String?>((ref, userId) {
   final col = FirebaseFirestore.instance.collection('users');
@@ -25,7 +25,7 @@ final userDetailsStreamProvider =
   if (userId != null && userId.isNotEmpty) {
     print('DEBUG: Buscando usuario por ID: $userId');
 
-    // Escucha directamente /users/{userId}
+    
     return col.doc(userId).snapshots().map((snap) {
       print('DEBUG: Snapshot exists: ${snap.exists}');
       if (snap.exists) {
@@ -40,7 +40,7 @@ final userDetailsStreamProvider =
   } else {
     print('DEBUG: userId es null o vacío, buscando por email del auth');
 
-    // Busca por email del auth.currentUser
+  
     final auth = fb_auth.FirebaseAuth.instance;
     return auth.authStateChanges().asyncExpand((fbUser) {
       if (fbUser == null) {
@@ -66,7 +66,7 @@ final userDetailsStreamProvider =
   }
 });
 
-/// 3) Provider alternativo para casos específicos donde sabemos que el userId no es null
+
 final userByIdStreamProvider = StreamProvider.family<User?, String>((ref, userId) {
   final col = FirebaseFirestore.instance.collection('users');
 
@@ -87,7 +87,7 @@ final userByIdStreamProvider = StreamProvider.family<User?, String>((ref, userId
   });
 });
 
-/// 4) Acciones sobre usuarios
+
 class UserActions {
   final _col = FirebaseFirestore.instance.collection('users');
   final _firestore = FirebaseFirestore.instance;
@@ -96,7 +96,7 @@ class UserActions {
     return _col.doc(id).update({'available': newValue});
   }
 
-  // Método para verificar si un usuario existe
+ 
   Future<bool> userExists(String userId) async {
     try {
       final doc = await _col.doc(userId).get();
