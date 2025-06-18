@@ -39,7 +39,6 @@ class MaternalData {
     required this.bloodType,
   });
 
-  // Método para crear un objeto MaternalData a partir de un mapa (por ejemplo, de Firestore)
   factory MaternalData.fromMap(Map<String, dynamic> map) {
     return MaternalData(
       firstName: map['firstName'] ?? '',
@@ -63,7 +62,6 @@ class MaternalData {
     );
   }
 
-  // Método para convertir a un mapa para guardar en Firestore
   Map<String, dynamic> toMap() {
     return {
       'firstName': firstName,

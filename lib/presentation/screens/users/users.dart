@@ -1,5 +1,3 @@
-// lib/presentation/screens/users_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +23,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(usersStreamProvider);
 
-    // 1) Perfil actual: usamos el provider de detalle con NULL para buscar por email
+    // Perfil actual: usamos el provider de detalle con NULL para buscar por email
     final currentUserAsync = ref.watch(userDetailsStreamProvider(null));
 
     return Scaffold(
@@ -41,23 +39,22 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
 
           return usersAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error al cargar usuarios: $e')),
+            error:
+                (e, _) => Center(child: Text('Error al cargar usuarios: $e')),
             data: (users) {
-              // Ahora filtramos comparando `userId`
-              final filtered = users.where((u) {
-                // a) Excluir al actual
-                if (u.userId == currentUser.userId) return false;
-                // b) Excluir a admins
-                if (u.role == 'admin') return false;
-                // c) Filtrar por available
-                if (u.available != showAvailable) return false;
-                // d) Filtrar por texto
-                final fullName = '${u.firstName} ${u.lastName}'.toLowerCase();
-                final query = searchText.toLowerCase();
-                final matchesName = fullName.contains(query);
-                final matchesDni = u.dni.toString().contains(searchText);
-                return searchText.isEmpty || matchesName || matchesDni;
-              }).toList();
+              final filtered =
+                  users.where((u) {
+                    if (u.userId == currentUser.userId) return false;
+                    if (u.role == 'admin') return false;
+                    if (u.available != showAvailable) return false;
+
+                    final fullName =
+                        '${u.firstName} ${u.lastName}'.toLowerCase();
+                    final query = searchText.toLowerCase();
+                    final matchesName = fullName.contains(query);
+                    final matchesDni = u.dni.toString().contains(searchText);
+                    return searchText.isEmpty || matchesName || matchesDni;
+                  }).toList();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -65,7 +62,9 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const ScreenSubtitle(text: 'Usuarios'),
-                    SearchField(onChanged: (v) => setState(() => searchText = v)),
+                    SearchField(
+                      onChanged: (v) => setState(() => searchText = v),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -78,18 +77,25 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                           onPressed: () => context.push('/usuarios/crear'),
                           backgroundColor: const Color(0xFF4F959D),
                           mini: true,
-                          child: const Icon(Icons.add, color: Color(0xFFFFF8E1)),
+                          child: const Icon(
+                            Icons.add,
+                            color: Color(0xFFFFF8E1),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: filtered.isEmpty
-                          ? const Center(child: Text('No se encontraron usuarios.'))
-                          : ListView.builder(
-                              itemCount: filtered.length,
-                              itemBuilder: (_, i) => UserCard(user: filtered[i]),
-                            ),
+                      child:
+                          filtered.isEmpty
+                              ? const Center(
+                                child: Text('No se encontraron usuarios.'),
+                              )
+                              : ListView.builder(
+                                itemCount: filtered.length,
+                                itemBuilder:
+                                    (_, i) => UserCard(user: filtered[i]),
+                              ),
                     ),
                   ],
                 ),
