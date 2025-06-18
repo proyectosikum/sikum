@@ -44,16 +44,14 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
 
   @override
   Widget build(BuildContext context) {
-    final form = ref.watch(
-      maternalDataFormProvider(widget.patient.id),
-    ); // solo agregué el (widget.patient.id)
+    final form = ref.watch(maternalDataFormProvider(widget.patient.id));
     final formNotifier = ref.read(
       maternalDataFormProvider(widget.patient.id).notifier,
-    ); // solo agregué el (widget.patient.id)
+    );
     final isDataSaved = form.isDataSaved;
 
     return PopScope(
-      canPop: false, // Interceptamos el botón de atrás del sistema
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           await handleExit(
@@ -80,7 +78,6 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                   MaternalHeader(patientId: widget.patient.id),
                   const SizedBox(height: 16),
 
-                  /// Tarjetita con datos del paciente
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -113,7 +110,6 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                   ),
                   const SizedBox(height: 24),
 
-                  /// Título de sección
                   const Text(
                     'Antecedentes médicos',
                     style: TextStyle(
@@ -161,7 +157,6 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                     readOnly: isDataSaved,
                   ),
 
-                  // Complicaciones
                   const SizedBox(height: 16),
                   const Text(
                     'Complicaciones del embarazo',
@@ -185,10 +180,9 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                   }),
 
                   const SizedBox(height: 32),
-                  // Botones: Volver y Siguiente
+
                   Row(
                     children: [
-                      // Botón Volver
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -214,7 +208,6 @@ class MaternalStep2State extends ConsumerState<MaternalStep2> {
                       ),
                       const SizedBox(width: 16),
 
-                      // Botón Siguiente
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(

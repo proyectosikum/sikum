@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class SearchField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
-  const SearchField({
-    super.key,
-    required this.onChanged,
-  });
+  const SearchField({super.key, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +16,7 @@ class SearchField extends StatelessWidget {
           fillColor: Colors.grey[300],
           prefixIcon: const Icon(Icons.search),
           hintText: 'DNI o Nombre',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

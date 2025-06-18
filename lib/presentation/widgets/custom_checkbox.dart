@@ -21,11 +21,12 @@ class CustomCheckBox extends StatelessWidget {
       children: [
         Checkbox(
           value: value,
-          onChanged: isDataSaved
-              ? null // Si está guardado, no se puede interactuar
-              : (bool? newValue) {
-                  onChanged(newValue ?? false);
-                },
+          onChanged:
+              isDataSaved
+                  ? null // Si está guardado, no se puede interactuar
+                  : (bool? newValue) {
+                    onChanged(newValue ?? false);
+                  },
           activeColor: AppColors.green,
         ),
         Text(label),

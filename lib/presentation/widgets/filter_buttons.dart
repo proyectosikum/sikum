@@ -17,25 +17,25 @@ class FilterButtons extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-    child: Row(
-      children: [
-        FilterChip(
-          label: const Text('Activos'),
-          selected: showAssets,
-          selectedColor: activeColor,
-          backgroundColor: inactiveColor,
-          onSelected: (_) => onChanged(true),
-        ),
-        const SizedBox(width: 8),
-        FilterChip(
-          label: const Text('Inactivos'),
-          selected: !showAssets,
-          selectedColor: activeColor,
-          backgroundColor: inactiveColor,
-          onSelected: (_) => onChanged(false),
-        ),
-      ],
-    ),
+      child: Row(
+        children: [
+          FilterChip(
+            label: const Text('Activos'),
+            selected: showAssets,
+            selectedColor: activeColor,
+            backgroundColor: inactiveColor,
+            onSelected: (_) => onChanged(true),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text('Inactivos'),
+            selected: !showAssets,
+            selectedColor: activeColor,
+            backgroundColor: inactiveColor,
+            onSelected: (_) => onChanged(false),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -11,11 +11,9 @@ Future<void> handleExit({
   required WidgetRef ref,
 }) async {
   if (isDataSaved) {
-    // Verificar si podemos hacer pop antes de intentarlo
     if (context.canPop()) {
       context.pop();
     } else {
-      // Si no podemos hacer pop, navegar directamente al detalle del paciente
       context.go('/paciente/detalle/$patientId');
     }
   } else {
@@ -53,7 +51,9 @@ Future<void> handleExit({
 
     if (shouldLeave == true && context.mounted) {
       // Descartar cambios y restaurar
-      final formNotifier = ref.read(maternalDataFormProvider(patientId).notifier);
+      final formNotifier = ref.read(
+        maternalDataFormProvider(patientId).notifier,
+      );
       formNotifier.discardChangesAndRestore(patientId);
 
       context.pop();

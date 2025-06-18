@@ -32,18 +32,16 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
   Widget build(BuildContext context) {
     final maternalNotifier = ref.read(
       maternalDataFormProvider(widget.patient.id).notifier,
-    ); // solo agregué el (widget.patient.id)
-    //cambios tres finals
+    );
+
     final maternalDataProvider = ref.watch(
       maternalDataFormProvider(widget.patient.id),
-    ); //->vane cambio: usar ref.watch y guardar en variable para no repetir
-    final firstHalfTests =
-        allTests.take(5).toList(); //->vane cambio: primeros 5 tests
-    final secondHalfTests =
-        allTests.skip(5).toList(); //->vane cambio: últimos 4 tests
+    ); //usar ref.watch y guardar en variable para no repetir
+    final firstHalfTests = allTests.take(5).toList();
+    final secondHalfTests = allTests.skip(5).toList();
 
     return PopScope(
-      canPop: false, // Interceptamos el botón de atrás del sistema
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           await handleExit(
@@ -69,7 +67,6 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                   MaternalHeader(patientId: widget.patient.id),
                   const SizedBox(height: 16),
 
-                  // Tarjetita con datos del paciente
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -112,7 +109,6 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                   ),
                   const SizedBox(height: 8.0),
 
-                  // Primer grupo de pruebas (siempre se muestra)
                   Column(
                     children:
                         firstHalfTests.map((testName) {
@@ -142,7 +138,6 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                         }).toList(),
                   ),
 
-                  // Segundo grupo de pruebas (solo si se mostró la segunda mitad)
                   if (showSecondHalf)
                     Column(
                       children:
@@ -178,7 +173,6 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
 
                   Row(
                     children: [
-                      // Botón Volver
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -204,7 +198,6 @@ class MaternalStep3State extends ConsumerState<MaternalStep3> {
                       ),
                       const SizedBox(width: 16),
 
-                      // Botón Siguiente o Mostrar más pruebas
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(

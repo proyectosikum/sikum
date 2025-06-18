@@ -27,16 +27,12 @@ class CustomDropdownField extends StatelessWidget {
         border: const OutlineInputBorder(),
         errorText: errorText,
       ),
-      items: items.map((item) {
-        return DropdownMenuItem(
-          value: item,
-          child: Text(item),
-        );
-      }).toList(),
-      onChanged: readOnly ? null : onChanged,  // Deshabilitamos la interacción si es solo lectura
-      // Si es solo lectura, deshabilitamos el campo
+      items:
+          items.map((item) {
+            return DropdownMenuItem(value: item, child: Text(item));
+          }).toList(),
+      onChanged: readOnly ? null : onChanged,
       icon: readOnly ? null : const Icon(Icons.arrow_drop_down),
     );
   }
 }
-
