@@ -31,7 +31,6 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
   @override
   void didUpdateWidget(covariant BirthDataForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Si cambió el paciente, forzamos re-inicialización
     if (oldWidget.patientId != widget.patientId) {
       _isInitialized = false;
     }
@@ -1005,11 +1004,10 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
         Row(
           mainAxisAlignment:
               MainAxisAlignment
-                  .spaceEvenly, // Distribuye los botones equitativamente
+                  .spaceEvenly,
           children:
               isUpdateView
                   ? [
-                    //MODO EDICION
                     TextButton.icon(
                       onPressed: () {
                         context.pop();
@@ -1193,7 +1191,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               onPressed:
                   () => Navigator.pop(
                     context,
-                  ), // Cierra el modal sin hacer cambios
+                  ), 
               child: Text(
                 'Cancelar',
                 style: TextStyle(color: Color(0xFF4F959D)),
@@ -1203,7 +1201,7 @@ class _BirthDataFormState extends ConsumerState<BirthDataForm> {
               onPressed: () {
                 Navigator.pop(
                   context,
-                ); // Cierra el modal antes de ejecutar la acción
+                );
                 onConfirm();
               },
               child: Text(

@@ -13,7 +13,7 @@ class PatientSummary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Puede ser null al inicio, así que le damos un default true (modo vista)
+
     final data = ref.watch(birthDataProvider);
     final isViewMode = data?.isDataSaved ?? true;
 
@@ -26,11 +26,9 @@ class PatientSummary extends ConsumerWidget {
               icon: const Icon(Icons.arrow_back),
               onPressed: () async {
                 if (isViewMode) {
-                  // modo vista: salir sin confirmación
                   context.pop();
                   return;
                 }
-                // modo edición: pedir confirmación
                 final discard = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(

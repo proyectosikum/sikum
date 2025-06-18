@@ -141,7 +141,7 @@ void updateBloodType(String value) {
 String? errorTextFor(String field) => errors.containsKey(field) ? errors[field] : null;
 
 
-// VALIDACIONES
+
 bool validateAll() {
   errors.clear();
   final d = state;
@@ -149,7 +149,7 @@ bool validateAll() {
 
   final now = DateTime.now();
 
-  // Obligatorios
+
   if (d.ruptureOfMembrane == null) errors['ruptureOfMembrane'] = 'Campo obligatorio';
   if (d.amnioticFluid == null) errors['amnioticFluid'] = 'Campo obligatorio';
   if (d.birthType == null) errors['birthType'] = 'Campo obligatorio';
@@ -162,7 +162,7 @@ bool validateAll() {
   if (d.disposition == null) errors['disposition'] = 'Campo obligatorio';
   if (d.bloodType == null) errors['bloodType'] = 'Campo obligatorio';
 
-  // Lugar de nacimiento y detalle
+
   if (d.birthPlace == null) {
     errors['birthPlace'] = 'Campo obligatorio';
   } else if (d.birthPlace == "Extra hospitalario" &&
@@ -170,7 +170,7 @@ bool validateAll() {
     errors['birthPlaceDetails'] = 'Debe detallar el lugar';
   }
 
-  // Examen físico
+
   if (state?.physicalExamination == "Anormal") {
   if (state?.physicalExaminationDetails?.trim().isEmpty ?? true) {
     errors['physicalExaminationDetails'] =
@@ -179,7 +179,6 @@ bool validateAll() {
 }
 
 
-  // Fecha y hora de nacimiento
   if (d.birthDate == null) {
     errors['birthDate'] = 'Campo obligatorio';
   } else if (d.birthDate!.isAfter(now)) {
@@ -189,7 +188,6 @@ bool validateAll() {
   if (d.birthTime == null || d.birthTime!.isEmpty) {
     errors['birthTime'] = 'Campo obligatorio';
   } else {
-    // Verificación cruzada de fecha y hora combinadas
     try {
       final timeParts = d.birthTime!.split(':');
       final combined = DateTime(
@@ -207,7 +205,6 @@ bool validateAll() {
     }
   }
 
-  // Validaciones numéricas
   final age = d.gestationalAge;
   if (age != null && (age < 23 || age > 42)) {
     errors['gestationalAge'] = 'Edad gestacional fuera de rango (23–42)';
