@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sikum/services/auth_service.dart';
@@ -40,7 +42,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
     if (newPass.length < 6) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('La nueva contraseña debe tener al menos 6 caracteres')),
+        const SnackBar(
+          content: Text('La nueva contraseña debe tener al menos 6 caracteres'),
+        ),
       );
       return;
     }
@@ -52,7 +56,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
     if (oldPass == newPass) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('La nueva contraseña no puede ser igual a la actual')),
+        const SnackBar(
+          content: Text('La nueva contraseña no puede ser igual a la actual'),
+        ),
       );
       return;
     }
@@ -68,7 +74,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         const SnackBar(content: Text('Contraseña actualizada')),
       );
       await AuthService.instance.logout();
-      // ignore: use_build_context_synchronously
       context.go('/login');
     } else {
       messenger.showSnackBar(
@@ -92,7 +97,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           icon: const Icon(Icons.arrow_back, color: cream),
           onPressed: () async {
             await AuthService.instance.logout();
-            // ignore: use_build_context_synchronously
             context.go('/login');
           },
         ),
@@ -100,12 +104,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Título
                 Text(
                   'Cambiar contraseña',
                   style: TextStyle(
@@ -117,7 +119,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 const SizedBox(height: 32),
 
-                // Card con fondo verde
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -128,7 +129,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Contraseña actual
                       _buildPasswordField(
                         label: 'Contraseña actual',
                         controller: _oldPassController,
@@ -141,7 +141,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Nueva contraseña
                       _buildPasswordField(
                         label: 'Nueva contraseña',
                         controller: _newPassController,
@@ -154,12 +153,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Repetir contraseña
                       _buildPasswordField(
                         label: 'Repetir contraseña',
                         controller: _confirmController,
                         showText: _showConfirm,
-                        onToggle: () => setState(() => _showConfirm = !_showConfirm),
+                        onToggle:
+                            () => setState(() => _showConfirm = !_showConfirm),
                         fillColor: cream,
                         textColor: Colors.black87,
                         labelColor: cream,
@@ -167,26 +166,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                       const SizedBox(height: 32),
 
-                      // Botones
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
                               height: 45,
                               child: OutlinedButton(
-                                onPressed: _loading
-                                    ? null
-                                    : () async {
-                                        await AuthService.instance.logout();
-                                        // ignore: use_build_context_synchronously
-                                        context.go('/login');
-                                      },
+                                onPressed:
+                                    _loading
+                                        ? null
+                                        : () async {
+                                          await AuthService.instance.logout();
+                                          context.go('/login');
+                                        },
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: green,
                                   side: const BorderSide(color: cream),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(25),
                                   ),
                                   textStyle: const TextStyle(
                                     fontSize: 16,
@@ -209,8 +206,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: cream,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(25),
                                   ),
                                   elevation: 0,
                                   textStyle: const TextStyle(
@@ -218,21 +214,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                child: _loading
-                                    ? Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: SizedBox(
-                                          width: 24, height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation(cream),
+                                child:
+                                    _loading
+                                        ? Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation(cream),
+                                            ),
                                           ),
+                                        )
+                                        : const Text(
+                                          'Aceptar',
+                                          style: TextStyle(color: green),
                                         ),
-                                      )
-                                    : const Text(
-                                        'Aceptar',
-                                        style: TextStyle(color: green),
-                                      ),
                               ),
                             ),
                           ),
@@ -261,10 +260,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: labelColor, fontSize: 18),
-        ),
+        Text(label, style: TextStyle(color: labelColor, fontSize: 18)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -273,8 +269,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,

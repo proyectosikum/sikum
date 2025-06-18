@@ -27,11 +27,12 @@ class AuthChangeNotifier extends ChangeNotifier {
         specialty = null;
         notifyListeners();
       } else {
-        final q = await FirebaseFirestore.instance
-            .collection('users')
-            .where('email', isEqualTo: user.email)
-            .limit(1)
-            .get();
+        final q =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .where('email', isEqualTo: user.email)
+                .limit(1)
+                .get();
 
         if (q.docs.isNotEmpty) {
           final data = q.docs.first.data();
