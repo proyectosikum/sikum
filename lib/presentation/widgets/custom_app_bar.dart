@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -41,17 +43,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 icon: const Icon(Icons.logout, color: cream),
                 onPressed: () async {
                   await AuthService.instance.logout();
-                  // ignore: use_build_context_synchronously
                   context.go('/login');
                 },
               ),
             ] else ...[
               Builder(
-                builder: (ctx) => IconButton(
-                  iconSize: 28,
-                  icon: const Icon(Icons.menu, color: cream),
-                  onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-                ),
+                builder:
+                    (ctx) => IconButton(
+                      iconSize: 28,
+                      icon: const Icon(Icons.menu, color: cream),
+                      onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+                    ),
               ),
             ],
             const SizedBox(width: 8),

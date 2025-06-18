@@ -16,16 +16,8 @@ import 'package:sikum/router/app_router.dart';
 import 'package:sikum/utils/string_utils.dart';
 
 const Map<String, List<String>> _labelToKeys = {
-  'Enfermería': [
-    'enfermeria',
-    'enfermeria_fei',
-    'enfermeria_test_saturacion',
-    'enfermeria_cambio_pulsera',
-  ],
-  'Neonatología': [
-    'neonatologia',
-    'neonatologia_adicional',
-  ]
+  'Enfermería': ['enfermeria', 'enfermeria_fei', 'enfermeria_test_saturacion', 'enfermeria_cambio_pulsera'],
+  'Neonatología': ['neonatologia', 'neonatologia_adicional'],
 };
 
 class EvolutionFormScreen extends ConsumerStatefulWidget {
@@ -42,7 +34,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
-  final Map<String, String?> _validationErrors = {}; // Para errores de validación
+  final Map<String, String?> _validationErrors = {};
   int _page = 0;
 
   @override
@@ -52,7 +44,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     final userSpecLabel = authChangeNotifier.specialty ?? '';
 
     if (_labelToKeys.containsKey(userSpecLabel)) {
-      //Convertir a lista mutable para poder hacer el remove
       _allowedSpecs = List<String>.from(_labelToKeys[userSpecLabel]!);
     } else {
       final match = evolutionFormConfig.keys.firstWhere(
@@ -62,7 +53,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       _allowedSpecs = [match];
     }
 
-    //Evitar mostrar enfermeria_cambio_pulsera si falta el número de pulsera
     final birthData = ref.read(birthDataProvider);
     if (birthData?.braceletNumber == null) {
       _allowedSpecs.remove('enfermeria_cambio_pulsera');
@@ -71,7 +61,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     selectedSpec = _allowedSpecs.first;
     _resetFormForSpec(selectedSpec);
   }
-
 
   @override
   void dispose() {
@@ -100,7 +89,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         _controllers[f.key] = TextEditingController();
         break;
     }
-    // Limpiar cualquier error de validación previo
     _validationErrors[f.key] = null;
   }
 
@@ -112,45 +100,28 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     _formData.clear();
     _validationErrors.clear();
 
-    final fields = spec == 'neonatologia'
-        ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[spec]!;
+    final fields =
+        spec == 'neonatologia'
+            ? [...neonatologyPage1, ...neonatologyPage2]
+            : evolutionFormConfig[spec]!;
     for (final f in fields) {
       _initField(f);
     }
   }
 
-  /// Valida todos los campos obligatorios y comprueba rangos en los FieldType.number
   bool _validateForm() {
     _validationErrors.clear();
     bool isValid = true;
 
-    // 1) Recoge los FieldConfig según la especialidad
-    final fields = selectedSpec == 'neonatologia'
-        ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[selectedSpec] ?? [];
-
-    final examValue = _formData['physicalExam'] as String?;
+    final fields =
+        selectedSpec == 'neonatologia'
+            ? neonatologyPage2
+            : evolutionFormConfig[selectedSpec] ?? [];
 
     for (final f in fields) {
-      if (selectedSpec == 'neonatologia') {
-        if (f.key == 'abnormalObservation' && examValue != 'Anormal') {
-          continue;
-        }
-        if (f.key == 'lfMlQuantity' &&
-            (_formData['lf'] as bool? ?? false) == false) {
-          continue;
-        }
-        if (f.key == 'feedingMlQuantity' &&
-            (_formData['feedingPmldComplement'] as bool? ?? false) == false) {
-          continue;
-        }
-      }
-
       final val = _formData[f.key];
       bool empty = false;
 
-      // 2) Chequeo de obligatoriedad
       switch (f.type) {
         case FieldType.text:
         case FieldType.multiline:
@@ -171,28 +142,27 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       if (f.isRequired && empty) {
         _validationErrors[f.key] = 'Este campo es obligatorio';
         isValid = false;
-        continue; // no chequeamos rango si está vacío
+        continue;
       }
 
-      // 3) Si es numérico, chequea min/max
-      if (f.type == FieldType.number && val != null && val.toString().isNotEmpty) {
+      if (f.type == FieldType.number &&
+          val != null &&
+          val.toString().isNotEmpty) {
         final numVal = val is num ? val : num.tryParse(val.toString());
         if (numVal != null) {
           if ((f.min != null && numVal < f.min!) ||
               (f.max != null && numVal > f.max!)) {
-            _validationErrors[f.key] =
-                'Debe estar entre ${f.min} y ${f.max}';
+            _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max}';
             isValid = false;
           }
         }
       }
     }
 
-    setState(() {}); // refresca los errores en pantalla
+    setState(() {});
     return isValid;
   }
 
-  /// Valida los campos obligatorios de neonatología (página 1)
   bool _validateNeonatologyPage1() {
     bool isValid = true;
     _validationErrors.clear();
@@ -202,7 +172,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     for (final f in neonatologyPage1) {
       if (!f.isRequired) continue;
 
-      // Si es abnormalObservation pero no estamos en “Anormal”, lo omitimos
       if (f.key == 'abnormalObservation' && examValue != 'Anormal') continue;
 
       final val = _formData[f.key];
@@ -227,7 +196,7 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       }
     }
 
-    setState(() {}); // refrescará los errores visibles
+    setState(() {});
     return isValid;
   }
 
@@ -242,19 +211,19 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       return;
     }
 
-    // 1) Reúne los datos
-    final fields = selectedSpec == 'neonatologia'
-        ? [...neonatologyPage1, ...neonatologyPage2]
-        : evolutionFormConfig[selectedSpec]!;
+    final fields =
+        selectedSpec == 'neonatologia'
+            ? [...neonatologyPage1, ...neonatologyPage2]
+            : evolutionFormConfig[selectedSpec]!;
     final details = <String, dynamic>{};
     for (final f in fields) {
       final v = _formData[f.key];
-      details[f.key] = (f.type == FieldType.datetime && v is DateTime)
-          ? Timestamp.fromDate(v)
-          : v;
+      details[f.key] =
+          (f.type == FieldType.datetime && v is DateTime)
+              ? Timestamp.fromDate(v)
+              : v;
     }
 
-    // 2) Lógica personalizada para cambio de pulsera
     if (selectedSpec == 'enfermeria_cambio_pulsera') {
       final birthDataNotifier = ref.read(birthDataProvider.notifier);
       final birthData = ref.read(birthDataProvider);
@@ -263,11 +232,9 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       if (birthData != null && nuevoNumero != null) {
         final viejoNumero = birthData.braceletNumber;
 
-        // Agregar datos al mapa de detalles
         details['braceletNumberOld'] = viejoNumero;
         details['braceletNumberNew'] = nuevoNumero;
 
-        // Actualizar el número de pulsera en birthData
         birthDataNotifier.updateBraceletNumber(nuevoNumero);
 
         final updatedBirthData = ref.read(birthDataProvider);
@@ -279,31 +246,31 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
 
     try {
-      // 3) Guarda en Firestore
-      await ref
-          .read(evolutionActionsProvider(widget.patientId))
-          .addEvolution({'specialty': selectedSpec, 'details': details});
+      await ref.read(evolutionActionsProvider(widget.patientId)).addEvolution({
+        'specialty': selectedSpec,
+        'details': details,
+      });
 
       if (!mounted) return;
 
-      // 4) Muestra el diálogo de éxito
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => AlertDialog(
-          backgroundColor: const Color(0xFFFFF8E1),
-          title: const Text("Evolución registrada ✅"),
-          content: const Text("La evolución se ha guardado correctamente."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // cerrar diálogo
-                context.pop(); // volver atrás
-              },
-              child: const Text('Aceptar'),
+        builder:
+            (_) => AlertDialog(
+              backgroundColor: const Color(0xFFFFF8E1),
+              title: const Text("Evolución registrada ✅"),
+              content: const Text("La evolución se ha guardado correctamente."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.pop();
+                  },
+                  child: const Text('Aceptar'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     } catch (e) {
       if (mounted) {
@@ -317,33 +284,40 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     const green = Color(0xFF4F959D);
 
-    // 1) Stream de paciente
-    final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
-    // 2) Stream de evoluciones
-    final evolutionsAsync = ref.watch(evolutionsStreamProvider(widget.patientId));
+    final patientAsync = ref.watch(
+      patientDetailsStreamProvider(widget.patientId),
+    );
+    final evolutionsAsync = ref.watch(
+      evolutionsStreamProvider(widget.patientId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: const CustomAppBar(),
       endDrawer: const SideMenu(),
       body: patientAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: green)),
+        loading:
+            () => const Center(child: CircularProgressIndicator(color: green)),
         error: (_, __) => const Center(child: Text('Error al cargar paciente')),
         data: (p) {
-          if (p == null) return const Center(child: Text('Paciente no encontrado'));
+          if (p == null) {
+            return const Center(child: Text('Paciente no encontrado'));
+          }
 
-          // Esperamos al stream de evoluciones
           return evolutionsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: green)),
-            // Si hay error, en lugar de bloquear con un Center(...), simplemente construimos el form con hasFei=false
+            loading:
+                () => const Center(
+                  child: CircularProgressIndicator(color: green),
+                ),
             error: (_, __) => _buildForm(context, p, green, false),
             data: (evolutions) {
-              final hasFei = evolutions.any((e) => e.specialty == 'enfermeria_fei');
+              final hasFei = evolutions.any(
+                (e) => e.specialty == 'enfermeria_fei',
+              );
               return _buildForm(context, p, green, hasFei);
             },
           );
@@ -357,15 +331,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
     const black = Colors.black87;
 
     if (_allowedSpecs.isEmpty) {
-      // Programa la inicialización justo después de este frame
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
           final userSpec = authChangeNotifier.specialty ?? '';
-          _allowedSpecs = _labelToKeys[userSpec] ??
+          _allowedSpecs =
+              _labelToKeys[userSpec] ??
               [
-                evolutionFormConfig.keys
-                    .firstWhere((k) => getSpecialtyDisplayName(k) == userSpec,
-                        orElse: () => evolutionFormConfig.keys.first)
+                evolutionFormConfig.keys.firstWhere(
+                  (k) => getSpecialtyDisplayName(k) == userSpec,
+                  orElse: () => evolutionFormConfig.keys.first,
+                ),
               ];
           selectedSpec = _allowedSpecs.first;
           _resetFormForSpec(selectedSpec);
@@ -383,7 +358,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
             child: Center(
-              child: Text('Evolución', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: black)),
+              child: Text(
+                'Evolución',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: black,
+                ),
+              ),
             ),
           ),
           // Tarjeta paciente
@@ -391,11 +373,29 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
+              decoration: BoxDecoration(
+                color: cream,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: green),
+              ),
               child: Row(
                 children: [
-                  Expanded(child: Text('${p.lastName}, ${p.firstName}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                  Text('DNI: ${p.dni}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: Text(
+                      '${p.lastName}, ${p.firstName}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'DNI: ${p.dni}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -407,23 +407,31 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: cream, borderRadius: BorderRadius.circular(12), border: Border.all(color: green)),
+                decoration: BoxDecoration(
+                  color: cream,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: green),
+                ),
                 child: Column(
                   children: [
                     _buildSpecSelector(green, cream, hasFei),
                     const SizedBox(height: 16),
                     Expanded(
                       child: SingleChildScrollView(
-                        child: isNeonato
-                            ? (_page == 0 ? _buildNeonatoPage1() : _buildNeonatoPage2())
-                            : Column(
-                                children: [
-                                  for (final f in evolutionFormConfig[selectedSpec]!) ...[
-                                    _buildFieldWidget(f),
-                                    const SizedBox(height: 16),
+                        child:
+                            isNeonato
+                                ? (_page == 0
+                                    ? _buildNeonatoPage1()
+                                    : _buildNeonatoPage2())
+                                : Column(
+                                  children: [
+                                    for (final f
+                                        in evolutionFormConfig[selectedSpec]!) ...[
+                                      _buildFieldWidget(f),
+                                      const SizedBox(height: 16),
+                                    ],
                                   ],
-                                ],
-                              ),
+                                ),
                       ),
                     ),
                   ],
@@ -468,7 +476,9 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                         _save();
                       }
                     },
-                    child: Text(isNeonato && _page == 0 ? 'Siguiente' : 'Guardar'),
+                    child: Text(
+                      isNeonato && _page == 0 ? 'Siguiente' : 'Guardar',
+                    ),
                   ),
                 ),
               ],
@@ -480,10 +490,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
   }
 
   Widget _buildSpecSelector(Color green, Color cream, bool hasFei) {
-    // Filtramos la lista local de _allowedSpecs
-    final specs = _allowedSpecs
-        .where((s) => !(hasFei && s == 'enfermeria_fei'))
-        .toList();
+    final specs =
+        _allowedSpecs.where((s) => !(hasFei && s == 'enfermeria_fei')).toList();
 
     if (specs.isEmpty) {
       return Container(
@@ -501,7 +509,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       );
     }
 
-    // Si el spec seleccionado ya no está en la lista, lo reasignamos
     if (!specs.contains(selectedSpec)) {
       selectedSpec = specs.first;
       _resetFormForSpec(selectedSpec);
@@ -511,8 +518,9 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       enabled: specs.length > 1,
       color: cream,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: green)),
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: green),
+      ),
       initialValue: selectedSpec,
       onSelected: (newSpec) {
         _resetFormForSpec(newSpec);
@@ -521,24 +529,34 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           _page = 0;
         });
       },
-      itemBuilder: (_) =>
-          specs.map((s) => PopupMenuItem(value: s, child: Text(getSpecialtyDisplayName(s))))
-              .toList(),
+      itemBuilder:
+          (_) =>
+              specs
+                  .map(
+                    (s) => PopupMenuItem(
+                      value: s,
+                      child: Text(getSpecialtyDisplayName(s)),
+                    ),
+                  )
+                  .toList(),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-            color: cream,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: green)),
+          color: cream,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: green),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(getSpecialtyDisplayName(selectedSpec)), const Icon(Icons.arrow_drop_down)],
+          children: [
+            Text(getSpecialtyDisplayName(selectedSpec)),
+            const Icon(Icons.arrow_drop_down),
+          ],
         ),
       ),
     );
   }
-
 
   Widget _buildNeonatoPage1() {
     final examValue = _formData['physicalExam'] as String?;
@@ -556,8 +574,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           ),
         ),
         const SizedBox(height: 4),
-
-        // Los radios
         Wrap(
           spacing: 16,
           children: ['Normal', 'Anormal'].map((opt) {
@@ -575,38 +591,32 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 Text(
                   opt,
                   style: TextStyle(
-                    color: hasExamError
-                        ? Colors.red
-                        : Colors.black,
+                    color: hasExamError ? errorColor : Colors.black,
                   ),
                 ),
               ],
             );
           }).toList(),
         ),
-
-        // Aquí mostramos el texto de error
         if (hasExamError) ...[
           const SizedBox(height: 4),
           Text(
             'Este campo es obligatorio',
-            style: const TextStyle(color: errorColor, fontSize: 12),
+            style: TextStyle(color: errorColor, fontSize: 12),
           ),
         ],
-
         const SizedBox(height: 16),
 
-        // Si eligió "Anormal", mostramos el textarea
         if (examValue == 'Anormal') ...[
           _buildFieldWidget(
-            neonatologyPage1.firstWhere((f) => f.key == 'abnormalObservation')
+            neonatologyPage1.firstWhere((f) => f.key == 'abnormalObservation'),
           ),
           const SizedBox(height: 16),
         ],
 
-        // El resto de campos de la página 1
-        for (final f in neonatologyPage1.where((f) =>
-            f.key != 'physicalExam' && f.key != 'abnormalObservation')) ...[
+        for (final f in neonatologyPage1.where(
+          (f) => f.key != 'physicalExam' && f.key != 'abnormalObservation',
+        )) ...[
           _buildFieldWidget(f),
           const SizedBox(height: 16),
         ],
@@ -621,26 +631,63 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
       children: [
         Text('Indicaciones', style: titleStyle),
         const SizedBox(height: 8),
-        CheckboxListTile(title: const Text('PMLD'), value: _formData['pmld'] as bool, onChanged: (v) => setState(() => _formData['pmld'] = v)),
-        CheckboxListTile(title: const Text('CSV por turno'), value: _formData['csvByShift'] as bool, onChanged: (v) => setState(() => _formData['csvByShift'] = v)),
+        CheckboxListTile(
+          title: const Text('PMLD'),
+          value: _formData['pmld'] as bool,
+          onChanged: (v) => setState(() => _formData['pmld'] = v),
+        ),
+        CheckboxListTile(
+          title: const Text('CSV por turno'),
+          value: _formData['csvByShift'] as bool,
+          onChanged: (v) => setState(() => _formData['csvByShift'] = v),
+        ),
         const SizedBox(height: 16),
         Text('Alimentación', style: titleStyle),
         const SizedBox(height: 8),
-        CheckboxListTile(title: const Text('PMLD'), value: _formData['feedingPmld'] as bool, onChanged: (v) => setState(() => _formData['feedingPmld'] = v)),
-        CheckboxListTile(title: const Text('PMLD + complemento'), value: _formData['feedingPmldComplement'] as bool, onChanged: (v) => setState(() => _formData['feedingPmldComplement'] = v)),
+        CheckboxListTile(
+          title: const Text('PMLD'),
+          value: _formData['feedingPmld'] as bool,
+          onChanged: (v) => setState(() => _formData['feedingPmld'] = v),
+        ),
+        CheckboxListTile(
+          title: const Text('PMLD + complemento'),
+          value: _formData['feedingPmldComplement'] as bool,
+          onChanged:
+              (v) => setState(() => _formData['feedingPmldComplement'] = v),
+        ),
         if (_formData['feedingPmldComplement'] as bool) ...[
-          Padding(padding: const EdgeInsets.only(left: 15, bottom: 8), child: _buildFieldWidget(neonatologyPage2.firstWhere((f) => f.key == 'feedingMlQuantity'))),
+          Padding(
+            padding: const EdgeInsets.only(left: 15, bottom: 8),
+            child: _buildFieldWidget(
+              neonatologyPage2.firstWhere((f) => f.key == 'feedingMlQuantity'),
+            ),
+          ),
         ],
-        CheckboxListTile(title: const Text('LF'), value: _formData['lf'] as bool, onChanged: (v) => setState(() => _formData['lf'] = v)),
+        CheckboxListTile(
+          title: const Text('LF'),
+          value: _formData['lf'] as bool,
+          onChanged: (v) => setState(() => _formData['lf'] = v),
+        ),
         if (_formData['lf'] as bool) ...[
-          Padding(padding: const EdgeInsets.only(left: 15, bottom: 8), child: _buildFieldWidget(neonatologyPage2.firstWhere((f) => f.key == 'lfMlQuantity'))),
+          Padding(
+            padding: const EdgeInsets.only(left: 15, bottom: 8),
+            child: _buildFieldWidget(
+              neonatologyPage2.firstWhere((f) => f.key == 'lfMlQuantity'),
+            ),
+          ),
         ],
         const SizedBox(height: 16),
-        _buildFieldWidget(neonatologyPage2.firstWhere((f) => f.key == 'phototherapy')),
+        _buildFieldWidget(
+          neonatologyPage2.firstWhere((f) => f.key == 'phototherapy'),
+        ),
         const SizedBox(height: 16),
-        _buildFieldWidget(neonatologyPage2.firstWhere((f) => f.key == 'medication')),
+        _buildFieldWidget(
+          neonatologyPage2.firstWhere((f) => f.key == 'medication'),
+        ),
         const SizedBox(height: 16),
-        _buildFieldWidget(neonatologyPage2.firstWhere((f) => f.key == 'observations')),
+        _buildFieldWidget(
+          neonatologyPage2.firstWhere((f) => f.key == 'observations'),
+        ),
       ],
     );
   }
@@ -658,7 +705,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               controller: _controllers[f.key],
               onChanged: (v) {
                 _formData[f.key] = v;
-                // Limpiar error si el usuario empieza a escribir
                 if (hasError && v.trim().isNotEmpty) {
                   setState(() {
                     _validationErrors[f.key] = null;
@@ -669,10 +715,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 labelText: f.label,
                 errorText: _validationErrors[f.key],
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
               ),
             ),
@@ -688,7 +738,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (v) {
                 if (v.trim().isEmpty) {
-                  // Vacío: marcar como nulo y dejar error si es requerido
                   _formData[f.key] = null;
                   if (f.isRequired) {
                     _validationErrors[f.key] = 'Este campo es obligatorio';
@@ -698,9 +747,10 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                   if (parsed != null) {
                     _formData[f.key] = parsed;
 
-                    // Validación de rango
-                    if ((f.min != null && parsed < f.min!) || (f.max != null && parsed > f.max!)) {
-                      _validationErrors[f.key] = 'Debe estar entre ${f.min} y ${f.max}';
+                    if ((f.min != null && parsed < f.min!) ||
+                        (f.max != null && parsed > f.max!)) {
+                      _validationErrors[f.key] =
+                          'Debe estar entre ${f.min} y ${f.max}';
                     } else {
                       _validationErrors[f.key] = null;
                     }
@@ -716,10 +766,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 labelText: f.label,
                 errorText: _validationErrors[f.key],
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
               ),
             ),
@@ -735,7 +789,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
               maxLines: 3,
               onChanged: (v) {
                 _formData[f.key] = v;
-                // Limpiar error si el usuario empieza a escribir
                 if (hasError && v.trim().isNotEmpty) {
                   setState(() {
                     _validationErrors[f.key] = null;
@@ -746,10 +799,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 labelText: f.label,
                 errorText: _validationErrors[f.key],
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
               ),
             ),
@@ -781,27 +838,27 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 crossAxisAlignment: WrapCrossAlignment.start,
                 spacing: 16,
                 runSpacing: 8,
-                children: f.options!.map((opt) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Radio<String>(
-                        value: opt,
-                        groupValue: _formData[f.key] as String?,
-                        onChanged: (v) {
-                          setState(() {
-                            _formData[f.key] = v;
-                            // Limpiar error cuando se selecciona una opción
-                            if (hasError) {
-                              _validationErrors[f.key] = null;
-                            }
-                          });
-                        },
-                      ),
-                      Text(opt),
-                    ],
-                  );
-                }).toList(),
+                children:
+                    f.options!.map((opt) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Radio<String>(
+                            value: opt,
+                            groupValue: _formData[f.key] as String?,
+                            onChanged: (v) {
+                              setState(() {
+                                _formData[f.key] = v;
+                                if (hasError) {
+                                  _validationErrors[f.key] = null;
+                                }
+                              });
+                            },
+                          ),
+                          Text(opt),
+                        ],
+                      );
+                    }).toList(),
               ),
             ),
             if (hasError) ...[
@@ -824,10 +881,14 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                 labelText: f.label,
                 errorText: _validationErrors[f.key],
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: hasError ? errorColor : Colors.grey),
+                  borderSide: BorderSide(
+                    color: hasError ? errorColor : Colors.grey,
+                  ),
                 ),
                 suffixIcon: const Icon(Icons.calendar_today),
               ),
@@ -844,7 +905,6 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
                   if (ctrl != null) {
                     ctrl.text = DateFormat('dd/MM/yyyy').format(picked);
                   }
-                  // Limpiar error cuando se selecciona una fecha
                   if (hasError) {
                     setState(() {
                       _validationErrors[f.key] = null;

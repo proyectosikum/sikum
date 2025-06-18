@@ -9,11 +9,7 @@ class LoginResult {
   final bool needsChange;
   final String role;
 
-  LoginResult(
-    this.status, {
-    this.needsChange = false,
-    this.role = 'user',
-  });
+  LoginResult(this.status, {this.needsChange = false, this.role = 'user'});
 }
 
 class AuthService {
@@ -23,14 +19,14 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Login
   Future<LoginResult> login(String username, String password) async {
     try {
-      final q = await _db
-        .collection('users')
-        .where('user', isEqualTo: username)
-        .limit(1)
-        .get();
+      final q =
+          await _db
+              .collection('users')
+              .where('user', isEqualTo: username)
+              .limit(1)
+              .get();
 
       if (q.docs.isEmpty) {
         return LoginResult(LoginStatus.invalid);
@@ -51,18 +47,11 @@ class AuthService {
         return LoginResult(LoginStatus.invalid);
       }
 
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
 
-      return LoginResult(
-        LoginStatus.success,
-        needsChange: needs,
-        role: role,
-      );
+      return LoginResult(LoginStatus.success, needsChange: needs, role: role);
     } on FirebaseAuthException catch (e) {
-      debugPrint('AuthService.login error: ${e.code} – ${e.message}');
+      debugPrint('AuthService.login error: ${e.code} - ${e.message}');
       return LoginResult(LoginStatus.invalid);
     } catch (e) {
       debugPrint('AuthService.login unexpected: $e');
@@ -70,17 +59,14 @@ class AuthService {
     }
   }
 
-  /// Logout
   Future<void> logout() => _auth.signOut();
 
-  /// Recuperación de contraseña
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       return true;
     } on FirebaseAuthException catch (e) {
-      debugPrint(
-          'AuthService.sendPasswordResetEmail error: ${e.code} – ${e.message}');
+      debugPrint('AuthService.sendPasswordResetEmail error: ${e.code} - ${e.message}');
       return false;
     } catch (e) {
       debugPrint('AuthService.sendPasswordResetEmail unexpected: $e');
@@ -88,8 +74,10 @@ class AuthService {
     }
   }
 
-  /// Cambio de contraseña
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     final user = _auth.currentUser;
     if (user == null || user.email == null) return false;
 
@@ -102,18 +90,18 @@ class AuthService {
 
       await user.updatePassword(newPassword);
 
-      final q = await _db
-          .collection('users')
-          .where('email', isEqualTo: user.email)
-          .limit(1)
-          .get();
+      final q =
+          await _db
+              .collection('users')
+              .where('email', isEqualTo: user.email)
+              .limit(1)
+              .get();
       if (q.docs.isNotEmpty) {
         await q.docs.first.reference.update({'needsPasswordChange': false});
       }
       return true;
     } on FirebaseAuthException catch (e) {
-      debugPrint(
-          'AuthService.changePassword error: ${e.code} – ${e.message}');
+      debugPrint('AuthService.changePassword error: ${e.code} - ${e.message}');
       return false;
     } catch (e) {
       debugPrint('AuthService.changePassword unexpected: $e');

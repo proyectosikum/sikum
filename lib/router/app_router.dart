@@ -5,7 +5,7 @@ import 'package:sikum/presentation/screens/patients/closure/clinical_discharge_f
 import 'package:sikum/presentation/screens/patients/closure/closure_choice_screen.dart';
 import 'package:sikum/presentation/screens/patients/closure/discharge_without_medical_high_form.dart';
 import 'package:sikum/presentation/screens/patients/closure/sector_transfer_form.dart';
-import 'package:sikum/presentation/screens/patients/data/edit_patient.dart'; // Asegúrate de que el path sea correcto
+import 'package:sikum/presentation/screens/patients/data/edit_patient.dart';
 import 'package:sikum/presentation/screens/statistics/statistics.dart';
 import 'package:sikum/presentation/screens/users/create_users.dart';
 import 'package:sikum/presentation/screens/patients/evolutions/evolution_details.dart';
@@ -27,10 +27,9 @@ final GoRouter appRouter = GoRouter(
   refreshListenable: authChangeNotifier,
   initialLocation: '/login',
   routes: [
-    GoRoute(path: '/login',           builder: (_, __) => const LoginScreen()),
-    GoRoute(path: '/usuarios',        builder: (_, __) => const UsersScreen()),
-    GoRoute(path: '/perfil',          builder: (_, __) => const UserDetailsScreen(),
-    ),
+    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+    GoRoute(path: '/usuarios', builder: (_, __) => const UsersScreen()),
+    GoRoute(path: '/perfil', builder: (_, __) => const UserDetailsScreen()),
     GoRoute(
       path: '/usuario/detalle/:id',
       builder: (context, state) {
@@ -38,7 +37,7 @@ final GoRouter appRouter = GoRouter(
         return UserDetailsScreen(userId: id);
       },
     ),
-    GoRoute(path: '/usuarios/crear',  builder: (_, __) => const CreateUsers()),
+    GoRoute(path: '/usuarios/crear', builder: (_, __) => const CreateUsers()),
     GoRoute(
       path: '/usuario/editar',
       builder: (context, state) {
@@ -46,18 +45,14 @@ final GoRouter appRouter = GoRouter(
         return EditUser(userId: userId);
       },
     ),
-    GoRoute(path: '/pacientes',       builder: (_, __) => const Patients()),
-    GoRoute(path: '/forgot',          builder: (_, __) => const ForgotPasswordScreen()),
-    GoRoute(path: '/change',          builder: (_, __) => const ChangePasswordScreen()),
+    GoRoute(path: '/pacientes', builder: (_, __) => const Patients()),
+    GoRoute(path: '/forgot', builder: (_, __) => const ForgotPasswordScreen()),
+    GoRoute(path: '/change', builder: (_, __) => const ChangePasswordScreen()),
     GoRoute(
       path: '/pacientes/editar/:patientId',
       builder: (context, state) {
         final patientId = state.pathParameters['patientId']!;
-        // Ya no necesitamos pasar patientData como extra
-        // El nuevo widget obtiene los datos directamente del provider
-        return EditPatientScreen(
-          patientId: patientId,
-        );
+        return EditPatientScreen(patientId: patientId);
       },
     ),
     GoRoute(
@@ -81,7 +76,7 @@ final GoRouter appRouter = GoRouter(
         return MaternalForm(patientId: id);
       },
     ),
-      GoRoute(
+    GoRoute(
       path: '/pacientes/:patientId/evolutions/:evolutionId',
       builder: (context, state) {
         final patientId = state.pathParameters['patientId']!;
@@ -100,10 +95,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    GoRoute(
-      path: '/estadisticas',
-      builder: (_, __) => const Statistics(),
-    ),
+    GoRoute(path: '/estadisticas', builder: (_, __) => const Statistics()),
 
     GoRoute(
       path: '/pacientes/:patientId/cerrar',
@@ -133,14 +125,13 @@ final GoRouter appRouter = GoRouter(
         return ClinicalDischargeForm(patientId: patientId);
       },
     ),
-
   ],
   redirect: (context, state) {
-    final user     = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
     final loggedIn = user != null;
-    final loc      = state.matchedLocation;
+    final loc = state.matchedLocation;
 
-    const publicPaths = ['/login','/forgot','/change'];
+    const publicPaths = ['/login', '/forgot', '/change'];
 
     if (!loggedIn && !publicPaths.contains(loc)) {
       return '/login';
@@ -149,43 +140,42 @@ final GoRouter appRouter = GoRouter(
     if (loggedIn) {
       if (loc == '/login') {
         if (authChangeNotifier.needsChange) return '/change';
-        return authChangeNotifier.role == 'admin'
-          ? '/usuarios'
-          : '/pacientes';
+        return authChangeNotifier.role == 'admin' ? '/usuarios' : '/pacientes';
       }
 
       final isAdmin = authChangeNotifier.role == 'admin';
-      final okAdmin = [
-        '/usuarios',
-        '/usuarios/crear',
-        '/usuario/editar',
-        '/perfil',
-        '/change',
-        '/forgot',
-        '/estadisticas'
-      ].any((p) => p == loc) || loc.startsWith('/usuario/detalle');
+      final okAdmin =
+          [
+            '/usuarios',
+            '/usuarios/crear',
+            '/usuario/editar',
+            '/perfil',
+            '/change',
+            '/forgot',
+            '/estadisticas',
+          ].any((p) => p == loc) ||
+          loc.startsWith('/usuario/detalle');
 
       if (isAdmin && !okAdmin) {
         return '/usuarios';
       }
 
-      final okUser = [
-        '/pacientes',
-        '/perfil',
-        '/change',
-        '/forgot',
-        '/estadisticas'
-      ].any((p) => p == loc)
-        || loc.startsWith('/paciente/detalle')
-        || loc.startsWith('/paciente/evolucionar')
-        || loc.startsWith('/pacientes') && (
-            loc.contains('/maternos') ||
-            loc.contains('/evolutions') ||
-            loc.contains('/editar') ||
-            loc.contains('/nacimiento') ||
-            loc.contains('/cerrar') 
-        );
-
+      final okUser =
+          [
+            '/pacientes',
+            '/perfil',
+            '/change',
+            '/forgot',
+            '/estadisticas',
+          ].any((p) => p == loc) ||
+          loc.startsWith('/paciente/detalle') ||
+          loc.startsWith('/paciente/evolucionar') ||
+          loc.startsWith('/pacientes') &&
+              (loc.contains('/maternos') ||
+                  loc.contains('/evolutions') ||
+                  loc.contains('/editar') ||
+                  loc.contains('/nacimiento') ||
+                  loc.contains('/cerrar'));
 
       if (!isAdmin && !okUser) {
         return '/pacientes';
@@ -193,5 +183,5 @@ final GoRouter appRouter = GoRouter(
     }
 
     return null;
-  }
+  },
 );

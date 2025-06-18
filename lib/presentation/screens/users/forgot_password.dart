@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,11 +35,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     setState(() => _loading = true);
 
-    final query = await FirebaseFirestore.instance
-        .collection('users')
-        .where('user', isEqualTo: user)
-        .limit(1)
-        .get();
+    final query =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .where('user', isEqualTo: user)
+            .limit(1)
+            .get();
 
     if (query.docs.isEmpty) {
       setState(() => _loading = false);
@@ -65,7 +68,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           content: Text('Revisa tu correo para restablecer tu contraseña'),
         ),
       );
-      // ignore: use_build_context_synchronously
       context.go('/login');
     } else {
       messenger.showSnackBar(
@@ -76,8 +78,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const green       = Color(0xFF4F959D);
-    const cream       = Color(0xFFFFF8E1);
+    const green = Color(0xFF4F959D);
+    const cream = Color(0xFFFFF8E1);
     const borderColor = Color(0xFFB2D4E1);
 
     return Scaffold(
@@ -116,26 +118,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Label
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'Usuario',
-                          style: TextStyle(
-                            color: cream,
-                            fontSize: 18,
-                          ),
+                          style: TextStyle(color: cream, fontSize: 18),
                         ),
                       ),
                       const SizedBox(height: 8),
 
-                      // Input de user
                       TextField(
                         controller: _userController,
                         style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           filled: true,
                           fillColor: cream,
                           border: OutlineInputBorder(
@@ -153,7 +152,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             child: SizedBox(
                               height: 45,
                               child: OutlinedButton(
-                                onPressed: _loading ? null : () => context.pop(),
+                                onPressed:
+                                    _loading ? null : () => context.pop(),
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: green,
                                   side: BorderSide(color: cream),
@@ -189,22 +189,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                child: _loading
-                                    ? Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation(cream),
+                                child:
+                                    _loading
+                                        ? Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation(cream),
+                                            ),
                                           ),
+                                        )
+                                        : Text(
+                                          'Aceptar',
+                                          style: TextStyle(color: green),
                                         ),
-                                      )
-                                    : Text(
-                                        'Aceptar',
-                                        style: TextStyle(color: green),
-                                      ),
                               ),
                             ),
                           ),

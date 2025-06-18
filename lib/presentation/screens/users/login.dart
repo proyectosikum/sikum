@@ -58,16 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
         break;
 
       case LoginStatus.success:
-        if (result.needsChange) {
-          context.go('/change');
-          return;
-        }
-
-        if (result.role == 'admin') {
-          context.go('/usuarios');
-        } else {
-          context.go('/pacientes');
-        }
         break;
     }
   }
@@ -76,12 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     const backgroundColor = Color(0xFF4F959D);
     const cardBorderColor = Color(0xFFB2D4E1);
-    const fieldFillColor  = Color(0xFFF2F2F2);
-    const buttonColor     = Color(0xFFFFF8E1);
-    const titleColor      = Color(0xFFFFF8E1);
-    const inputTextColor  = Colors.black87;
-    const labelColor      = Color(0xFFFFF8E1);
-    const labelSize       = 18.0;
+    const fieldFillColor = Color(0xFFF2F2F2);
+    const buttonColor = Color(0xFFFFF8E1);
+    const titleColor = Color(0xFFFFF8E1);
+    const inputTextColor = Colors.black87;
+    const labelColor = Color(0xFFFFF8E1);
+    const labelSize = 18.0;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -100,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 24),
 
-                  // Título
                   Text(
                     'Sikum',
                     style: GoogleFonts.kronaOne(
@@ -112,15 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Campo user
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Usuario',
-                      style: TextStyle(
-                        color: labelColor,
-                        fontSize: labelSize,
-                      ),
+                      style: TextStyle(color: labelColor, fontSize: labelSize),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -129,7 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -141,15 +128,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Campo Contraseña
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Contraseña',
-                      style: TextStyle(
-                        color: labelColor,
-                        fontSize: labelSize,
-                      ),
+                      style: TextStyle(color: labelColor, fontSize: labelSize),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -159,7 +142,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: inputTextColor),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       filled: true,
                       fillColor: fieldFillColor,
                       border: OutlineInputBorder(
@@ -168,9 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _showText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                          _showText ? Icons.visibility_off : Icons.visibility,
                           color: Colors.grey,
                         ),
                         onPressed: _togglePasswordView,
@@ -180,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Botón Ingresar
                   SizedBox(
                     width: double.infinity,
                     height: 45,
@@ -193,39 +175,39 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: _loading
-                        ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              width: 24, height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(buttonColor),
+                      child:
+                          _loading
+                              ? Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      buttonColor,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              : Text(
+                                'Ingresar',
+                                style: TextStyle(
+                                  color: backgroundColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          )
-                        : Text(
-                            'Ingresar',
-                            style: TextStyle(
-                              color: backgroundColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                     ),
                   ),
 
                   const SizedBox(height: 5),
 
-                  // Link Olvidé mi contraseña
                   TextButton(
                     onPressed: () => context.push('/forgot'),
                     child: const Text(
                       'Olvidé mi contraseña',
-                      style: TextStyle(
-                        color: labelColor,
-                        fontSize: 14
-                      ),
+                      style: TextStyle(color: labelColor, fontSize: 14),
                     ),
                   ),
 

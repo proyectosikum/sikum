@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sikum/router/app_router.dart';
@@ -79,13 +81,14 @@ class SideMenu extends StatelessWidget {
                   onTap: () async {
                     Navigator.of(context).pop();
                     await AuthService.instance.logout();
-                    // ignore: use_build_context_synchronously
                     context.go('/login');
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
@@ -111,11 +114,11 @@ class SideMenu extends StatelessWidget {
   }
 
   Widget _buildMenuItem(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon, color: Colors.black54),
       title: Text(label, style: const TextStyle(color: Colors.black87)),
