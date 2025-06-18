@@ -66,7 +66,6 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Título con flecha de atrás
                   Row(
                     children: [
                       IconButton(
@@ -148,7 +147,6 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Título + PopupMenuButton de especialidades
                   Row(
                     children: [
                       const Text(
@@ -209,7 +207,6 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Evoluciones filtradas
                   evolutionsAsync.when(
                     loading: () => const Center(child: CircularProgressIndicator(color: green)),
                     error: (_, __) => const Center(child: Text('Error al cargar evoluciones')),
@@ -232,7 +229,6 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
             ),
           ),
 
-          // Menú de acciones
           if (showActions)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -280,11 +276,9 @@ class _PatientDetailsScreenState extends ConsumerState<PatientDetailsScreen> {
                       ),
                     ];
                   }
-                  // Paciente activo: siempre mostramos "Evolucionar"
                   final items = <PopupMenuEntry<String>>[
                     const PopupMenuItem(value: 'evolucionar', child: Text('Evolucionar')),
                   ];
-                  // Y sólo si el usuario es neonatólogo mostramos "Cerrar HC"
                   if (userSpecLabel == 'Neonatología') {
                     items.add(const PopupMenuItem(value: 'cerrar', child: Text('Cerrar HC')));
                   }

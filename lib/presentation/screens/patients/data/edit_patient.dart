@@ -103,7 +103,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
     super.dispose();
   }
 
-  /// Inicializa los controladores con los datos del paciente
   void _initializeForm(Patient patient) {
     if (!isInitialized) {
       _firstNameController.text = patient.firstName;
@@ -116,7 +115,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
     }
   }
 
-  /// Verifica si ya existe otro paciente con el DNI ingresado
   bool _isDniAlreadyExists(int dniToCheck, String currentPatientId) {
     final maybePatients = ref.read(patientsStreamProvider).value;
     final patients = maybePatients ?? [];
@@ -125,7 +123,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
         patient.dni == dniToCheck && patient.id != currentPatientId);
   }
 
-  /// Capitaliza la primera letra de cada palabra
   String _capitalizeWords(String text) {
     if (text.isEmpty) return text;
 
@@ -140,7 +137,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
   Future<void> _submit(Patient originalPatient) async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Verificar si el DNI ya existe (excluyendo el paciente actual)
     final dniInt = int.tryParse(dni);
     if (dniInt == null) {
       showDialog(
@@ -163,19 +159,17 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
     setState(() => isSubmitting = true);
 
     try {
-      // Crear el paciente actualizado manteniendo los campos inmutables
       final updatedPatient = Patient(
         id: originalPatient.id,
         firstName: firstName,
         lastName: lastName,
         dni: dniInt,
-        medicalRecordNumber: originalPatient.medicalRecordNumber, // No se modifica
+        medicalRecordNumber: originalPatient.medicalRecordNumber,
         available: originalPatient.available,
         createdByUserId: originalPatient.createdByUserId,
         createdAt: originalPatient.createdAt,
       );
 
-      // Usar el provider para actualizar
       await ref.read(patientActionsProvider).updatePatient(updatedPatient);
 
       if (mounted) {
@@ -197,7 +191,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
     }
   }
 
-  /// Validador personalizado para el campo DNI
   String? _validateDni(String? value) {
     if (value == null || value.isEmpty) {
       return 'Ingrese el DNI';
@@ -217,7 +210,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener los datos del paciente específico
     final patientAsync = ref.watch(patientDetailsStreamProvider(widget.patientId));
     final patientsListAsync = ref.watch(patientsStreamProvider);
 
@@ -275,7 +267,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
             );
           }
 
-          // Inicializar el formulario con los datos del paciente
           _initializeForm(patient);
 
           return Padding(
@@ -297,12 +288,11 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(width: 48), // Para balancear el IconButton
+                      const SizedBox(width: 48),
                     ],
                   ),
                   const SizedBox(height: 40),
                   
-                  /*const SizedBox(height: 20),*/
 
                   TextFormField(
                     controller: _firstNameController,
@@ -352,7 +342,6 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Mostrar información de carga si los datos están cargando
                   patientsListAsync.when(
                     loading: () => const Center(
                       child: Padding(
@@ -370,7 +359,7 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
                         style: const TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
-                    data: (patients) => Container(), // No mostrar nada cuando los datos están cargados
+                    data: (patients) => Container(),
                   ),
 
                   Row(
@@ -379,8 +368,8 @@ class _EditPatientScreenState extends ConsumerState<EditPatientScreen> {
                       OutlinedButton(
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF4F959D), // Color del texto
-                          side: const BorderSide(color: Color(0xFF4F959D)), // Borde del botón
+                          foregroundColor: const Color(0xFF4F959D),
+                          side: const BorderSide(color: Color(0xFF4F959D)),
                         ),
                         child: const Text('Cancelar'),
                       ),

@@ -94,9 +94,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     super.dispose();
   }
 
-  /// Calcula el siguiente número de historia clínica a partir de la lista actual
   Future<int> _getNextMedicalRecordNumber() async {
-    // Leemos la lista actual de pacientes (puede estar en loading; asumimos lista vacía)
     final maybePatients = ref.read(patientsStreamProvider).value;
     final patients = maybePatients ?? [];
 
@@ -106,7 +104,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     return maxNumber + 1;
   }
 
-  /// Verifica si ya existe un paciente con el DNI ingresado
   bool _isDniAlreadyExists(int dniToCheck) {
     final maybePatients = ref.read(patientsStreamProvider).value;
     final patients = maybePatients ?? [];
@@ -114,7 +111,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     return patients.any((patient) => patient.dni == dniToCheck);
   }
 
-  /// Capitaliza la primera letra de cada palabra
   String _capitalizeWords(String text) {
     if (text.isEmpty) return text;
 
@@ -129,7 +125,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Verificar si el DNI ya existe antes de proceder
     final dniInt = int.tryParse(dni);
     if (dniInt == null) {
       showDialog(
@@ -154,18 +149,17 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     try {
       final newNumber = await _getNextMedicalRecordNumber();
       final newPatient = Patient(
-        id: '', // Firestore asignará un ID
+        id: '',
         firstName: firstName,
         lastName: lastName,
         dni: dniInt,
         medicalRecordNumber: newNumber,
         available: true,
-        createdByUserId: '', // No se necesita especificar aca
+        createdByUserId: '',
         createdAt: DateTime.now(),
       );
 
-      // Usamos el provider de acciones para agregar
-      // El createdByUserId se asigna automáticamente en el provider
+      
       await ref.read(patientActionsProvider).addPatient(newPatient);
 
       if (mounted) {
@@ -187,7 +181,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
     }
   }
 
-  /// Validador personalizado para el campo DNI
   String? _validateDni(String? value) {
     if (value == null || value.isEmpty) {
       return 'Ingrese el DNI';
@@ -207,7 +200,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos el stream de pacientes para tener los datos actualizados
     final patientsAsync = ref.watch(patientsStreamProvider);
 
     return Scaffold(
@@ -269,7 +261,6 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
                 validator: _validateDni,
               ),
               const SizedBox(height: 30),
-              // Mostrar información de carga si los datos están cargando
               patientsAsync.when(
                 loading: () => const Center(
                   child: Padding(
@@ -287,7 +278,7 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
-                data: (patients) => Container(), // No mostrar nada cuando los datos están cargados
+                data: (patients) => Container(),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -295,8 +286,8 @@ class _AddPatientsScreenState extends ConsumerState<AddPatientsScreen> {
                   OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF4F959D), // Color del texto
-                      side: const BorderSide(color: Color(0xFF4F959D)), // Borde del botón
+                      foregroundColor: const Color(0xFF4F959D),
+                      side: const BorderSide(color: Color(0xFF4F959D)),
                     ),
                     child: const Text('Cancelar'),
                   ),

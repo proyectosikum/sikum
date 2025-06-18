@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sikum/entities/birth_data.dart';
