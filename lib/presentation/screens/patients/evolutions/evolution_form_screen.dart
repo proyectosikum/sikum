@@ -236,6 +236,12 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         details['braceletNumberNew'] = nuevoNumero;
 
         birthDataNotifier.updateBraceletNumber(nuevoNumero);
+
+        final updatedBirthData = ref.read(birthDataProvider);
+        await ref
+        .read(patientActionsProvider)
+        .submitBirthData(widget.patientId, updatedBirthData!);
+        
       }
     }
 

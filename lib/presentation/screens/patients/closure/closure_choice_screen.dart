@@ -27,7 +27,8 @@ class ClosureChoiceScreen extends ConsumerWidget {
       body: SafeArea(
         child: patientAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const Center(child: Text('Error al cargar paciente')),
+          error:
+              (_, __) => const Center(child: Text('Error al cargar paciente')),
           data: (patient) {
             if (patient == null) {
               return const Center(child: Text('Paciente no encontrado'));
@@ -64,61 +65,87 @@ class ClosureChoiceScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
                   dischargeStatus.when(
                     loading: () => const CircularProgressIndicator(),
-                    error: (_, __) => const Text('Error al evaluar estado de alta'),
-                    data: (status) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.logout),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: green,
-                            foregroundColor: cream,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () {
-                            context.push('/pacientes/$patientId/cerrar/egreso');
-                          },
-                          label: const Text('Egreso sin alta médica'),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.transfer_within_a_station),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: green,
-                            foregroundColor: cream,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () {
-                            context.push('/pacientes/$patientId/cerrar/derivacion');
-                          },
-                          label: const Text('Derivación de sector'),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.check_circle_outline),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: status.status == DischargeStatus.ready ? green : Colors.grey,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            foregroundColor: cream,
-                          ),
-                          onPressed: status.status == DischargeStatus.ready
-                              ? () => context.push('/pacientes/$patientId/cerrar/alta')
-                              : null,
-                          label: const Text('Alta clínica'),
-                        ),
-                        const SizedBox(height: 32),
-                        if (status.status != DischargeStatus.ready)
-                          TextButton.icon(
-                            onPressed: () => showDischargeDetails(context, status.status, status.missingItems),
-                            icon: const Icon(Icons.info_outline, color: Colors.redAccent),
-                            label: const Text(
-                              'Ver requisitos pendientes para el alta',
-                              style: TextStyle(color: Colors.redAccent),
+                    error:
+                        (_, __) =>
+                            const Text('Error al evaluar estado de alta'),
+                    data:
+                        (status) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.logout),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: green,
+                                foregroundColor: cream,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
+                              onPressed: () {
+                                context.push(
+                                  '/pacientes/$patientId/cerrar/egreso',
+                                );
+                              },
+                              label: const Text('Egreso sin alta médica'),
                             ),
-                          ),
-
-                      ],
-                    ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.transfer_within_a_station),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: green,
+                                foregroundColor: cream,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
+                              onPressed: () {
+                                context.push(
+                                  '/pacientes/$patientId/cerrar/derivacion',
+                                );
+                              },
+                              label: const Text('Derivación de sector'),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.check_circle_outline),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    status.status == DischargeStatus.ready
+                                        ? green
+                                        : Colors.grey,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                foregroundColor: cream,
+                              ),
+                              onPressed:
+                                  status.status == DischargeStatus.ready
+                                      ? () => context.push(
+                                        '/pacientes/$patientId/cerrar/alta',
+                                      )
+                                      : null,
+                              label: const Text('Alta clínica'),
+                            ),
+                            const SizedBox(height: 32),
+                            if (status.status != DischargeStatus.ready)
+                              TextButton.icon(
+                                onPressed:
+                                    () => showDischargeDetails(
+                                      context,
+                                      status.status,
+                                      status.missingItems,
+                                    ),
+                                icon: const Icon(
+                                  Icons.info_outline,
+                                  color: Colors.redAccent,
+                                ),
+                                label: const Text(
+                                  'Ver requisitos pendientes para el alta',
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
+                              ),
+                          ],
+                        ),
                   ),
                 ],
               ),
@@ -147,18 +174,12 @@ class ClosureChoiceScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               '${p.lastName}, ${p.firstName}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           Text(
             'DNI: ${p.dni}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
