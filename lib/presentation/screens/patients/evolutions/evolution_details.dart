@@ -94,9 +94,7 @@ class _EvolutionDetailsScreenState
       }
     }
 
-    setState(
-      () {},
-    ); //obliga a reconstruir la pantalla para, asi los errores se ven
+    setState(() {}); //obliga a reconstruir la pantalla asi los errores se ven
     return isValid;
   }
 
@@ -188,6 +186,7 @@ class _EvolutionDetailsScreenState
         specialty != 'enfermeria_cambio_pulsera';
 
     if (_formData.isEmpty) {
+      //para cargarlo una sola vez
       details.forEach((key, value) {
         _formData[key] = value is Timestamp ? value.toDate() : value;
       });
@@ -627,6 +626,8 @@ class _EvolutionDetailsScreenState
 
   Widget _buildNeonatoPage2() {
     const titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    final feedingValue = _formData['feedingType'] as String?;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -646,40 +647,32 @@ class _EvolutionDetailsScreenState
         const SizedBox(height: 16),
         Text('Alimentación', style: titleStyle),
         const SizedBox(height: 8),
-        CheckboxListTile(
-          title: const Text('PMLD'),
-          value: _formData['feedingPmld'] as bool? ?? false,
-          onChanged:
-              (v) => setState(() => _formData['feedingPmld'] = v ?? false),
-        ),
-        CheckboxListTile(
-          title: const Text('PMLD + complemento'),
-          value: _formData['feedingPmldComplement'] as bool? ?? false,
-          onChanged:
-              (v) => setState(
-                () => _formData['feedingPmldComplement'] = v ?? false,
-              ),
-        ),
-        if (_formData['feedingPmldComplement'] as bool? ?? false) ...[
+        for (final option in ['PMLD', 'PMLD + complemento', 'LF'])
+          RadioListTile<String>(
+            title: Text(option),
+            value: option,
+            groupValue: feedingValue,
+            onChanged:
+                (v) => setState(() {
+                  _formData['feedingType'] = v;
+                  _validationErrors.remove('feedingType');
+                }),
+          ),
+        if (_validationErrors['feedingType'] != null)
           Padding(
-            padding: const EdgeInsets.only(left: 15, bottom: 8),
-            child: _buildEditableField(
-              neonatologyPage2.firstWhere((f) => f.key == 'feedingMlQuantity'),
-              _formData['feedingMlQuantity'],
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text(
+              _validationErrors['feedingType']!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ),
-        ],
-        CheckboxListTile(
-          title: const Text('LF'),
-          value: _formData['lf'] as bool? ?? false,
-          onChanged: (v) => setState(() => _formData['lf'] = v ?? false),
-        ),
-        if (_formData['lf'] as bool? ?? false) ...[
+        if (feedingValue == 'PMLD + complemento' || feedingValue == 'LF') ...[
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 15, bottom: 8),
             child: _buildEditableField(
-              neonatologyPage2.firstWhere((f) => f.key == 'lfMlQuantity'),
-              _formData['lfMlQuantity'],
+              neonatologyPage2.firstWhere((f) => f.key == 'mlQuantity'),
+              _formData['mlQuantity'],
             ),
           ),
         ],
