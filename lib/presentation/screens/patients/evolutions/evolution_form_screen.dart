@@ -16,7 +16,12 @@ import 'package:sikum/router/app_router.dart';
 import 'package:sikum/utils/string_utils.dart';
 
 const Map<String, List<String>> _labelToKeys = {
-  'Enfermería': ['enfermeria', 'enfermeria_fei', 'enfermeria_test_saturacion', 'enfermeria_cambio_pulsera'],
+  'Enfermería': [
+    'enfermeria',
+    'enfermeria_fei',
+    'enfermeria_test_saturacion',
+    'enfermeria_cambio_pulsera',
+  ],
   'Neonatología': ['neonatologia', 'neonatologia_adicional'],
 };
 
@@ -25,7 +30,8 @@ class EvolutionFormScreen extends ConsumerStatefulWidget {
   const EvolutionFormScreen({super.key, required this.patientId});
 
   @override
-  ConsumerState<EvolutionFormScreen> createState() => _EvolutionFormScreenState();
+  ConsumerState<EvolutionFormScreen> createState() =>
+      _EvolutionFormScreenState();
 }
 
 class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
@@ -157,6 +163,16 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
           }
         }
       }
+      if (selectedSpec == 'neonatologia') {
+        final feeding = _formData['feedingType'] as String?;
+        final mlValue = _formData['mlQuantity'];
+
+        if ((feeding == 'PMLD + complemento' || feeding == 'LF') &&
+            (mlValue == null || mlValue.toString().isEmpty)) {
+          _validationErrors['mlQuantity'] = 'Este campo es obligatorio';
+          isValid = false;
+        }
+      }
     }
 
     setState(() {});
@@ -239,9 +255,8 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
         final updatedBirthData = ref.read(birthDataProvider);
         await ref
-        .read(patientActionsProvider)
-        .submitBirthData(widget.patientId, updatedBirthData!);
-        
+            .read(patientActionsProvider)
+            .submitBirthData(widget.patientId, updatedBirthData!);
       }
     }
 
@@ -576,27 +591,29 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         const SizedBox(height: 4),
         Wrap(
           spacing: 16,
-          children: ['Normal', 'Anormal'].map((opt) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Radio<String>(
-                  value: opt,
-                  groupValue: examValue,
-                  onChanged: (v) => setState(() {
-                    _formData['physicalExam'] = v;
-                    _validationErrors.remove('physicalExam');
-                  }),
-                ),
-                Text(
-                  opt,
-                  style: TextStyle(
-                    color: hasExamError ? errorColor : Colors.black,
-                  ),
-                ),
-              ],
-            );
-          }).toList(),
+          children:
+              ['Normal', 'Anormal'].map((opt) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Radio<String>(
+                      value: opt,
+                      groupValue: examValue,
+                      onChanged:
+                          (v) => setState(() {
+                            _formData['physicalExam'] = v;
+                            _validationErrors.remove('physicalExam');
+                          }),
+                    ),
+                    Text(
+                      opt,
+                      style: TextStyle(
+                        color: hasExamError ? errorColor : Colors.black,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
         ),
         if (hasExamError) ...[
           const SizedBox(height: 4),
@@ -616,16 +633,15 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
 
         for (final f in neonatologyPage1.where(
           (f) => f.key != 'physicalExam' && f.key != 'abnormalObservation',
-        )) ...[
-          _buildFieldWidget(f),
-          const SizedBox(height: 16),
-        ],
+        )) ...[_buildFieldWidget(f), const SizedBox(height: 16)],
       ],
     );
   }
 
   Widget _buildNeonatoPage2() {
     const titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    final feedingValue = _formData['feedingType'] as String?;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -644,35 +660,31 @@ class _EvolutionFormScreenState extends ConsumerState<EvolutionFormScreen> {
         const SizedBox(height: 16),
         Text('Alimentación', style: titleStyle),
         const SizedBox(height: 8),
-        CheckboxListTile(
-          title: const Text('PMLD'),
-          value: _formData['feedingPmld'] as bool,
-          onChanged: (v) => setState(() => _formData['feedingPmld'] = v),
-        ),
-        CheckboxListTile(
-          title: const Text('PMLD + complemento'),
-          value: _formData['feedingPmldComplement'] as bool,
-          onChanged:
-              (v) => setState(() => _formData['feedingPmldComplement'] = v),
-        ),
-        if (_formData['feedingPmldComplement'] as bool) ...[
+        for (final option in ['PMLD', 'PMLD + complemento', 'LF'])
+          RadioListTile<String>(
+            title: Text(option),
+            value: option,
+            groupValue: feedingValue,
+            onChanged:
+                (val) => setState(() {
+                  _formData['feedingType'] = val;
+                  _validationErrors.remove('feedingType');
+                }),
+          ),
+        if (_validationErrors['feedingType'] != null)
           Padding(
-            padding: const EdgeInsets.only(left: 15, bottom: 8),
-            child: _buildFieldWidget(
-              neonatologyPage2.firstWhere((f) => f.key == 'feedingMlQuantity'),
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text(
+              _validationErrors['feedingType']!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ),
-        ],
-        CheckboxListTile(
-          title: const Text('LF'),
-          value: _formData['lf'] as bool,
-          onChanged: (v) => setState(() => _formData['lf'] = v),
-        ),
-        if (_formData['lf'] as bool) ...[
+        if (feedingValue == 'PMLD + complemento' || feedingValue == 'LF') ...[
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 15, bottom: 8),
             child: _buildFieldWidget(
-              neonatologyPage2.firstWhere((f) => f.key == 'lfMlQuantity'),
+              neonatologyPage2.firstWhere((f) => f.key == 'mlQuantity'),
             ),
           ),
         ],

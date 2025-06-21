@@ -278,36 +278,22 @@ const List<FieldConfig> neonatologyPage2 = [
     type: FieldType.checkbox,
     isRequired: true,
   ),
-  FieldConfig(
-    key: 'feedingPmld',
-    label: 'PMLD',
-    type: FieldType.checkbox,
+    FieldConfig(
+    key: 'feedingType',
+    label: 'Alimentación',
+    type: FieldType.radio,
+    options: ['PMLD', 'PMLD + complemento', 'LF'],
     isRequired: true,
   ),
   FieldConfig(
-    key: 'feedingPmldComplement',
-    label: 'PMLD + complemento',
-    type: FieldType.checkbox,
-    isRequired: true,
-  ),
-  FieldConfig(
-    key: 'feedingMlQuantity',
+    key: 'mlQuantity',
     label: 'Cantidad de ML/3hs',
     type: FieldType.number,
-    isRequired: true,
+    isRequired: false, // será requerido solo si corresponde
+    min: 0,
+    max: 300,
   ),
-  FieldConfig(
-    key: 'lf',
-    label: 'LF',
-    type: FieldType.checkbox,
-    isRequired: true,
-  ),
-  FieldConfig(
-    key: 'lfMlQuantity',
-    label: 'Cantidad de ML/3hs',
-    type: FieldType.number,
-    isRequired: true,
-  ),
+
   FieldConfig(
     key: 'phototherapy',
     label: 'Luminoterapia',
